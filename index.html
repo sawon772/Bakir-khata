@@ -28,6 +28,7 @@
     .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
     .btn-blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
     .btn-google { background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%); }
+    .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
     .stat-card { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
     .scrollbar-thin::-webkit-scrollbar { width: 6px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
@@ -38,6 +39,12 @@
     .auth-divider { display: flex; align-items: center; text-align: center; }
     .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e5e7eb; }
     .auth-divider span { padding: 0 10px; color: #6b7280; font-size: 0.875rem; }
+    .action-buttons { display: flex; gap: 4px; }
+    .edit-btn, .delete-btn { padding: 4px 8px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .edit-btn { background: #f59e0b; color: white; }
+    .edit-btn:hover { background: #d97706; }
+    .delete-btn { background: #ef4444; color: white; }
+    .delete-btn:hover { background: #dc2626; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
@@ -254,6 +261,7 @@
     let currentFilter = 'all';
     let searchQuery = '';
     let deleteConfirmId = null;
+    let editCustomerId = null;
     let currentUser = null;
     let isGuest = false;
     let guestId = 'guest_' + Date.now();
@@ -416,6 +424,24 @@
         item.__backendId = generateId();
         allData.push(item);
         localStorage.setItem('guest_data', JSON.stringify(allData));
+        return { isOk: true };
+      }
+    }
+
+    // Update data
+    async function updateData(item) {
+      if (!isGuest && currentUser) {
+        // Update in Firebase
+        const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
+        await userRef.set(item);
+        return { isOk: true };
+      } else {
+        // Update in localStorage
+        const index = allData.findIndex(d => d.__backendId === item.__backendId);
+        if (index > -1) {
+          allData[index] = item;
+          localStorage.setItem('guest_data', JSON.stringify(allData));
+        }
         return { isOk: true };
       }
     }
@@ -611,29 +637,35 @@
         const isConfirming = deleteConfirmId === c.__backendId;
         
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow flex items-center justify-between" data-id="${c.__backendId}">
-            <div class="flex items-center gap-3 flex-1" onclick="viewCustomerHistory('${c.customer_id}')">
-              <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
-                ${c.customer_name.charAt(0)}
-              </div>
-              <div class="flex-1">
-                <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                <p class="text-sm text-gray-500">${c.mobile || 'মোবাইল নেই'}</p>
-              </div>
-            </div>
-            <div class="text-right flex items-center gap-2">
-              <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer">
-                <p class="font-bold ${balanceColor}">${formatCurrency(balance)}</p>
-                <p class="text-xs text-gray-400">${balance > 0 ? 'বাকি' : balance < 0 ? 'অগ্রিম' : 'পরিশোধিত'}</p>
-              </div>
-              ${isConfirming ? `
-                <div class="flex gap-1">
-                  <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
-                  <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${c.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1" onclick="viewCustomerHistory('${c.customer_id}')">
+                <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
+                  ${c.customer_name.charAt(0)}
                 </div>
-              ` : `
-                <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
-              `}
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                  <p class="text-sm text-gray-500">${c.mobile || 'মোবাইল নেই'}</p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                </div>
+              </div>
+              <div class="text-right">
+                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                  <p class="font-bold ${balanceColor}">${formatCurrency(balance)}</p>
+                  <p class="text-xs text-gray-400">${balance > 0 ? 'বাকি' : balance < 0 ? 'অগ্রিম' : 'পরিশোধিত'}</p>
+                </div>
+                ${isConfirming ? `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                  </div>
+                ` : `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
+                  </div>
+                `}
+              </div>
             </div>
           </div>
         `;
@@ -776,6 +808,39 @@
             </div>
           </form>
         `;
+      } else if (type === 'edit-customer') {
+        const customer = getCustomers().find(c => c.customer_id === customerId);
+        if (!customer) return;
+        
+        content.innerHTML = `
+          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ কাস্টমার এডিট</h2>
+          <form onsubmit="updateCustomer(event, '${customerId}')">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <input type="text" id="edit-customer-name" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+                  placeholder="কাস্টমারের নাম" value="${customer.customer_name}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <input type="tel" id="edit-customer-mobile" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+                  placeholder="০১XXXXXXXXX" value="${customer.mobile || ''}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <input type="text" id="edit-customer-address" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+                  placeholder="ঠিকানা (ঐচ্ছিক)" value="${customer.address || ''}">
+              </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="submit" id="update-customer-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">আপডেট</button>
+            </div>
+          </form>
+        `;
       } else if (type === 'due' || type === 'payment') {
         const customers = getCustomers();
         const title = type === 'due' ? '📝 বাকি এন্ট্রি' : '💰 পেমেন্ট এন্ট্রি';
@@ -867,6 +932,10 @@
       overlay.classList.remove('hidden');
     }
 
+    function openEditCustomerModal(customerId) {
+      openModal('edit-customer', customerId);
+    }
+
     function closeModal() {
       document.getElementById('modal-overlay').classList.add('hidden');
     }
@@ -916,6 +985,40 @@
         showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
         btn.disabled = false;
         btn.textContent = 'সংরক্ষণ';
+      }
+    }
+
+    async function updateCustomer(e, customerId) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('update-customer-btn');
+      btn.disabled = true;
+      btn.textContent = 'আপডেট হচ্ছে...';
+
+      // Find the customer
+      const customer = allData.find(d => d.customer_id === customerId && d.type === 'customer');
+      if (!customer) return;
+
+      // Update customer data
+      customer.customer_name = document.getElementById('edit-customer-name').value.trim();
+      customer.mobile = document.getElementById('edit-customer-mobile').value.trim();
+      customer.address = document.getElementById('edit-customer-address').value.trim();
+
+      const result = await updateData(customer);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          // Guest mode - manually update
+          loadGuestData();
+        }
+        showToast('কাস্টমার আপডেট হয়েছে!');
+        closeModal();
+      } else {
+        showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        btn.disabled = false;
+        btn.textContent = 'আপডেট';
       }
     }
 
