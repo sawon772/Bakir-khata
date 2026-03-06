@@ -48,6 +48,7 @@
     .edit-btn:hover { background: #d97706; }
     .delete-btn { background: #ef4444; color: white; }
     .delete-btn:hover { background: #dc2626; }
+    .fund-provider-card { border-left: 4px solid #9333ea; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
@@ -56,7 +57,7 @@
     <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
         <div class="text-center mb-6">
-          <div class="text-6xl mb-4">📖</div>
+          <div class="text-6xl mb-4">📒</div>
           <h1 class="text-3xl font-bold text-gray-800 mb-2">বাকির খাতা</h1>
           <p class="text-gray-600">আপনার ব্যবসায়িক হিসাব ব্যবস্থাপনা</p>
         </div>
@@ -186,11 +187,22 @@
       
       <!-- Funds Tab -->
       <div id="content-funds" class="space-y-3 hidden">
-        <div class="flex gap-2 mb-3">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="font-bold text-lg text-purple-800">ফান্ড দাতা তালিকা</h2>
+          <button onclick="openAddFundProviderModal()" class="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">+ নতুন দাতা</button>
+        </div>
+        
+        <!-- Fund Providers List -->
+        <div id="fund-providers-list" class="space-y-2 mb-4"></div>
+        
+        <!-- Fund Transactions Filters -->
+        <div class="flex gap-2 mb-3 mt-4">
           <button onclick="filterFunds('all')" id="fund-filter-all" class="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white">সব</button>
           <button onclick="filterFunds('receive')" id="fund-filter-receive" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">গ্রহণ</button>
           <button onclick="filterFunds('payment')" id="fund-filter-payment" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">পরিশোধ</button>
         </div>
+        
+        <!-- Fund Transactions List -->
         <div id="funds-list" class="space-y-2"></div>
         <div id="no-funds" class="text-center py-10 text-gray-500 hidden">
           <p class="text-4xl mb-2">💰</p>
@@ -305,7 +317,7 @@
     let searchQuery = '';
     let deleteConfirmId = null;
     let editCustomerId = null;
-    let editFundId = null;
+    let editProviderId = null;
     let currentUser = null;
     let isGuest = false;
     let guestId = 'guest_' + Date.now();
@@ -590,14 +602,35 @@
       return Array.from(customerMap.values());
     }
 
-    // Get funds
+    // Get fund providers
+    function getFundProviders() {
+      const providerMap = new Map();
+      allData.filter(d => d.type === 'fund-provider').forEach(p => {
+        providerMap.set(p.provider_id, p);
+      });
+      return Array.from(providerMap.values());
+    }
+
+    // Get fund provider balance
+    function getFundProviderBalance(providerId) {
+      let balance = 0;
+      allData.forEach(d => {
+        if (d.provider_id === providerId) {
+          if (d.type === 'fund-receive') balance += d.amount;
+          if (d.type === 'fund-payment') balance -= d.amount;
+        }
+      });
+      return balance;
+    }
+
+    // Get all fund transactions
     function getFunds() {
       return allData.filter(d => d.type === 'fund-receive' || d.type === 'fund-payment')
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    // Calculate fund balance
-    function getFundBalance() {
+    // Calculate total fund balance
+    function getTotalFundBalance() {
       let balance = 0;
       allData.forEach(d => {
         if (d.type === 'fund-receive') balance += d.amount;
@@ -606,7 +639,7 @@
       return balance;
     }
 
-    // Get transactions (all types)
+    // Get all transactions
     function getTransactions() {
       return allData.filter(d => d.type === 'due' || d.type === 'payment' || d.type === 'fund-receive' || d.type === 'fund-payment')
         .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -664,7 +697,10 @@
     function renderCurrentView() {
       updateStats();
       if (currentTab === 'customers') renderCustomers();
-      else if (currentTab === 'funds') renderFunds();
+      else if (currentTab === 'funds') {
+        renderFundProviders();
+        renderFunds();
+      }
       else if (currentTab === 'transactions') renderTransactions();
       else if (currentTab === 'reports') renderReports();
     }
@@ -685,7 +721,7 @@
         }
       });
 
-      const totalFund = getFundBalance();
+      const totalFund = getTotalFundBalance();
 
       document.getElementById('total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('total-due').textContent = formatCurrency(totalDue);
@@ -754,6 +790,45 @@
       }).join('');
     }
 
+    function renderFundProviders() {
+      const providers = getFundProviders();
+      const container = document.getElementById('fund-providers-list');
+      
+      if (providers.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-gray-500 bg-purple-50 rounded-lg">কোনো ফান্ড দাতা নেই। নতুন দাতা যোগ করুন।</div>';
+        return;
+      }
+
+      container.innerHTML = providers.map(p => {
+        const balance = getFundProviderBalance(p.provider_id);
+        const isConfirming = deleteConfirmId === p.__backendId;
+        
+        return `
+          <div class="bg-white rounded-xl p-3 card-shadow fund-provider-card" data-id="${p.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                  ${p.provider_name.charAt(0)}
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
+                  <p class="text-xs text-gray-500">${p.mobile || 'মোবাইল নেই'}</p>
+                </div>
+              </div>
+              <div class="text-right">
+                <p class="font-bold text-purple-600">${formatCurrency(balance)}</p>
+                <p class="text-xs text-gray-400">বাকি</p>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-2 justify-end">
+              <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
+              <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderFunds() {
       let funds = getFunds();
       const container = document.getElementById('funds-list');
@@ -765,7 +840,7 @@
 
       if (searchQuery) {
         funds = funds.filter(f => 
-          f.person_name.toLowerCase().includes(searchQuery) ||
+          f.provider_name.toLowerCase().includes(searchQuery) ||
           (f.note && f.note.toLowerCase().includes(searchQuery))
         );
       }
@@ -792,7 +867,7 @@
                   ${icon}
                 </div>
                 <div>
-                  <h3 class="font-semibold text-gray-800">${f.person_name}</h3>
+                  <h3 class="font-semibold text-gray-800">${f.provider_name}</h3>
                   <p class="text-xs text-gray-500">${formatDate(f.date)}</p>
                 </div>
               </div>
@@ -833,7 +908,7 @@
       if (searchQuery) {
         transactions = transactions.filter(t => 
           (t.customer_name && t.customer_name.toLowerCase().includes(searchQuery)) ||
-          (t.person_name && t.person_name.toLowerCase().includes(searchQuery)) ||
+          (t.provider_name && t.provider_name.toLowerCase().includes(searchQuery)) ||
           (t.note && t.note.toLowerCase().includes(searchQuery))
         );
       }
@@ -865,13 +940,13 @@
           color = 'text-purple-600';
           bgColor = 'bg-purple-50';
           typeText = 'ফান্ড গ্রহণ';
-          name = t.person_name;
+          name = t.provider_name;
         } else if (t.type === 'fund-payment') {
           icon = '💸';
           color = 'text-indigo-600';
           bgColor = 'bg-indigo-50';
           typeText = 'ফান্ড পরিশোধ';
-          name = t.person_name;
+          name = t.provider_name;
         }
         
         const isConfirming = deleteConfirmId === t.__backendId;
@@ -911,6 +986,7 @@
 
     function renderReports() {
       const customers = getCustomers();
+      const providers = getFundProviders();
       const transactions = getTransactions();
       
       let totalGiven = 0;
@@ -933,7 +1009,7 @@
       document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived);
       document.getElementById('report-net-fund').textContent = formatCurrency(totalFundReceived - totalFundPaid);
 
-      // Top debtors
+      // Top debtors (customers)
       const debtors = customers.map(c => ({
         name: c.customer_name,
         balance: getCustomerBalance(c.customer_id)
@@ -954,26 +1030,11 @@
         `).join('');
       }
 
-      // Top lenders
-      const funds = getFunds();
-      const lenderMap = new Map();
-      
-      funds.forEach(f => {
-        if (!lenderMap.has(f.person_name)) {
-          lenderMap.set(f.person_name, 0);
-        }
-        if (f.type === 'fund-receive') {
-          lenderMap.set(f.person_name, lenderMap.get(f.person_name) + f.amount);
-        } else {
-          lenderMap.set(f.person_name, lenderMap.get(f.person_name) - f.amount);
-        }
-      });
-      
-      const lenders = Array.from(lenderMap.entries())
-        .map(([name, balance]) => ({ name, balance }))
-        .filter(l => l.balance > 0)
-        .sort((a, b) => b.balance - a.balance)
-        .slice(0, 5);
+      // Top lenders (fund providers)
+      const lenders = providers.map(p => ({
+        name: p.provider_name,
+        balance: getFundProviderBalance(p.provider_id)
+      })).filter(l => l.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
 
       const topLendersContainer = document.getElementById('top-lenders');
       if (lenders.length === 0) {
@@ -1059,6 +1120,69 @@
             </div>
           </form>
         `;
+      } else if (type === 'fund-provider') {
+        content.innerHTML = `
+          <h2 class="text-xl font-bold text-gray-800 mb-4">➕ নতুন ফান্ড দাতা</h2>
+          <form onsubmit="addFundProvider(event)">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <input type="text" id="provider-name" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="যেমন: রহিম, Sonali Bank">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <input type="tel" id="provider-mobile" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="০১XXXXXXXXX">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <input type="text" id="provider-address" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="ঠিকানা (ঐচ্ছিক)">
+              </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="submit" id="submit-provider-btn" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700">সংরক্ষণ</button>
+            </div>
+          </form>
+        `;
+      } else if (type === 'edit-fund-provider') {
+        const provider = getFundProviders().find(p => p.provider_id === personId);
+        if (!provider) return;
+        
+        content.innerHTML = `
+          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ ফান্ড দাতা এডিট</h2>
+          <form onsubmit="updateFundProvider(event, '${personId}')">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <input type="text" id="edit-provider-name" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="নাম" value="${provider.provider_name}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <input type="tel" id="edit-provider-mobile" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="০১XXXXXXXXX" value="${provider.mobile || ''}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <input type="text" id="edit-provider-address" 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="ঠিকানা (ঐচ্ছিক)" value="${provider.address || ''}">
+              </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="submit" id="update-provider-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">আপডেট</button>
+            </div>
+          </form>
+        `;
       } else if (type === 'due' || type === 'payment') {
         const customers = getCustomers();
         const title = type === 'due' ? '📝 বাকি এন্ট্রি' : '💳 পেমেন্ট এন্ট্রি';
@@ -1103,19 +1227,33 @@
           </form>
         `;
       } else if (type === 'fund-receive' || type === 'fund-payment') {
+        const providers = getFundProviders();
         const title = type === 'fund-receive' ? '💰 ফান্ড গ্রহণ' : '💸 ফান্ড পরিশোধ';
         const btnText = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
-        const btnClass = type === 'fund-receive' ? 'btn-purple' : 'btn-indigo';
+        const btnClass = type === 'fund-receive' ? 'bg-purple-600' : 'bg-indigo-600';
+        
+        if (providers.length === 0) {
+          content.innerHTML = `
+            <div class="text-center py-6">
+              <p class="text-gray-600 mb-4">কোনো ফান্ড দাতা নেই। প্রথমে ফান্ড দাতা যোগ করুন।</p>
+              <button onclick="closeModal(); openModal('fund-provider')" class="px-4 py-2 bg-purple-600 text-white rounded-lg">+ ফান্ড দাতা যোগ করুন</button>
+            </div>
+          `;
+          overlay.classList.remove('hidden');
+          return;
+        }
         
         content.innerHTML = `
           <h2 class="text-xl font-bold text-gray-800 mb-4">${title}</h2>
           <form onsubmit="addFundTransaction(event, '${type}')">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">কার কাছ থেকে/কাকে *</label>
-                <input type="text" id="fund-person-name" required 
-                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="নাম (যেমন: রহিম, Sonali Bank)">
+                <label class="block text-sm font-medium text-gray-700 mb-1">ফান্ড দাতা *</label>
+                <select id="fund-provider" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
+                  <option value="">ফান্ড দাতা নির্বাচন করুন</option>
+                  ${providers.map(p => `<option value="${p.provider_id}" data-name="${p.provider_name}">${p.provider_name} ${p.mobile ? ' - ' + p.mobile : ''}</option>`).join('')}
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
@@ -1138,7 +1276,7 @@
             </div>
             <div class="flex gap-3 mt-6">
               <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
-              <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium">${btnText}</button>
+              <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium hover:opacity-90">${btnText}</button>
             </div>
           </form>
         `;
@@ -1190,6 +1328,14 @@
       overlay.classList.remove('hidden');
     }
 
+    function openAddFundProviderModal() {
+      openModal('fund-provider');
+    }
+
+    function openEditFundProviderModal(providerId) {
+      openModal('edit-fund-provider', providerId);
+    }
+
     function openEditCustomerModal(customerId) {
       openModal('edit-customer', customerId);
     }
@@ -1202,7 +1348,77 @@
       openModal('history', customerId);
     }
 
-    // CRUD operations
+    // CRUD operations for Fund Providers
+    async function addFundProvider(e) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submit-provider-btn');
+      btn.disabled = true;
+      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+
+      const providerId = generateId();
+      const providerData = {
+        type: 'fund-provider',
+        provider_id: providerId,
+        provider_name: document.getElementById('provider-name').value.trim(),
+        mobile: document.getElementById('provider-mobile').value.trim(),
+        address: document.getElementById('provider-address').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      const result = await saveData(providerData);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          // Guest mode - manually update
+          loadGuestData();
+        }
+        showToast('ফান্ড দাতা যোগ হয়েছে!');
+        closeModal();
+      } else {
+        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        btn.disabled = false;
+        btn.textContent = 'সংরক্ষণ';
+      }
+    }
+
+    async function updateFundProvider(e, providerId) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('update-provider-btn');
+      btn.disabled = true;
+      btn.textContent = 'আপডেট হচ্ছে...';
+
+      // Find the provider
+      const provider = allData.find(d => d.provider_id === providerId && d.type === 'fund-provider');
+      if (!provider) return;
+
+      // Update provider data
+      provider.provider_name = document.getElementById('edit-provider-name').value.trim();
+      provider.mobile = document.getElementById('edit-provider-mobile').value.trim();
+      provider.address = document.getElementById('edit-provider-address').value.trim();
+
+      const result = await updateData(provider);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          // Guest mode - manually update
+          loadGuestData();
+        }
+        showToast('ফান্ড দাতা আপডেট হয়েছে!');
+        closeModal();
+      } else {
+        showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        btn.disabled = false;
+        btn.textContent = 'আপডেট';
+      }
+    }
+
+    // CRUD operations for Customers
     async function addCustomer(e) {
       e.preventDefault();
       
@@ -1330,9 +1546,13 @@
       btn.disabled = true;
       btn.textContent = 'সংরক্ষণ হচ্ছে...';
 
+      const select = document.getElementById('fund-provider');
+      const selectedOption = select.options[select.selectedIndex];
+
       const fundData = {
         type: type,
-        person_name: document.getElementById('fund-person-name').value.trim(),
+        provider_id: select.value,
+        provider_name: selectedOption.dataset.name,
         amount: parseFloat(document.getElementById('fund-amount').value),
         date: document.getElementById('fund-date').value,
         note: document.getElementById('fund-note').value.trim(),
@@ -1361,6 +1581,11 @@
     function initiateDeleteCustomer(backendId) {
       deleteConfirmId = backendId;
       renderCustomers();
+    }
+
+    function initiateDeleteFundProvider(backendId) {
+      deleteConfirmId = backendId;
+      renderFundProviders();
     }
 
     function initiateDeleteTransaction(backendId) {
@@ -1400,6 +1625,36 @@
           loadGuestData();
         }
         showToast('কাস্টমার মুছে ফেলা হয়েছে!');
+      } else {
+        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+      }
+      deleteConfirmId = null;
+    }
+
+    async function confirmDeleteFundProvider(backendId) {
+      const provider = allData.find(d => d.__backendId === backendId);
+      if (!provider) return;
+
+      // Check if there are any transactions for this provider
+      const providerTransactions = allData.filter(d => 
+        d.provider_id === provider.provider_id && (d.type === 'fund-receive' || d.type === 'fund-payment')
+      );
+
+      if (providerTransactions.length > 0) {
+        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।', 'error');
+        deleteConfirmId = null;
+        return;
+      }
+
+      const result = await deleteData(provider);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          loadGuestData();
+        }
+        showToast('ফান্ড দাতা মুছে ফেলা হয়েছে!');
       } else {
         showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
       }
@@ -1449,8 +1704,9 @@
       const data = {
         exported_at: new Date().toISOString(),
         customers: getCustomers(),
-        funds: getFunds(),
-        transactions: getTransactions()
+        fund_providers: getFundProviders(),
+        fund_transactions: getFunds(),
+        all_transactions: getTransactions()
       };
       
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1478,8 +1734,6 @@
           menu.classList.add('hidden');
         }
       });
-
-      // Hide auth screen if already logged in (Firebase handles this via onAuthStateChanged)
     }
 
     init();
