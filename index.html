@@ -29,7 +29,10 @@
     .btn-blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
     .btn-google { background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%); }
     .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+    .btn-purple { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
+    .btn-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
     .stat-card { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .fund-stat-card { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); }
     .scrollbar-thin::-webkit-scrollbar { width: 6px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
     .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
@@ -53,7 +56,7 @@
     <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 z-50 flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
         <div class="text-center mb-6">
-          <div class="text-6xl mb-4">📒</div>
+          <div class="text-6xl mb-4">📖</div>
           <h1 class="text-3xl font-bold text-gray-800 mb-2">বাকির খাতা</h1>
           <p class="text-gray-600">আপনার ব্যবসায়িক হিসাব ব্যবস্থাপনা</p>
         </div>
@@ -132,18 +135,22 @@
 
     <!-- Stats Summary -->
     <div class="max-w-4xl mx-auto w-full px-4 py-4">
-      <div class="grid grid-cols-3 gap-3">
-        <div class="stat-card rounded-xl p-3 text-center card-shadow">
+      <div class="grid grid-cols-4 gap-2">
+        <div class="stat-card rounded-xl p-2 text-center card-shadow">
           <p class="text-xs text-emerald-600 font-medium">মোট কাস্টমার</p>
-          <p id="total-customers" class="text-xl font-bold text-emerald-700">০</p>
+          <p id="total-customers" class="text-lg font-bold text-emerald-700">০</p>
         </div>
-        <div class="stat-card rounded-xl p-3 text-center card-shadow">
+        <div class="stat-card rounded-xl p-2 text-center card-shadow">
           <p class="text-xs text-emerald-600 font-medium">মোট পাওনা</p>
-          <p id="total-due" class="text-xl font-bold text-red-600">৳০</p>
+          <p id="total-due" class="text-lg font-bold text-red-600">৳০</p>
         </div>
-        <div class="stat-card rounded-xl p-3 text-center card-shadow">
+        <div class="fund-stat-card rounded-xl p-2 text-center card-shadow">
+          <p class="text-xs text-purple-600 font-medium">মোট ফান্ড</p>
+          <p id="total-fund" class="text-lg font-bold text-purple-700">৳০</p>
+        </div>
+        <div class="stat-card rounded-xl p-2 text-center card-shadow">
           <p class="text-xs text-emerald-600 font-medium">আজকের বাকি</p>
-          <p id="today-due" class="text-xl font-bold text-orange-600">৳০</p>
+          <p id="today-due" class="text-lg font-bold text-orange-600">৳০</p>
         </div>
       </div>
     </div>
@@ -152,6 +159,7 @@
     <div class="max-w-4xl mx-auto w-full px-4">
       <div class="flex bg-white rounded-xl p-1 card-shadow">
         <button onclick="showTab('customers')" id="tab-customers" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active">👥 কাস্টমার</button>
+        <button onclick="showTab('funds')" id="tab-funds" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">💰 ফান্ড</button>
         <button onclick="showTab('transactions')" id="tab-transactions" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">📝 লেনদেন</button>
         <button onclick="showTab('reports')" id="tab-reports" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">📊 রিপোর্ট</button>
       </div>
@@ -176,12 +184,28 @@
         </div>
       </div>
       
+      <!-- Funds Tab -->
+      <div id="content-funds" class="space-y-3 hidden">
+        <div class="flex gap-2 mb-3">
+          <button onclick="filterFunds('all')" id="fund-filter-all" class="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white">সব</button>
+          <button onclick="filterFunds('receive')" id="fund-filter-receive" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">গ্রহণ</button>
+          <button onclick="filterFunds('payment')" id="fund-filter-payment" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">পরিশোধ</button>
+        </div>
+        <div id="funds-list" class="space-y-2"></div>
+        <div id="no-funds" class="text-center py-10 text-gray-500 hidden">
+          <p class="text-4xl mb-2">💰</p>
+          <p>কোনো ফান্ড লেনদেন নেই</p>
+          <p class="text-sm">নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন</p>
+        </div>
+      </div>
+      
       <!-- Transactions Tab -->
       <div id="content-transactions" class="space-y-3 hidden">
         <div class="flex gap-2 mb-3">
           <button onclick="filterTransactions('all')" id="filter-all" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white">সব</button>
           <button onclick="filterTransactions('due')" id="filter-due" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">বাকি</button>
           <button onclick="filterTransactions('payment')" id="filter-payment" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">পরিশোধ</button>
+          <button onclick="filterTransactions('fund')" id="filter-fund" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">ফান্ড</button>
         </div>
         <div id="transactions-list" class="space-y-2"></div>
         <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
@@ -207,9 +231,21 @@
               <span class="text-gray-600">মোট পরিশোধ হয়েছে</span>
               <span id="report-total-received" class="font-bold text-emerald-600">৳০</span>
             </div>
+            <div class="flex justify-between py-2 border-b bg-purple-50">
+              <span class="text-gray-600">মোট ফান্ড নেওয়া</span>
+              <span id="report-total-fund-received" class="font-bold text-purple-600">৳০</span>
+            </div>
+            <div class="flex justify-between py-2 border-b bg-purple-50">
+              <span class="text-gray-600">মোট ফান্ড পরিশোধ</span>
+              <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
+            </div>
             <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
-              <span class="text-gray-800 font-medium">মোট পাওনা</span>
+              <span class="text-gray-800 font-medium">মোট পাওনা (কাস্টমার)</span>
               <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
+            </div>
+            <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
+              <span class="text-gray-800 font-medium">মোট ফান্ড দায়</span>
+              <span id="report-net-fund" class="font-bold text-xl text-purple-600">৳০</span>
             </div>
           </div>
         </div>
@@ -217,15 +253,21 @@
           <h3 class="font-bold text-lg text-gray-800 mb-3">🏆 সর্বোচ্চ বাকিদার</h3>
           <div id="top-debtors" class="space-y-2"></div>
         </div>
+        <div class="bg-white rounded-xl p-4 card-shadow">
+          <h3 class="font-bold text-lg text-gray-800 mb-3">💰 ফান্ড দাতা</h3>
+          <div id="top-lenders" class="space-y-2"></div>
+        </div>
         <button onclick="exportData()" class="w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
       </div>
     </div>
     
     <!-- Floating Action Buttons -->
-    <div class="fixed bottom-6 right-6 flex flex-col gap-3">
-      <button onclick="openModal('payment')" class="w-14 h-14 btn-blue text-white rounded-full card-shadow flex items-center justify-center text-xl hover:scale-110 transition-transform">💰</button>
-      <button onclick="openModal('due')" class="w-14 h-14 btn-danger text-white rounded-full card-shadow flex items-center justify-center text-xl hover:scale-110 transition-transform">📝</button>
-      <button onclick="openModal('customer')" class="w-14 h-14 btn-primary text-white rounded-full card-shadow flex items-center justify-center text-xl hover:scale-110 transition-transform">➕</button>
+    <div class="fixed bottom-6 right-6 flex flex-col gap-2">
+      <button onclick="openModal('fund-payment')" class="w-12 h-12 bg-indigo-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড পরিশোধ">💸</button>
+      <button onclick="openModal('fund-receive')" class="w-12 h-12 bg-purple-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড গ্রহণ">💰</button>
+      <button onclick="openModal('payment')" class="w-12 h-12 btn-blue text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">💳</button>
+      <button onclick="openModal('due')" class="w-12 h-12 btn-danger text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">📝</button>
+      <button onclick="openModal('customer')" class="w-12 h-12 btn-primary text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">➕</button>
     </div>
     
     <!-- Modal Container -->
@@ -259,9 +301,11 @@
     let allData = [];
     let currentTab = 'customers';
     let currentFilter = 'all';
+    let currentFundFilter = 'all';
     let searchQuery = '';
     let deleteConfirmId = null;
     let editCustomerId = null;
+    let editFundId = null;
     let currentUser = null;
     let isGuest = false;
     let guestId = 'guest_' + Date.now();
@@ -529,7 +573,7 @@
     // Tab navigation
     function showTab(tab) {
       currentTab = tab;
-      ['customers', 'transactions', 'reports'].forEach(t => {
+      ['customers', 'funds', 'transactions', 'reports'].forEach(t => {
         document.getElementById(`content-${t}`).classList.toggle('hidden', t !== tab);
         document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
         document.getElementById(`tab-${t}`).classList.toggle('text-gray-600', t !== tab);
@@ -546,10 +590,26 @@
       return Array.from(customerMap.values());
     }
 
-    // Get transactions
+    // Get funds
+    function getFunds() {
+      return allData.filter(d => d.type === 'fund-receive' || d.type === 'fund-payment')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    }
+
+    // Calculate fund balance
+    function getFundBalance() {
+      let balance = 0;
+      allData.forEach(d => {
+        if (d.type === 'fund-receive') balance += d.amount;
+        if (d.type === 'fund-payment') balance -= d.amount;
+      });
+      return balance;
+    }
+
+    // Get transactions (all types)
     function getTransactions() {
-      return allData.filter(d => d.type === 'due' || d.type === 'payment')
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      return allData.filter(d => d.type === 'due' || d.type === 'payment' || d.type === 'fund-receive' || d.type === 'fund-payment')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
     // Calculate customer balance
@@ -573,19 +633,38 @@
     // Filter transactions
     function filterTransactions(filter) {
       currentFilter = filter;
-      ['all', 'due', 'payment'].forEach(f => {
-        document.getElementById(`filter-${f}`).classList.toggle('bg-emerald-600', f === filter);
-        document.getElementById(`filter-${f}`).classList.toggle('text-white', f === filter);
-        document.getElementById(`filter-${f}`).classList.toggle('bg-gray-200', f !== filter);
-        document.getElementById(`filter-${f}`).classList.toggle('text-gray-700', f !== filter);
+      ['all', 'due', 'payment', 'fund'].forEach(f => {
+        const el = document.getElementById(`filter-${f}`);
+        if (el) {
+          el.classList.toggle('bg-emerald-600', f === filter);
+          el.classList.toggle('text-white', f === filter);
+          el.classList.toggle('bg-gray-200', f !== filter);
+          el.classList.toggle('text-gray-700', f !== filter);
+        }
       });
       renderTransactions();
+    }
+
+    // Filter funds
+    function filterFunds(filter) {
+      currentFundFilter = filter;
+      ['all', 'receive', 'payment'].forEach(f => {
+        const el = document.getElementById(`fund-filter-${f}`);
+        if (el) {
+          el.classList.toggle('bg-purple-600', f === filter);
+          el.classList.toggle('text-white', f === filter);
+          el.classList.toggle('bg-gray-200', f !== filter);
+          el.classList.toggle('text-gray-700', f !== filter);
+        }
+      });
+      renderFunds();
     }
 
     // Render functions
     function renderCurrentView() {
       updateStats();
       if (currentTab === 'customers') renderCustomers();
+      else if (currentTab === 'funds') renderFunds();
       else if (currentTab === 'transactions') renderTransactions();
       else if (currentTab === 'reports') renderReports();
     }
@@ -606,8 +685,11 @@
         }
       });
 
+      const totalFund = getFundBalance();
+
       document.getElementById('total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('total-due').textContent = formatCurrency(totalDue);
+      document.getElementById('total-fund').textContent = formatCurrency(totalFund);
       document.getElementById('today-due').textContent = formatCurrency(todayDue);
     }
 
@@ -661,12 +743,75 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
                 `}
               </div>
             </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderFunds() {
+      let funds = getFunds();
+      const container = document.getElementById('funds-list');
+      const noFunds = document.getElementById('no-funds');
+
+      if (currentFundFilter !== 'all') {
+        funds = funds.filter(f => f.type === `fund-${currentFundFilter}`);
+      }
+
+      if (searchQuery) {
+        funds = funds.filter(f => 
+          f.person_name.toLowerCase().includes(searchQuery) ||
+          (f.note && f.note.toLowerCase().includes(searchQuery))
+        );
+      }
+
+      if (funds.length === 0) {
+        container.innerHTML = '';
+        noFunds.classList.remove('hidden');
+        return;
+      }
+
+      noFunds.classList.add('hidden');
+      container.innerHTML = funds.map(f => {
+        const icon = f.type === 'fund-receive' ? '💰' : '💸';
+        const color = f.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600';
+        const bgColor = f.type === 'fund-receive' ? 'bg-purple-50' : 'bg-indigo-50';
+        const typeText = f.type === 'fund-receive' ? 'গ্রহণ' : 'পরিশোধ';
+        const isConfirming = deleteConfirmId === f.__backendId;
+        
+        return `
+          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${f.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center">
+                  ${icon}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">${f.person_name}</h3>
+                  <p class="text-xs text-gray-500">${formatDate(f.date)}</p>
+                </div>
+              </div>
+              <div class="text-right flex items-center gap-2">
+                <div>
+                  <p class="font-bold ${color}">${f.type === 'fund-receive' ? '+' : '-'}${formatCurrency(f.amount)}</p>
+                  <p class="text-xs text-gray-400">${typeText}</p>
+                </div>
+                ${isConfirming ? `
+                  <div class="flex gap-1">
+                    <button onclick="confirmDeleteFund('${f.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                  </div>
+                ` : `
+                  <button onclick="initiateDeleteFund('${f.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
+                `}
+              </div>
+            </div>
+            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note}</p>` : ''}
           </div>
         `;
       }).join('');
@@ -678,12 +823,17 @@
       const noTransactions = document.getElementById('no-transactions');
 
       if (currentFilter !== 'all') {
-        transactions = transactions.filter(t => t.type === currentFilter);
+        if (currentFilter === 'fund') {
+          transactions = transactions.filter(t => t.type === 'fund-receive' || t.type === 'fund-payment');
+        } else {
+          transactions = transactions.filter(t => t.type === currentFilter);
+        }
       }
 
       if (searchQuery) {
         transactions = transactions.filter(t => 
-          t.customer_name.toLowerCase().includes(searchQuery) ||
+          (t.customer_name && t.customer_name.toLowerCase().includes(searchQuery)) ||
+          (t.person_name && t.person_name.toLowerCase().includes(searchQuery)) ||
           (t.note && t.note.toLowerCase().includes(searchQuery))
         );
       }
@@ -696,9 +846,34 @@
 
       noTransactions.classList.add('hidden');
       container.innerHTML = transactions.map(t => {
-        const icon = t.type === 'due' ? '📝' : '💰';
-        const color = t.type === 'due' ? 'text-red-600' : 'text-emerald-600';
-        const bgColor = t.type === 'due' ? 'bg-red-50' : 'bg-emerald-50';
+        let icon, color, bgColor, typeText, name;
+        
+        if (t.type === 'due') {
+          icon = '📝';
+          color = 'text-red-600';
+          bgColor = 'bg-red-50';
+          typeText = 'বাকি';
+          name = t.customer_name;
+        } else if (t.type === 'payment') {
+          icon = '💰';
+          color = 'text-emerald-600';
+          bgColor = 'bg-emerald-50';
+          typeText = 'পরিশোধ';
+          name = t.customer_name;
+        } else if (t.type === 'fund-receive') {
+          icon = '💰';
+          color = 'text-purple-600';
+          bgColor = 'bg-purple-50';
+          typeText = 'ফান্ড গ্রহণ';
+          name = t.person_name;
+        } else if (t.type === 'fund-payment') {
+          icon = '💸';
+          color = 'text-indigo-600';
+          bgColor = 'bg-indigo-50';
+          typeText = 'ফান্ড পরিশোধ';
+          name = t.person_name;
+        }
+        
         const isConfirming = deleteConfirmId === t.__backendId;
         
         return `
@@ -709,14 +884,14 @@
                   ${icon}
                 </div>
                 <div>
-                  <h3 class="font-semibold text-gray-800">${t.customer_name}</h3>
+                  <h3 class="font-semibold text-gray-800">${name}</h3>
                   <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
                 </div>
               </div>
               <div class="text-right flex items-center gap-2">
                 <div>
-                  <p class="font-bold ${color}">${t.type === 'due' ? '+' : '-'}${formatCurrency(t.amount)}</p>
-                  <p class="text-xs text-gray-400">${t.type === 'due' ? 'বাকি' : 'পরিশোধ'}</p>
+                  <p class="font-bold ${color}">${(t.type === 'due' || t.type === 'fund-receive') ? '+' : '-'}${formatCurrency(t.amount)}</p>
+                  <p class="text-xs text-gray-400">${typeText}</p>
                 </div>
                 ${isConfirming ? `
                   <div class="flex gap-1">
@@ -740,16 +915,23 @@
       
       let totalGiven = 0;
       let totalReceived = 0;
+      let totalFundReceived = 0;
+      let totalFundPaid = 0;
       
       transactions.forEach(t => {
         if (t.type === 'due') totalGiven += t.amount;
         if (t.type === 'payment') totalReceived += t.amount;
+        if (t.type === 'fund-receive') totalFundReceived += t.amount;
+        if (t.type === 'fund-payment') totalFundPaid += t.amount;
       });
 
       document.getElementById('report-total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('report-total-given').textContent = formatCurrency(totalGiven);
       document.getElementById('report-total-received').textContent = formatCurrency(totalReceived);
+      document.getElementById('report-total-fund-received').textContent = formatCurrency(totalFundReceived);
+      document.getElementById('report-total-fund-paid').textContent = formatCurrency(totalFundPaid);
       document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived);
+      document.getElementById('report-net-fund').textContent = formatCurrency(totalFundReceived - totalFundPaid);
 
       // Top debtors
       const debtors = customers.map(c => ({
@@ -771,10 +953,46 @@
           </div>
         `).join('');
       }
+
+      // Top lenders
+      const funds = getFunds();
+      const lenderMap = new Map();
+      
+      funds.forEach(f => {
+        if (!lenderMap.has(f.person_name)) {
+          lenderMap.set(f.person_name, 0);
+        }
+        if (f.type === 'fund-receive') {
+          lenderMap.set(f.person_name, lenderMap.get(f.person_name) + f.amount);
+        } else {
+          lenderMap.set(f.person_name, lenderMap.get(f.person_name) - f.amount);
+        }
+      });
+      
+      const lenders = Array.from(lenderMap.entries())
+        .map(([name, balance]) => ({ name, balance }))
+        .filter(l => l.balance > 0)
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 5);
+
+      const topLendersContainer = document.getElementById('top-lenders');
+      if (lenders.length === 0) {
+        topLendersContainer.innerHTML = '<p class="text-gray-500 text-center py-4">কোনো ফান্ড দাতা নেই</p>';
+      } else {
+        topLendersContainer.innerHTML = lenders.map((l, i) => `
+          <div class="flex items-center justify-between py-2 ${i < lenders.length - 1 ? 'border-b' : ''}">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">${toBengaliNumber(i + 1)}</span>
+              <span class="text-gray-800">${l.name}</span>
+            </div>
+            <span class="font-bold text-purple-600">${formatCurrency(l.balance)}</span>
+          </div>
+        `).join('');
+      }
     }
 
     // Modal functions
-    function openModal(type, customerId = null) {
+    function openModal(type, personId = null) {
       const overlay = document.getElementById('modal-overlay');
       const content = document.getElementById('modal-content');
       
@@ -809,12 +1027,12 @@
           </form>
         `;
       } else if (type === 'edit-customer') {
-        const customer = getCustomers().find(c => c.customer_id === customerId);
+        const customer = getCustomers().find(c => c.customer_id === personId);
         if (!customer) return;
         
         content.innerHTML = `
           <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ কাস্টমার এডিট</h2>
-          <form onsubmit="updateCustomer(event, '${customerId}')">
+          <form onsubmit="updateCustomer(event, '${personId}')">
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
@@ -843,7 +1061,7 @@
         `;
       } else if (type === 'due' || type === 'payment') {
         const customers = getCustomers();
-        const title = type === 'due' ? '📝 বাকি এন্ট্রি' : '💰 পেমেন্ট এন্ট্রি';
+        const title = type === 'due' ? '📝 বাকি এন্ট্রি' : '💳 পেমেন্ট এন্ট্রি';
         const btnText = type === 'due' ? 'বাকি যোগ করুন' : 'পেমেন্ট যোগ করুন';
         const btnClass = type === 'due' ? 'btn-danger' : 'btn-blue';
         
@@ -856,7 +1074,7 @@
                 <select id="transaction-customer" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
                   <option value="">কাস্টমার নির্বাচন করুন</option>
-                  ${customers.map(c => `<option value="${c.customer_id}" data-name="${c.customer_name}" ${customerId === c.customer_id ? 'selected' : ''}>${c.customer_name}</option>`).join('')}
+                  ${customers.map(c => `<option value="${c.customer_id}" data-name="${c.customer_name}" ${personId === c.customer_id ? 'selected' : ''}>${c.customer_name}</option>`).join('')}
                 </select>
               </div>
               <div>
@@ -884,12 +1102,52 @@
             </div>
           </form>
         `;
+      } else if (type === 'fund-receive' || type === 'fund-payment') {
+        const title = type === 'fund-receive' ? '💰 ফান্ড গ্রহণ' : '💸 ফান্ড পরিশোধ';
+        const btnText = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
+        const btnClass = type === 'fund-receive' ? 'btn-purple' : 'btn-indigo';
+        
+        content.innerHTML = `
+          <h2 class="text-xl font-bold text-gray-800 mb-4">${title}</h2>
+          <form onsubmit="addFundTransaction(event, '${type}')">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">কার কাছ থেকে/কাকে *</label>
+                <input type="text" id="fund-person-name" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="নাম (যেমন: রহিম, Sonali Bank)">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
+                <input type="number" id="fund-amount" required min="1"
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="০">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">তারিখ *</label>
+                <input type="date" id="fund-date" required 
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  value="${new Date().toISOString().split('T')[0]}">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নোট</label>
+                <textarea id="fund-note" rows="2"
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                  placeholder="বিশেষ তথ্য..."></textarea>
+              </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium">${btnText}</button>
+            </div>
+          </form>
+        `;
       } else if (type === 'history') {
-        const customer = getCustomers().find(c => c.customer_id === customerId);
+        const customer = getCustomers().find(c => c.customer_id === personId);
         if (!customer) return;
         
-        const balance = getCustomerBalance(customerId);
-        const transactions = getTransactions().filter(t => t.customer_id === customerId);
+        const balance = getCustomerBalance(personId);
+        const transactions = getTransactions().filter(t => t.customer_id === personId);
         
         content.innerHTML = `
           <div class="flex items-center justify-between mb-4">
@@ -903,8 +1161,8 @@
             ${customer.address ? `<p class="text-sm">📍 ${customer.address}</p>` : ''}
           </div>
           <div class="flex gap-2 mb-4">
-            <button onclick="closeModal(); openModal('due', '${customerId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 বাকি দিন</button>
-            <button onclick="closeModal(); openModal('payment', '${customerId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 পেমেন্ট নিন</button>
+            <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 বাকি দিন</button>
+            <button onclick="closeModal(); openModal('payment', '${personId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 পেমেন্ট নিন</button>
           </div>
           <h3 class="font-semibold text-gray-700 mb-2">লেনদেনের ইতিহাস</h3>
           <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
@@ -1041,8 +1299,6 @@
         type: type,
         customer_id: select.value,
         customer_name: selectedOption.dataset.name,
-        mobile: '',
-        address: '',
         amount: parseFloat(document.getElementById('transaction-amount').value),
         date: document.getElementById('transaction-date').value,
         note: document.getElementById('transaction-note').value.trim(),
@@ -1067,6 +1323,40 @@
       }
     }
 
+    async function addFundTransaction(e, type) {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submit-fund-btn');
+      btn.disabled = true;
+      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+
+      const fundData = {
+        type: type,
+        person_name: document.getElementById('fund-person-name').value.trim(),
+        amount: parseFloat(document.getElementById('fund-amount').value),
+        date: document.getElementById('fund-date').value,
+        note: document.getElementById('fund-note').value.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      const result = await saveData(fundData);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          // Guest mode - manually update
+          loadGuestData();
+        }
+        showToast(type === 'fund-receive' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'ফান্ড পরিশোধ করা হয়েছে!');
+        closeModal();
+      } else {
+        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        btn.disabled = false;
+        btn.textContent = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
+      }
+    }
+
     // Delete functions
     function initiateDeleteCustomer(backendId) {
       deleteConfirmId = backendId;
@@ -1076,6 +1366,11 @@
     function initiateDeleteTransaction(backendId) {
       deleteConfirmId = backendId;
       renderTransactions();
+    }
+
+    function initiateDeleteFund(backendId) {
+      deleteConfirmId = backendId;
+      renderFunds();
     }
 
     function cancelDelete() {
@@ -1130,11 +1425,31 @@
       deleteConfirmId = null;
     }
 
+    async function confirmDeleteFund(backendId) {
+      const fund = allData.find(d => d.__backendId === backendId);
+      if (!fund) return;
+
+      const result = await deleteData(fund);
+      
+      if (result.isOk) {
+        if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
+        } else {
+          loadGuestData();
+        }
+        showToast('ফান্ড লেনদেন মুছে ফেলা হয়েছে!');
+      } else {
+        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+      }
+      deleteConfirmId = null;
+    }
+
     // Export data
     function exportData() {
       const data = {
         exported_at: new Date().toISOString(),
         customers: getCustomers(),
+        funds: getFunds(),
         transactions: getTransactions()
       };
       
