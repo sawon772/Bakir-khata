@@ -49,6 +49,10 @@
     .delete-btn { background: #ef4444; color: white; }
     .delete-btn:hover { background: #dc2626; }
     .fund-provider-card { border-left: 4px solid #9333ea; }
+    .balance-info { font-size: 0.875rem; padding: 0.5rem; border-radius: 0.5rem; margin-top: 0.5rem; }
+    .positive-balance { background-color: #fee2e2; color: #b91c1c; }
+    .negative-balance { background-color: #d1fae5; color: #065f46; }
+    .zero-balance { background-color: #f3f4f6; color: #4b5563; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
@@ -189,7 +193,7 @@
       <div id="content-funds" class="space-y-3 hidden">
         <div class="flex justify-between items-center mb-2">
           <h2 class="font-bold text-lg text-purple-800">ফান্ড দাতা তালিকা</h2>
-          <button onclick="openAddFundProviderModal()" class="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">+ নতুন দাতা</button>
+          <button onclick="openModal('fund-provider')" class="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">+ নতুন দাতা</button>
         </div>
         
         <!-- Fund Providers List -->
@@ -693,6 +697,50 @@
       renderFunds();
     }
 
+    // Show customer balance info
+    function showCustomerBalance(customerId) {
+      const balance = getCustomerBalance(customerId);
+      const infoDiv = document.getElementById('customer-balance-info');
+      
+      if (!infoDiv) return;
+      
+      if (balance > 0) {
+        infoDiv.className = 'balance-info positive-balance';
+        infoDiv.innerHTML = `পূর্বের বকেয়া: ${formatCurrency(balance)}`;
+        infoDiv.classList.remove('hidden');
+      } else if (balance < 0) {
+        infoDiv.className = 'balance-info negative-balance';
+        infoDiv.innerHTML = `অগ্রিম ব্যালেন্স: ${formatCurrency(Math.abs(balance))}`;
+        infoDiv.classList.remove('hidden');
+      } else {
+        infoDiv.className = 'balance-info zero-balance';
+        infoDiv.innerHTML = 'পূর্বের কোনো বাকি নেই';
+        infoDiv.classList.remove('hidden');
+      }
+    }
+
+    // Show fund provider balance info
+    function showFundProviderBalance(providerId) {
+      const balance = getFundProviderBalance(providerId);
+      const infoDiv = document.getElementById('provider-balance-info');
+      
+      if (!infoDiv) return;
+      
+      if (balance > 0) {
+        infoDiv.className = 'balance-info positive-balance';
+        infoDiv.innerHTML = `পূর্বের পাওনা: ${formatCurrency(balance)}`;
+        infoDiv.classList.remove('hidden');
+      } else if (balance < 0) {
+        infoDiv.className = 'balance-info negative-balance';
+        infoDiv.innerHTML = `অতিরিক্ত পরিশোধ: ${formatCurrency(Math.abs(balance))}`;
+        infoDiv.classList.remove('hidden');
+      } else {
+        infoDiv.className = 'balance-info zero-balance';
+        infoDiv.innerHTML = 'পূর্বের কোনো লেনদেন নেই';
+        infoDiv.classList.remove('hidden');
+      }
+    }
+
     // Render functions
     function renderCurrentView() {
       updateStats();
@@ -817,13 +865,20 @@
               </div>
               <div class="text-right">
                 <p class="font-bold text-purple-600">${formatCurrency(balance)}</p>
-                <p class="text-xs text-gray-400">বাকি</p>
+                <p class="text-xs text-gray-400">পাওনা</p>
               </div>
             </div>
-            <div class="flex gap-2 mt-2 justify-end">
-              <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
-              <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
-            </div>
+            ${isConfirming ? `
+              <div class="flex gap-2 mt-2 justify-end">
+                <button onclick="confirmDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
+                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+              </div>
+            ` : `
+              <div class="flex gap-2 mt-2 justify-end">
+                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
+                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
+              </div>
+            `}
           </div>
         `;
       }).join('');
@@ -1195,11 +1250,12 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">কাস্টমার *</label>
-                <select id="transaction-customer" required 
+                <select id="transaction-customer" required onchange="showCustomerBalance(this.value)"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
                   <option value="">কাস্টমার নির্বাচন করুন</option>
                   ${customers.map(c => `<option value="${c.customer_id}" data-name="${c.customer_name}" ${personId === c.customer_id ? 'selected' : ''}>${c.customer_name}</option>`).join('')}
                 </select>
+                <div id="customer-balance-info" class="balance-info hidden"></div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
@@ -1226,6 +1282,11 @@
             </div>
           </form>
         `;
+        
+        // Show balance if customer is pre-selected
+        if (personId) {
+          setTimeout(() => showCustomerBalance(personId), 100);
+        }
       } else if (type === 'fund-receive' || type === 'fund-payment') {
         const providers = getFundProviders();
         const title = type === 'fund-receive' ? '💰 ফান্ড গ্রহণ' : '💸 ফান্ড পরিশোধ';
@@ -1249,11 +1310,12 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">ফান্ড দাতা *</label>
-                <select id="fund-provider" required 
+                <select id="fund-provider" required onchange="showFundProviderBalance(this.value)"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
                   <option value="">ফান্ড দাতা নির্বাচন করুন</option>
                   ${providers.map(p => `<option value="${p.provider_id}" data-name="${p.provider_name}">${p.provider_name} ${p.mobile ? ' - ' + p.mobile : ''}</option>`).join('')}
                 </select>
+                <div id="provider-balance-info" class="balance-info hidden"></div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
@@ -1326,10 +1388,6 @@
       }
       
       overlay.classList.remove('hidden');
-    }
-
-    function openAddFundProviderModal() {
-      openModal('fund-provider');
     }
 
     function openEditFundProviderModal(providerId) {
