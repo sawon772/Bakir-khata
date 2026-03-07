@@ -28,6 +28,7 @@
     .btn-danger { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
     .btn-blue { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
     .btn-google { background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%); }
+    .btn-email { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); }
     .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
     .btn-purple { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
     .btn-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
@@ -59,13 +60,26 @@
     .warning-box { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 0.5rem; }
     .contact-info { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; }
     .contact-info:hover { background-color: #f3f4f6; }
+    .sound-toggle { position: fixed; top: 80px; right: 10px; z-index: 40; }
+    .sound-btn { width: 40px; height: 40px; border-radius: 50%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; }
+    .sound-btn:hover { transform: scale(1.1); }
+    .sound-on { background: #059669; color: white; }
+    .sound-off { background: #6b7280; color: white; }
+    .optional-badge { font-size: 0.7rem; color: #6b7280; margin-left: 0.5rem; font-weight: normal; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
   <div id="app" class="w-full min-h-full flex flex-col">
+    <!-- Sound Toggle Button -->
+    <div class="sound-toggle">
+      <button id="sound-toggle-btn" onclick="toggleSound()" class="sound-btn sound-off" title="সাউন্ড অফ">
+        🔇
+      </button>
+    </div>
+
     <!-- Auth Screen (Sign In) -->
-    <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl">
+    <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl my-4">
         <div class="text-center mb-6">
           <div class="text-6xl mb-4">📒</div>
           <h1 class="text-3xl font-bold text-gray-800 mb-2">বাকির খাতা</h1>
@@ -83,8 +97,51 @@
           </div>
         </div>
         
-        <!-- Sign In Options -->
-        <div class="space-y-4">
+        <!-- Email/Password Sign In -->
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-3">📧 ইমেইল দিয়ে সাইন ইন</h2>
+          <form onsubmit="signInWithEmail(event)" class="space-y-3">
+            <div>
+              <input type="email" id="email-login-email" placeholder="ইমেইল" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+            </div>
+            <div>
+              <input type="password" id="email-login-password" placeholder="পাসওয়ার্ড" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+            </div>
+            <button type="submit" class="w-full btn-email text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all">
+              সাইন ইন
+            </button>
+          </form>
+          <div class="text-right mt-2">
+            <button onclick="showForgotPassword()" class="text-sm text-emerald-600 hover:underline">পাসওয়ার্ড ভুলে গেছেন?</button>
+          </div>
+        </div>
+
+        <!-- Register New Account -->
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold text-gray-700 mb-3">📝 নতুন একাউন্ট</h2>
+          <form onsubmit="registerWithEmail(event)" class="space-y-3">
+            <div>
+              <input type="text" id="email-register-name" placeholder="আপনার নাম" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+              <span class="text-xs text-gray-500 optional-badge">ঐচ্ছিক</span>
+            </div>
+            <div>
+              <input type="email" id="email-register-email" placeholder="ইমেইল" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+            </div>
+            <div>
+              <input type="password" id="email-register-password" placeholder="পাসওয়ার্ড (ন্যূনতম ৬ অক্ষর)" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+            </div>
+            <button type="submit" class="w-full btn-email text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all">
+              রেজিস্টার
+            </button>
+          </form>
+        </div>
+        
+        <div class="auth-divider">
+          <span>অথবা</span>
+        </div>
+        
+        <!-- Google Sign In -->
+        <div class="space-y-4 mt-6">
           <button onclick="signInWithGoogle()" id="google-signin-btn" class="w-full btn-google text-white py-3 rounded-xl font-bold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
             <svg class="w-6 h-6" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -112,6 +169,19 @@
         <p class="text-xs text-gray-500 text-center mt-6">
           সাইন ইন করলে আপনার ডাটা ক্লাউডে সংরক্ষিত হবে এবং যেকোনো ডিভাইস থেকে অ্যাক্সেস করতে পারবেন
         </p>
+      </div>
+    </div>
+    
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">পাসওয়ার্ড রিসেট</h2>
+        <p class="text-sm text-gray-600 mb-4">আপনার ইমেইল দিন। পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হবে।</p>
+        <input type="email" id="reset-email" placeholder="ইমেইল" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
+        <div class="flex gap-3">
+          <button onclick="closeForgotPassword()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+          <button onclick="resetPassword()" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">পাঠান</button>
+        </div>
       </div>
     </div>
     
@@ -171,6 +241,19 @@
         </div>
       </div>
       
+      <!-- সাউন্ড সেটিংস -->
+      <div class="mb-3 p-2 bg-amber-50 rounded-lg">
+        <p class="text-sm font-medium text-amber-800 mb-2">🔊 সাউন্ড সেটিংস</p>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-700">সাউন্ড ইফেক্ট</span>
+          <button onclick="toggleSound()" id="menu-sound-btn" class="px-3 py-1 rounded-full text-sm flex items-center gap-1 bg-gray-200">
+            <span id="menu-sound-icon">🔇</span>
+            <span id="menu-sound-text">অফ</span>
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
+      </div>
+      
       <!-- সহায়তা তথ্য -->
       <div class="mb-3 p-2 bg-blue-50 rounded-lg">
         <p class="text-sm font-medium text-blue-800 mb-2">🆘 সহায়তা</p>
@@ -199,15 +282,15 @@
         <p class="text-sm font-medium text-purple-800 mb-2">📖 ব্যবহারের নিয়ম</p>
         <div class="text-xs text-gray-600 space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">প্রথম ব্যবহার:</span> দোকানের নাম দিন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম, মোবাইল, ঠিকানা দিন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> প্রথমে দাতা যোগ করুন, তারপর গ্রহণ/পরিশোধ</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💡 টিপস:</span> কাস্টমার/দাতা সিলেক্ট করলে পূর্বের বাকি দেখাবে</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">✏️ এডিট:</span> পেন্সিল আইকনে ক্লিক করে তথ্য হালনাগাদ করুন</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">🗑️ ডিলিট:</span> ডিলিট করলে ডাটা স্থায়ীভাবে মুছে যাবে</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📥 ব্যাকআপ:</span> রিপোর্ট ট্যাব থেকে JSON ডাউনলোড করুন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📊 রিপোর্ট:</span> মাসিক সারাংশ ও সর্বোচ্চ বাকিদার দেখুন</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">🔊 সাউন্ড:</span> উপরের ডানদিকে বাটন দিয়ে অন/অফ করুন</p>
         </div>
       </div>
       
@@ -423,6 +506,135 @@
     let isGuest = false;
     let isAPK = false;
     let guestId = 'guest_' + Date.now();
+    let soundEnabled = false;
+
+    // Load sound preference
+    const savedSound = localStorage.getItem('sound_enabled');
+    if (savedSound === 'true') {
+      soundEnabled = true;
+      document.getElementById('sound-toggle-btn').classList.remove('sound-off');
+      document.getElementById('sound-toggle-btn').classList.add('sound-on');
+      document.getElementById('sound-toggle-btn').innerHTML = '🔊';
+      document.getElementById('sound-toggle-btn').title = 'সাউন্ড অন';
+    }
+
+    // Sound effects (using Web Audio API)
+    function playSound(type) {
+      if (!soundEnabled) return;
+      
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        if (type === 'success') {
+          // Success sound - cheerful ding
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+          
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.2);
+        }
+        else if (type === 'warning') {
+          // Warning sound - beep beep
+          for (let i = 0; i < 2; i++) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(400, audioContext.currentTime + i * 0.2);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + i * 0.2);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + i * 0.2 + 0.1);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start(audioContext.currentTime + i * 0.2);
+            oscillator.stop(audioContext.currentTime + i * 0.2 + 0.1);
+          }
+        }
+        else if (type === 'error') {
+          // Error sound - low buzz
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.type = 'sawtooth';
+          oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+          
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator.start();
+          oscillator.stop(audioContext.currentTime + 0.3);
+        }
+        else if (type === 'cash') {
+          // Cash register sound
+          const oscillator1 = audioContext.createOscillator();
+          const oscillator2 = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator1.type = 'sine';
+          oscillator1.frequency.setValueAtTime(600, audioContext.currentTime);
+          
+          oscillator2.type = 'sine';
+          oscillator2.frequency.setValueAtTime(800, audioContext.currentTime + 0.05);
+          
+          gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+          
+          oscillator1.connect(gainNode);
+          oscillator2.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          oscillator1.start();
+          oscillator2.start(audioContext.currentTime + 0.05);
+          oscillator1.stop(audioContext.currentTime + 0.2);
+          oscillator2.stop(audioContext.currentTime + 0.2);
+        }
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
+
+    // Toggle sound
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('sound-toggle-btn');
+      const menuBtn = document.getElementById('menu-sound-btn');
+      const menuIcon = document.getElementById('menu-sound-icon');
+      const menuText = document.getElementById('menu-sound-text');
+      
+      if (soundEnabled) {
+        btn.classList.remove('sound-off');
+        btn.classList.add('sound-on');
+        btn.innerHTML = '🔊';
+        btn.title = 'সাউন্ড অন';
+        if (menuIcon) menuIcon.textContent = '🔊';
+        if (menuText) menuText.textContent = 'অন';
+        localStorage.setItem('sound_enabled', 'true');
+        playSound('success');
+      } else {
+        btn.classList.remove('sound-on');
+        btn.classList.add('sound-off');
+        btn.innerHTML = '🔇';
+        btn.title = 'সাউন্ড অফ';
+        if (menuIcon) menuIcon.textContent = '🔇';
+        if (menuText) menuText.textContent = 'অফ';
+        localStorage.setItem('sound_enabled', 'false');
+      }
+    }
 
     // Detect if running in APK/WebView
     function detectPlatform() {
@@ -528,13 +740,110 @@
     function signInWithGoogle() {
       if (isAPK) {
         showToast('Google Sign-In APK তে কাজ করে না। গেস্ট মোড ব্যবহার করুন।', 'warning');
+        playSound('warning');
         return;
       }
       
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch(error => {
         showToast('সাইন ইন ব্যর্থ হয়েছে: ' + error.message, 'error');
+        playSound('error');
       });
+    }
+
+    // Sign in with Email/Password
+    async function signInWithEmail(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email-login-email').value;
+      const password = document.getElementById('email-login-password').value;
+      
+      if (!email || !password) {
+        showToast('ইমেইল ও পাসওয়ার্ড দিন', 'warning');
+        playSound('warning');
+        return;
+      }
+      
+      try {
+        const result = await auth.signInWithEmailAndPassword(email, password);
+        showToast('সাইন ইন সফল হয়েছে!', 'success');
+        playSound('success');
+      } catch (error) {
+        showToast('সাইন ইন ব্যর্থ: ' + error.message, 'error');
+        playSound('error');
+      }
+    }
+
+    // Register with Email/Password
+    async function registerWithEmail(event) {
+      event.preventDefault();
+      
+      const name = document.getElementById('email-register-name').value;
+      const email = document.getElementById('email-register-email').value;
+      const password = document.getElementById('email-register-password').value;
+      
+      if (!email || !password) {
+        showToast('ইমেইল ও পাসওয়ার্ড দিন', 'warning');
+        playSound('warning');
+        return;
+      }
+      
+      if (password.length < 6) {
+        showToast('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে', 'warning');
+        playSound('warning');
+        return;
+      }
+      
+      try {
+        const result = await auth.createUserWithEmailAndPassword(email, password);
+        
+        // Update profile with name if provided
+        if (name) {
+          await result.user.updateProfile({
+            displayName: name
+          });
+        }
+        
+        showToast('রেজিস্ট্রেশন সফল হয়েছে! দোকানের নাম দিন।', 'success');
+        playSound('success');
+        
+        // Show setup screen
+        document.getElementById('auth-screen').classList.add('hidden');
+        document.getElementById('setup-screen').classList.remove('hidden');
+      } catch (error) {
+        showToast('রেজিস্ট্রেশন ব্যর্থ: ' + error.message, 'error');
+        playSound('error');
+      }
+    }
+
+    // Show forgot password modal
+    function showForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.remove('hidden');
+    }
+
+    function closeForgotPassword() {
+      document.getElementById('forgot-password-modal').classList.add('hidden');
+    }
+
+    // Reset password
+    async function resetPassword() {
+      const email = document.getElementById('reset-email').value;
+      
+      if (!email) {
+        showToast('ইমেইল দিন', 'warning');
+        playSound('warning');
+        return;
+      }
+      
+      try {
+        await auth.sendPasswordResetEmail(email);
+        showToast('পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে!', 'success');
+        playSound('success');
+        closeForgotPassword();
+      } catch (error) {
+        showToast('ব্যর্থ: ' + error.message, 'error');
+        playSound('error');
+      }
     }
 
     // Continue as Guest
@@ -547,6 +856,7 @@
       if (isAPK) {
         setTimeout(() => {
           showToast('⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।', 'warning', 5000);
+          playSound('warning');
         }, 500);
       }
       
@@ -577,8 +887,10 @@
         document.getElementById('app-header').classList.add('hidden');
         document.getElementById('main-menu').classList.add('hidden');
         document.getElementById('user-menu').classList.add('hidden');
+        playSound('success');
       } else {
         auth.signOut();
+        playSound('success');
       }
     }
 
@@ -722,7 +1034,8 @@
       const shopName = document.getElementById('setup-shop-name').value.trim();
       
       if (!shopName) {
-        showToast('দোকানের নাম দিন', 'error');
+        showToast('দোকানের নাম দিন', 'warning');
+        playSound('warning');
         return;
       }
       
@@ -745,6 +1058,7 @@
       }
       
       showToast('স্বাগতম! ' + shopName);
+      playSound('success');
     }
 
     // Tab navigation
@@ -972,8 +1286,8 @@
                 </div>
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                  <p class="text-sm text-gray-500">${c.mobile || 'মোবাইল নেই'}</p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                  <p class="text-sm text-gray-500">${c.mobile || 'মোবাইল নেই'} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : '<p class="text-xs text-gray-400">ঠিকানা দেওয়া হয়নি</p>'}
                 </div>
               </div>
               <div class="text-right">
@@ -1021,7 +1335,7 @@
                 </div>
                 <div>
                   <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
-                  <p class="text-xs text-gray-500">${p.mobile || 'মোবাইল নেই'}</p>
+                  <p class="text-xs text-gray-500">${p.mobile || 'মোবাইল নেই'} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>
                 </div>
               </div>
               <div class="text-right">
@@ -1102,7 +1416,7 @@
                 `}
               </div>
             </div>
-            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note}</p>` : ''}
+            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>` : '<p class="mt-2 text-xs text-gray-400">নোট দেওয়া হয়নি</p>'}
           </div>
         `;
       }).join('');
@@ -1194,7 +1508,7 @@
                 `}
               </div>
             </div>
-            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : ''}
+            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>` : '<p class="mt-2 text-xs text-gray-400">নোট দেওয়া হয়নি</p>'}
           </div>
         `;
       }).join('');
@@ -1279,22 +1593,22 @@
           <form onsubmit="addCustomer(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নাম * <span class="text-xs text-gray-500 font-normal">(আবশ্যক)</span></label>
                 <input type="text" id="customer-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="কাস্টমারের নাম">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="tel" id="customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="০১XXXXXXXXX">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="text" id="customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="ঠিকানা (ঐচ্ছিক)">
+                  placeholder="ঠিকানা">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -1318,16 +1632,16 @@
                   placeholder="কাস্টমারের নাম" value="${customer.customer_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="tel" id="edit-customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="০১XXXXXXXXX" value="${customer.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="text" id="edit-customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="ঠিকানা (ঐচ্ছিক)" value="${customer.address || ''}">
+                  placeholder="ঠিকানা" value="${customer.address || ''}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -1342,22 +1656,22 @@
           <form onsubmit="addFundProvider(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নাম * <span class="text-xs text-gray-500 font-normal">(আবশ্যক)</span></label>
                 <input type="text" id="provider-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="যেমন: রহিম, Sonali Bank">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="tel" id="provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="০১XXXXXXXXX">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="text" id="provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="ঠিকানা (ঐচ্ছিক)">
+                  placeholder="ঠিকানা">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -1381,16 +1695,16 @@
                   placeholder="নাম" value="${provider.provider_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="tel" id="edit-provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="০১XXXXXXXXX" value="${provider.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <input type="text" id="edit-provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="ঠিকানা (ঐচ্ছিক)" value="${provider.address || ''}">
+                  placeholder="ঠিকানা" value="${provider.address || ''}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -1431,7 +1745,7 @@
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নোট</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নোট <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <textarea id="transaction-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="কি জিনিসের জন্য..."></textarea>
@@ -1491,7 +1805,7 @@
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নোট</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">নোট <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
                 <textarea id="fund-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="বিশেষ তথ্য..."></textarea>
@@ -1595,9 +1909,11 @@
           loadGuestData();
         }
         showToast('ফান্ড দাতা যোগ হয়েছে!');
+        playSound('success');
         closeModal();
       } else {
         showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = 'সংরক্ষণ';
       }
@@ -1629,9 +1945,11 @@
           loadGuestData();
         }
         showToast('ফান্ড দাতা আপডেট হয়েছে!');
+        playSound('success');
         closeModal();
       } else {
         showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = 'আপডেট';
       }
@@ -1643,6 +1961,7 @@
       
       if (allData.filter(d => d.type === 'customer').length >= 999) {
         showToast('সর্বোচ্চ ৯৯৯ কাস্টমার যোগ করা যাবে!', 'error');
+        playSound('error');
         return;
       }
 
@@ -1673,9 +1992,11 @@
           loadGuestData();
         }
         showToast('কাস্টমার যোগ হয়েছে!');
+        playSound('success');
         closeModal();
       } else {
         showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = 'সংরক্ষণ';
       }
@@ -1707,9 +2028,11 @@
           loadGuestData();
         }
         showToast('কাস্টমার আপডেট হয়েছে!');
+        playSound('success');
         closeModal();
       } else {
         showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = 'আপডেট';
       }
@@ -1720,6 +2043,7 @@
       
       if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
         showToast('সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!', 'error');
+        playSound('error');
         return;
       }
 
@@ -1750,9 +2074,11 @@
           loadGuestData();
         }
         showToast(type === 'due' ? 'বাকি যোগ হয়েছে!' : 'পেমেন্ট যোগ হয়েছে!');
+        playSound('cash');
         closeModal();
       } else {
         showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = type === 'due' ? 'বাকি যোগ করুন' : 'পেমেন্ট যোগ করুন';
       }
@@ -1788,9 +2114,11 @@
           loadGuestData();
         }
         showToast(type === 'fund-receive' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'ফান্ড পরিশোধ করা হয়েছে!');
+        playSound('cash');
         closeModal();
       } else {
         showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        playSound('error');
         btn.disabled = false;
         btn.textContent = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
       }
@@ -1844,8 +2172,10 @@
           loadGuestData();
         }
         showToast('কাস্টমার মুছে ফেলা হয়েছে!');
+        playSound('success');
       } else {
         showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        playSound('error');
       }
       deleteConfirmId = null;
     }
@@ -1860,7 +2190,8 @@
       );
 
       if (providerTransactions.length > 0) {
-        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।', 'error');
+        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।', 'warning');
+        playSound('warning');
         deleteConfirmId = null;
         return;
       }
@@ -1874,8 +2205,10 @@
           loadGuestData();
         }
         showToast('ফান্ড দাতা মুছে ফেলা হয়েছে!');
+        playSound('success');
       } else {
         showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        playSound('error');
       }
       deleteConfirmId = null;
     }
@@ -1893,8 +2226,10 @@
           loadGuestData();
         }
         showToast('লেনদেন মুছে ফেলা হয়েছে!');
+        playSound('success');
       } else {
         showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        playSound('error');
       }
       deleteConfirmId = null;
     }
@@ -1912,8 +2247,10 @@
           loadGuestData();
         }
         showToast('ফান্ড লেনদেন মুছে ফেলা হয়েছে!');
+        playSound('success');
       } else {
         showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        playSound('error');
       }
       deleteConfirmId = null;
     }
@@ -1936,6 +2273,7 @@
       a.click();
       URL.revokeObjectURL(url);
       showToast('ব্যাকআপ ডাউনলোড হয়েছে!');
+      playSound('success');
     }
 
     // Initialize
@@ -1961,6 +2299,11 @@
         if (userMenu && !userMenu.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
           userMenu.classList.add('hidden');
         }
+      });
+
+      // Close forgot password modal
+      document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'forgot-password-modal') closeForgotPassword();
       });
     }
 
