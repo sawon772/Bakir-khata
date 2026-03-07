@@ -694,13 +694,19 @@
     }
 
     // ============================================
-    // ইমেজ আপলোড ফাংশন - সম্পূর্ণ ঠিক করা হয়েছে
+    // ইমেজ আপলোড ফাংশন - ফাইনাল ফিক্সড ভার্সন
     // ============================================
 
     // ইমেজ আপলোড মডেল খোলা
     function openImageUploadModal(context, customerId = null) {
+      console.log('📸 openImageUploadModal called with:', context, customerId);
+      
+      // কন্টেক্সট সেট করুন
       currentImageUploadContext = context;
       currentImageUploadCustomerId = customerId;
+      
+      console.log('✅ currentImageUploadContext set to:', currentImageUploadContext);
+      console.log('✅ currentImageUploadCustomerId set to:', currentImageUploadCustomerId);
       
       const modal = document.getElementById('image-upload-modal');
       const contextText = document.getElementById('image-upload-context');
@@ -716,8 +722,7 @@
 
     function closeImageUploadModal() {
       document.getElementById('image-upload-modal').classList.add('hidden');
-      currentImageUploadContext = null;
-      currentImageUploadCustomerId = null;
+      // কন্টেক্সট রিসেট করবেন না - আপলোড শেষে রিসেট হবে
     }
 
     function openCamera() {
@@ -730,41 +735,34 @@
       closeImageUploadModal();
     }
 
-    // মেইন আপলোড ফাংশন
+    // মেইন আপলোড ফাংশন - ফাইনাল ফিক্সড ভার্সন
     async function handleImageSelect(event) {
       const file = event.target.files[0];
+      
+      console.log('📸 handleImageSelect called');
+      console.log('currentImageUploadContext:', currentImageUploadContext);
+      console.log('currentImageUploadCustomerId:', currentImageUploadCustomerId);
+      
       if (!file) {
-        alert('কোনো ফাইল সিলেক্ট করা হয়নি');
+        console.log('কোনো ফাইল নেই');
         return;
       }
 
-      // ফাইল সাইজ চেক (৫MB এর কম)
+      // ফাইল সাইজ চেক
       if (file.size > 5 * 1024 * 1024) {
         alert('ছবির সাইজ ৫MB এর কম হতে হবে');
-        playSound('error');
-        event.target.value = '';
-        return;
-      }
-
-      // ফাইল টাইপ চেক
-      if (!file.type.startsWith('image/')) {
-        alert('অনুগ্রহ করে ছবি নির্বাচন করুন');
-        playSound('error');
         event.target.value = '';
         return;
       }
 
       alert('ছবি আপলোড শুরু হচ্ছে...');
 
-      // FormData তৈরি
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
       formData.append('cloud_name', CLOUDINARY_CONFIG.cloud_name);
 
       try {
-        alert('Cloudinary এ আপলোড হচ্ছে...');
-        
         const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
           method: 'POST',
           body: formData
@@ -774,61 +772,71 @@
         console.log('Cloudinary response:', data);
         
         if (data.secure_url) {
-          alert('আপলোড সফল! URL: ' + data.secure_url);
+          alert('আপলোড সফল!');
           
-          // ছবির URL সংরক্ষণ
+          // ========================================
+          // প্রোফাইল ছবি আপলোড
+          // ========================================
           if (currentImageUploadContext === 'profile') {
-            alert('প্রোফাইল ছবি সংরক্ষণ হচ্ছে...');
+            console.log('📸 প্রোফাইল ছবি সেভ করা হচ্ছে');
             
-            // প্রোফাইল ছবি সংরক্ষণ
+            // Firebase-এ সেভ
             if (!isGuest && currentUser) {
               await database.ref(`users/${currentUser.uid}/profile_image`).set(data.secure_url);
-              alert('ফায়ারবেসে সেভ হয়েছে');
+              console.log('✅ Firebase-এ সেভ হয়েছে');
             } else {
               localStorage.setItem('profile_image', data.secure_url);
-              alert('লোকাল স্টোরেজে সেভ হয়েছে');
+              console.log('✅ লোকাল স্টোরেজে সেভ হয়েছে');
             }
             
-            // UI আপডেট - সরাসরি ইমেজ সোর্স পরিবর্তন
+            // UI আপডেট
             const profileImg = document.getElementById('profile-image');
             if (profileImg) {
               profileImg.src = data.secure_url;
-              alert('প্রোফাইল ইমেজ আপডেট হয়েছে');
+              console.log('✅ UI আপডেট হয়েছে');
             }
             
-            // মেনু আপডেট
-            updateProfileInfo();
+            alert('প্রোফাইল ছবি আপলোড হয়েছে!');
+          } 
+          
+          // ========================================
+          // কাস্টমার ছবি আপলোড
+          // ========================================
+          else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
+            console.log('📸 কাস্টমার ছবি সেভ করা হচ্ছে, ID:', currentImageUploadCustomerId);
             
-            alert('প্রোফাইল ছবি আপলোড সম্পূর্ণ!');
-            
-          } else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
-            alert('কাস্টমারের ছবি সংরক্ষণ হচ্ছে...');
-            
-            // কাস্টমারের ছবি সংরক্ষণ
+            // ডাটা আপডেট
             const customerIndex = allData.findIndex(d => d.customer_id === currentImageUploadCustomerId && d.type === 'customer');
             if (customerIndex !== -1) {
               allData[customerIndex].image = data.secure_url;
               await updateData(allData[customerIndex]);
+              console.log('✅ কাস্টমারের ডাটা আপডেট হয়েছে');
               
               // কাস্টমার লিস্ট রি-রেন্ডার
               renderCustomers();
+              console.log('✅ কাস্টমার লিস্ট রি-রেন্ডার হয়েছে');
               
               alert('কাস্টমারের ছবি আপলোড হয়েছে!');
+            } else {
+              console.log('❌ কাস্টমার খুঁজে পাওয়া যায়নি:', currentImageUploadCustomerId);
             }
           }
           
-          playSound('success');
+          else {
+            console.log('❌ কন্টেক্সট ঠিক নেই!', currentImageUploadContext);
+            alert('আপলোড কন্টেক্সট ঠিক নেই!');
+          }
         } else {
-          alert('আপলোড ব্যর্থ: ' + (data.error?.message || 'Unknown error'));
-          playSound('error');
+          alert('আপলোড ব্যর্থ');
         }
       } catch (error) {
-        alert('আপলোড এরর: ' + error.message);
         console.error('Upload error:', error);
-        playSound('error');
+        alert('Error: ' + error.message);
       }
 
-      // ইনপুট ক্লিয়ার
+      // কন্টেক্সট রিসেট
+      currentImageUploadContext = null;
+      currentImageUploadCustomerId = null;
       event.target.value = '';
     }
 
@@ -866,13 +874,11 @@
     function detectPlatform() {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       
-      // Check if running in WebView/APK
       if (/wv|WebView|Android.*Version\/[\d.]+.*Chrome|Linux; Android.*wv/i.test(userAgent)) {
         isAPK = true;
         document.getElementById('platform-badge').textContent = '📱 APK ভার্সন';
         document.getElementById('guest-warning').classList.remove('hidden');
         
-        // Disable Google Sign-In button in APK
         const googleBtn = document.getElementById('google-signin-btn');
         if (googleBtn) {
           googleBtn.classList.add('opacity-50', 'cursor-not-allowed');
@@ -900,7 +906,6 @@
       document.getElementById('profile-name').textContent = currentUser?.displayName || 'ব্যবহারকারী';
       document.getElementById('profile-email-menu').textContent = currentUser?.email || 'guest@local';
       
-      // প্রোফাইল ছবি লোড
       const profileImg = document.getElementById('profile-image');
       
       if (!isGuest && currentUser) {
@@ -908,18 +913,15 @@
           const imageUrl = snapshot.val();
           if (imageUrl && profileImg) {
             profileImg.src = imageUrl;
-            console.log('Profile image loaded from Firebase:', imageUrl);
           }
         });
       } else {
         const savedImage = localStorage.getItem('profile_image');
         if (savedImage && profileImg) {
           profileImg.src = savedImage;
-          console.log('Profile image loaded from localStorage:', savedImage);
         }
       }
       
-      // Show guest warning in menu if in guest mode
       if (isGuest) {
         document.getElementById('menu-guest-warning').classList.remove('hidden');
       } else {
@@ -941,35 +943,28 @@
     // Auth State Observer
     auth.onAuthStateChanged(async (user) => {
       if (user) {
-        // User is signed in
         currentUser = user;
         isGuest = false;
         updateUserMenu(user);
         
-        // Check if user has shop name
         const shopNameRef = database.ref(`users/${user.uid}/shop_name`);
         const snapshot = await shopNameRef.once('value');
         const shopName = snapshot.val();
         
         if (!shopName) {
-          // Show setup screen for new users
           document.getElementById('auth-screen').classList.add('hidden');
           document.getElementById('setup-screen').classList.remove('hidden');
         } else {
-          // Existing user, load data
           defaultConfig.shop_name = shopName;
           document.getElementById('shop-name').textContent = shopName;
           document.getElementById('auth-screen').classList.add('hidden');
           document.getElementById('setup-screen').classList.add('hidden');
           document.getElementById('app-header').classList.remove('hidden');
           
-          // Load user data from Firebase
           loadUserData(user.uid);
         }
       } else {
-        // User is signed out
         if (!isGuest) {
-          // Show auth screen only if not guest
           document.getElementById('auth-screen').classList.remove('hidden');
           document.getElementById('setup-screen').classList.add('hidden');
           document.getElementById('app-header').classList.add('hidden');
@@ -1006,7 +1001,7 @@
       }
       
       try {
-        const result = await auth.signInWithEmailAndPassword(email, password);
+        await auth.signInWithEmailAndPassword(email, password);
         showToast('সাইন ইন সফল হয়েছে!', 'success');
         playSound('success');
       } catch (error) {
@@ -1038,7 +1033,6 @@
       try {
         const result = await auth.createUserWithEmailAndPassword(email, password);
         
-        // Update profile with name if provided
         if (name) {
           await result.user.updateProfile({
             displayName: name
@@ -1048,7 +1042,6 @@
         showToast('রেজিস্ট্রেশন সফল হয়েছে! দোকানের নাম দিন।', 'success');
         playSound('success');
         
-        // Show setup screen
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('setup-screen').classList.remove('hidden');
       } catch (error) {
@@ -1093,7 +1086,6 @@
       currentUser = { uid: guestId };
       document.getElementById('auth-screen').classList.add('hidden');
       
-      // Show guest warning in APK
       if (isAPK) {
         setTimeout(() => {
           showToast('⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।', 'warning', 5000);
@@ -1101,7 +1093,6 @@
         }, 500);
       }
       
-      // Check if guest has shop name in localStorage
       const guestShopName = localStorage.getItem('guest_shop_name');
       
       if (!guestShopName) {
@@ -1111,7 +1102,6 @@
         document.getElementById('shop-name').textContent = guestShopName;
         document.getElementById('app-header').classList.remove('hidden');
         
-        // Load guest data from localStorage
         loadGuestData();
       }
       
@@ -1121,7 +1111,6 @@
     // Sign out
     function signOut() {
       if (isGuest) {
-        // Clear guest data
         isGuest = false;
         guestId = 'guest_' + Date.now();
         document.getElementById('auth-screen').classList.remove('hidden');
@@ -1162,7 +1151,6 @@
       userRef.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          // Convert Firebase object to array
           allData = Object.keys(data).map(key => ({
             ...data[key],
             __backendId: key
@@ -1185,16 +1173,14 @@
       renderCurrentView();
     }
 
-    // Save data (Firebase for logged in, localStorage for guest)
+    // Save data
     async function saveData(item) {
       if (!isGuest && currentUser) {
-        // Save to Firebase
         const userRef = database.ref(`users/${currentUser.uid}/data`);
         const newRef = userRef.push();
-        const result = await newRef.set(item);
+        await newRef.set(item);
         return { isOk: true, id: newRef.key };
       } else {
-        // Save to localStorage
         item.__backendId = generateId();
         allData.push(item);
         localStorage.setItem('guest_data', JSON.stringify(allData));
@@ -1205,12 +1191,10 @@
     // Update data
     async function updateData(item) {
       if (!isGuest && currentUser) {
-        // Update in Firebase
         const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
         await userRef.set(item);
         return { isOk: true };
       } else {
-        // Update in localStorage
         const index = allData.findIndex(d => d.__backendId === item.__backendId);
         if (index > -1) {
           allData[index] = item;
@@ -1223,12 +1207,10 @@
     // Delete data
     async function deleteData(item) {
       if (!isGuest && currentUser) {
-        // Delete from Firebase
         const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
         await userRef.remove();
         return { isOk: true };
       } else {
-        // Delete from localStorage
         const index = allData.findIndex(d => d.__backendId === item.__backendId);
         if (index > -1) {
           allData.splice(index, 1);
@@ -1271,10 +1253,8 @@
       }
       
       if (!isGuest && currentUser) {
-        // Save to Firebase
         await database.ref(`users/${currentUser.uid}/shop_name`).set(shopName);
       } else {
-        // Save to localStorage for guest
         localStorage.setItem('guest_shop_name', shopName);
       }
       
@@ -1283,7 +1263,6 @@
       document.getElementById('setup-screen').classList.add('hidden');
       document.getElementById('app-header').classList.remove('hidden');
       
-      // Load data
       if (isGuest) {
         loadGuestData();
       }
@@ -1774,7 +1753,7 @@
       document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived);
       document.getElementById('report-net-fund').textContent = formatCurrency(totalFundReceived - totalFundPaid);
 
-      // Top debtors (customers)
+      // Top debtors
       const debtors = customers.map(c => ({
         name: c.customer_name,
         balance: getCustomerBalance(c.customer_id)
@@ -1795,7 +1774,7 @@
         `).join('');
       }
 
-      // Top lenders (fund providers)
+      // Top lenders
       const lenders = providers.map(p => ({
         name: p.provider_name,
         balance: getFundProviderBalance(p.provider_id)
@@ -1993,7 +1972,6 @@
           </form>
         `;
         
-        // Show balance if customer is pre-selected
         if (personId) {
           setTimeout(() => showCustomerBalance(personId), 100);
         }
@@ -2149,9 +2127,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast('ফান্ড দাতা যোগ হয়েছে!');
@@ -2172,11 +2148,9 @@
       btn.disabled = true;
       btn.textContent = 'আপডেট হচ্ছে...';
 
-      // Find the provider
       const provider = allData.find(d => d.provider_id === providerId && d.type === 'fund-provider');
       if (!provider) return;
 
-      // Update provider data
       provider.provider_name = document.getElementById('edit-provider-name').value.trim();
       provider.mobile = document.getElementById('edit-provider-mobile').value.trim();
       provider.address = document.getElementById('edit-provider-address').value.trim();
@@ -2185,9 +2159,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast('ফান্ড দাতা আপডেট হয়েছে!');
@@ -2233,9 +2205,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast('কাস্টমার যোগ হয়েছে!');
@@ -2256,11 +2226,9 @@
       btn.disabled = true;
       btn.textContent = 'আপডেট হচ্ছে...';
 
-      // Find the customer
       const customer = allData.find(d => d.customer_id === customerId && d.type === 'customer');
       if (!customer) return;
 
-      // Update customer data
       customer.customer_name = document.getElementById('edit-customer-name').value.trim();
       customer.mobile = document.getElementById('edit-customer-mobile').value.trim();
       customer.address = document.getElementById('edit-customer-address').value.trim();
@@ -2269,9 +2237,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast('কাস্টমার আপডেট হয়েছে!');
@@ -2315,9 +2281,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast(type === 'due' ? 'বাকি যোগ হয়েছে!' : 'পেমেন্ট যোগ হয়েছে!');
@@ -2355,9 +2319,7 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
-          // Guest mode - manually update
           loadGuestData();
         }
         showToast(type === 'fund-receive' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'ফান্ড পরিশোধ করা হয়েছে!');
@@ -2401,7 +2363,6 @@
       const customer = allData.find(d => d.__backendId === backendId);
       if (!customer) return;
 
-      // Delete all transactions for this customer
       const customerTransactions = allData.filter(d => 
         d.customer_id === customer.customer_id && (d.type === 'due' || d.type === 'payment')
       );
@@ -2414,7 +2375,6 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
@@ -2431,7 +2391,6 @@
       const provider = allData.find(d => d.__backendId === backendId);
       if (!provider) return;
 
-      // Check if there are any transactions for this provider
       const providerTransactions = allData.filter(d => 
         d.provider_id === provider.provider_id && (d.type === 'fund-receive' || d.type === 'fund-payment')
       );
@@ -2447,7 +2406,6 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
@@ -2468,7 +2426,6 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
@@ -2489,7 +2446,6 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
@@ -2527,17 +2483,14 @@
     function init() {
       detectPlatform();
       
-      // Close modal on overlay click
       document.getElementById('modal-overlay').addEventListener('click', (e) => {
         if (e.target.id === 'modal-overlay') closeModal();
       });
 
-      // Close image upload modal on overlay click
       document.getElementById('image-upload-modal').addEventListener('click', (e) => {
         if (e.target.id === 'image-upload-modal') closeImageUploadModal();
       });
 
-      // Close menus when clicking outside
       document.addEventListener('click', (e) => {
         const mainMenu = document.getElementById('main-menu');
         const menuBtn = document.querySelector('[onclick="toggleMainMenu()"]');
@@ -2553,7 +2506,6 @@
         }
       });
 
-      // Close forgot password modal
       document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
         if (e.target.id === 'forgot-password-modal') closeForgotPassword();
       });
@@ -2561,72 +2513,5 @@
 
     init();
   </script>
-  <script>
-// ============================================
-// ইমেজ আপলোড - আলাদা এবং সিম্পল ভার্সন
-// ============================================
-
-// Cloudinary কনফিগারেশন (আপনার দেওয়া তথ্য)
-const CLOUDINARY = {
-  cloud_name: 'dtep7yhzl',
-  upload_preset: 'bakir_khata_preset'
-};
-
-// ইমেজ আপলোড ফাংশন
-async function handleImageSelect(event) {
-  const file = event.target.files[0];
-  if (!file) {
-    alert('কোনো ফাইল সিলেক্ট করা হয়নি');
-    return;
-  }
-
-  alert('ছবি আপলোড শুরু হচ্ছে...');
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', CLOUDINARY.upload_preset);
-  formData.append('cloud_name', CLOUDINARY.cloud_name);
-
-  try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY.cloud_name}/image/upload`, {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await response.json();
-    
-    if (data.secure_url) {
-      alert('আপলোড সফল! URL: ' + data.secure_url);
-      
-      // প্রোফাইল ছবি আপডেট
-      const profileImg = document.getElementById('profile-image');
-      if (profileImg) {
-        profileImg.src = data.secure_url;
-      }
-      
-      // লোকাল স্টোরেজে সেভ
-      localStorage.setItem('profile_image', data.secure_url);
-      
-    } else {
-      alert('আপলোড ব্যর্থ: ' + (data.error?.message || 'অজানা ত্রুটি'));
-    }
-  } catch (error) {
-    alert('আপলোড এরর: ' + error.message);
-  }
-
-  event.target.value = '';
-}
-
-// মেনুতে ছবি দেখানোর জন্য
-function showProfileImage() {
-  const savedImage = localStorage.getItem('profile_image');
-  if (savedImage) {
-    document.getElementById('profile-image').src = savedImage;
-  }
-}
-
-// প্রতি ১ সেকেন্ড পর পর প্রোফাইল ইমেজ চেক করুন
-setInterval(showProfileImage, 1000);
-</script>
 </body>
 </html>
