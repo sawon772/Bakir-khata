@@ -66,6 +66,16 @@
     .sound-on { background: #059669; color: white; }
     .sound-off { background: #6b7280; color: white; }
     .optional-badge { font-size: 0.7rem; color: #6b7280; margin-left: 0.5rem; font-weight: normal; }
+    .profile-image-container { position: relative; width: 80px; height: 80px; margin: 0 auto; }
+    .profile-image { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #059669; }
+    .camera-icon { position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; background: #059669; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; border: 2px solid white; }
+    .camera-icon:hover { background: #047857; }
+    .customer-image { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #059669; }
+    .image-upload-options { display: flex; gap: 1rem; justify-content: center; margin: 1rem 0; }
+    .upload-option { flex: 1; padding: 1rem; border: 2px dashed #d1d5db; border-radius: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .upload-option:hover { border-color: #059669; background: #f0fdf4; }
+    .upload-option.selected { border-color: #059669; background: #f0fdf4; }
+    .default-avatar { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
@@ -75,6 +85,36 @@
       <button id="sound-toggle-btn" onclick="toggleSound()" class="sound-btn sound-off" title="সাউন্ড অফ">
         🔇
       </button>
+    </div>
+
+    <!-- Hidden file inputs for image upload -->
+    <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event, 'camera')">
+    <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'gallery')">
+
+    <!-- Image Upload Modal -->
+    <div id="image-upload-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">ছবি আপলোড</h2>
+        <p id="image-upload-context" class="text-sm text-gray-600 mb-4">ছবি তোলার মাধ্যম নির্বাচন করুন</p>
+        
+        <div class="image-upload-options">
+          <div onclick="openCamera()" class="upload-option">
+            <div class="text-4xl mb-2">📷</div>
+            <p class="font-medium">ক্যামেরা</p>
+            <p class="text-xs text-gray-500">ছবি তুলুন</p>
+          </div>
+          
+          <div onclick="openGallery()" class="upload-option">
+            <div class="text-4xl mb-2">🖼️</div>
+            <p class="font-medium">গ্যালারি</p>
+            <p class="text-xs text-gray-500">ছবি নির্বাচন</p>
+          </div>
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+          <button onclick="closeImageUploadModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+        </div>
+      </div>
     </div>
 
     <!-- Auth Screen (Sign In) -->
@@ -234,10 +274,22 @@
       <!-- প্রোফাইল অপশন -->
       <div class="mb-3 p-2 bg-emerald-50 rounded-lg">
         <p class="text-sm font-medium text-emerald-800 mb-2">👤 আপনার প্রোফাইল</p>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="profile-image-container">
+            <img id="profile-image" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=80" 
+                 class="profile-image" alt="Profile">
+            <div onclick="openImageUploadModal('profile')" class="camera-icon">
+              📷
+            </div>
+          </div>
+          <div class="flex-1">
+            <p id="profile-name" class="font-medium text-gray-800">ব্যবহারকারী</p>
+            <p id="profile-email-menu" class="text-xs text-gray-500">guest@local</p>
+          </div>
+        </div>
         <div class="text-sm text-gray-700 space-y-1">
           <p><span class="font-medium">দোকান:</span> <span id="profile-shop-name" class="text-emerald-600">-</span></p>
           <p><span class="font-medium">মোড:</span> <span id="profile-mode" class="text-emerald-600">-</span></p>
-          <p><span class="font-medium">ইমেইল:</span> <span id="profile-email" class="text-emerald-600 break-all">-</span></p>
         </div>
       </div>
       
@@ -282,10 +334,11 @@
         <p class="text-sm font-medium text-purple-800 mb-2">📖 ব্যবহারের নিয়ম</p>
         <div class="text-xs text-gray-600 space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">প্রথম ব্যবহার:</span> দোকানের নাম দিন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা/ছবি ঐচ্ছিক)</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📸 ছবি আপলোড:</span> ক্যামেরা বা গ্যালারি থেকে (ঐচ্ছিক)</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💡 টিপস:</span> কাস্টমার/দাতা সিলেক্ট করলে পূর্বের বাকি দেখাবে</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">✏️ এডিট:</span> পেন্সিল আইকনে ক্লিক করে তথ্য হালনাগাদ করুন</p>
           <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">🗑️ ডিলিট:</span> ডিলিট করলে ডাটা স্থায়ীভাবে মুছে যাবে</p>
@@ -507,6 +560,8 @@
     let isAPK = false;
     let guestId = 'guest_' + Date.now();
     let soundEnabled = false;
+    let currentImageUploadContext = null;
+    let currentImageUploadCustomerId = null;
 
     // Load sound preference
     const savedSound = localStorage.getItem('sound_enabled');
@@ -526,7 +581,6 @@
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
         if (type === 'success') {
-          // Success sound - cheerful ding
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
           
@@ -544,7 +598,6 @@
           oscillator.stop(audioContext.currentTime + 0.2);
         }
         else if (type === 'warning') {
-          // Warning sound - beep beep
           for (let i = 0; i < 2; i++) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -563,7 +616,6 @@
           }
         }
         else if (type === 'error') {
-          // Error sound - low buzz
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
           
@@ -580,7 +632,6 @@
           oscillator.stop(audioContext.currentTime + 0.3);
         }
         else if (type === 'cash') {
-          // Cash register sound
           const oscillator1 = audioContext.createOscillator();
           const oscillator2 = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
@@ -636,6 +687,136 @@
       }
     }
 
+    // ============================================
+    // ইমেজ আপলোড ফাংশন - সম্পূর্ণ নতুন ভার্সন
+    // ============================================
+    
+    // Cloudinary কনফিগারেশন
+    const CLOUDINARY_CONFIG = {
+      cloud_name: 'dtep7yhzl',
+      upload_preset: 'bakir_khata_preset'
+    };
+
+    // ইমেজ আপলোড মডেল খোলা
+    function openImageUploadModal(context, customerId = null) {
+      currentImageUploadContext = context;
+      currentImageUploadCustomerId = customerId;
+      
+      const modal = document.getElementById('image-upload-modal');
+      const contextText = document.getElementById('image-upload-context');
+      
+      if (context === 'profile') {
+        contextText.textContent = 'প্রোফাইল ছবি আপলোড করুন';
+      } else if (context === 'customer') {
+        contextText.textContent = 'কাস্টমারের ছবি আপলোড করুন';
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    function closeImageUploadModal() {
+      document.getElementById('image-upload-modal').classList.add('hidden');
+      currentImageUploadContext = null;
+      currentImageUploadCustomerId = null;
+    }
+
+    function openCamera() {
+      document.getElementById('camera-input').click();
+      closeImageUploadModal();
+    }
+
+    function openGallery() {
+      document.getElementById('gallery-input').click();
+      closeImageUploadModal();
+    }
+
+    async function handleImageSelect(event, source) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // ফাইল সাইজ চেক (৫MB এর কম)
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('ছবির সাইজ ৫MB এর কম হতে হবে', 'error');
+        playSound('error');
+        event.target.value = '';
+        return;
+      }
+
+      // ফাইল টাইপ চেক
+      if (!file.type.startsWith('image/')) {
+        showToast('অনুগ্রহ করে ছবি নির্বাচন করুন', 'error');
+        playSound('error');
+        event.target.value = '';
+        return;
+      }
+
+      // লোডিং টোস্ট
+      showToast('ছবি আপলোড হচ্ছে...', 'info');
+
+      // FormData তৈরি
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
+      formData.append('cloud_name', CLOUDINARY_CONFIG.cloud_name);
+
+      try {
+        console.log('Uploading to Cloudinary...');
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+        console.log('Cloudinary response:', data);
+        
+        if (data.secure_url) {
+          console.log('Upload successful, URL:', data.secure_url);
+          
+          // ছবির URL সংরক্ষণ
+          if (currentImageUploadContext === 'profile') {
+            // প্রোফাইল ছবি সংরক্ষণ
+            if (!isGuest && currentUser) {
+              await database.ref(`users/${currentUser.uid}/profile_image`).set(data.secure_url);
+            } else {
+              localStorage.setItem('profile_image', data.secure_url);
+            }
+            
+            // UI আপডেট
+            const profileImg = document.getElementById('profile-image');
+            if (profileImg) {
+              profileImg.src = data.secure_url;
+            }
+            
+            showToast('প্রোফাইল ছবি আপলোড হয়েছে!', 'success');
+            
+          } else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
+            // কাস্টমারের ছবি সংরক্ষণ
+            const customerIndex = allData.findIndex(d => d.customer_id === currentImageUploadCustomerId && d.type === 'customer');
+            if (customerIndex !== -1) {
+              allData[customerIndex].image = data.secure_url;
+              await updateData(allData[customerIndex]);
+              
+              // কাস্টমার লিস্ট রি-রেন্ডার
+              renderCustomers();
+              
+              showToast('কাস্টমারের ছবি আপলোড হয়েছে!', 'success');
+            }
+          }
+          
+          playSound('success');
+        } else {
+          throw new Error(data.error?.message || 'Upload failed');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        showToast('ছবি আপলোড ব্যর্থ হয়েছে: ' + error.message, 'error');
+        playSound('error');
+      }
+
+      // ইনপুট ক্লিয়ার
+      event.target.value = '';
+    }
+
     // Detect if running in APK/WebView
     function detectPlatform() {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -671,11 +852,24 @@
     function updateProfileInfo() {
       document.getElementById('profile-shop-name').textContent = defaultConfig.shop_name;
       document.getElementById('profile-mode').textContent = isGuest ? 'গেস্ট মোড' : 'সাইন ইন';
+      document.getElementById('profile-name').textContent = currentUser?.displayName || 'ব্যবহারকারী';
+      document.getElementById('profile-email-menu').textContent = currentUser?.email || 'guest@local';
       
-      if (currentUser && !isGuest) {
-        document.getElementById('profile-email').textContent = currentUser.email || '-';
+      // Load profile image
+      if (!isGuest && currentUser) {
+        database.ref(`users/${currentUser.uid}/profile_image`).once('value').then(snapshot => {
+          const imageUrl = snapshot.val();
+          const profileImg = document.getElementById('profile-image');
+          if (imageUrl && profileImg) {
+            profileImg.src = imageUrl;
+          }
+        });
       } else {
-        document.getElementById('profile-email').textContent = 'guest@local';
+        const savedImage = localStorage.getItem('profile_image');
+        const profileImg = document.getElementById('profile-image');
+        if (savedImage && profileImg) {
+          profileImg.src = savedImage;
+        }
       }
       
       // Show guest warning in menu if in guest mode
@@ -855,7 +1049,7 @@
       // Show guest warning in APK
       if (isAPK) {
         setTimeout(() => {
-          showToast('⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।', 'warning', 5000);
+          showToast('⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন。', 'warning', 5000);
           playSound('warning');
         }, 500);
       }
@@ -1276,13 +1470,17 @@
         const balance = getCustomerBalance(c.customer_id);
         const balanceColor = balance > 0 ? 'text-red-600' : balance < 0 ? 'text-emerald-600' : 'text-gray-600';
         const isConfirming = deleteConfirmId === c.__backendId;
+        const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
         
         return `
           <div class="bg-white rounded-xl p-4 card-shadow" data-id="${c.__backendId}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-3 flex-1" onclick="viewCustomerHistory('${c.customer_id}')">
-                <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-xl">
-                  ${c.customer_name.charAt(0)}
+                <div class="relative">
+                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
+                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                    📷
+                  </button>
                 </div>
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
@@ -1823,17 +2021,28 @@
         
         const balance = getCustomerBalance(personId);
         const transactions = getTransactions().filter(t => t.customer_id === personId);
+        const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64`;
         
         content.innerHTML = `
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-800">📋 ${customer.customer_name}</h2>
             <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
           </div>
-          <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white mb-4">
-            <p class="text-sm opacity-80">বর্তমান বাকি</p>
-            <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
-            ${customer.mobile ? `<p class="text-sm mt-2">📞 ${customer.mobile}</p>` : ''}
-            ${customer.address ? `<p class="text-sm">📍 ${customer.address}</p>` : ''}
+          <div class="flex items-center gap-3 mb-4">
+            <div class="relative">
+              <img src="${customerImage}" class="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" alt="${customer.customer_name}">
+              <button onclick="closeModal(); openImageUploadModal('customer', '${customer.customer_id}')" class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-emerald-600">
+                📷
+              </button>
+            </div>
+            <div class="flex-1">
+              <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
+                <p class="text-sm opacity-80">বর্তমান বাকি</p>
+                <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
+                ${customer.mobile ? `<p class="text-sm mt-2">📞 ${customer.mobile}</p>` : ''}
+                ${customer.address ? `<p class="text-sm">📍 ${customer.address}</p>` : ''}
+              </div>
+            </div>
           </div>
           <div class="flex gap-2 mb-4">
             <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 বাকি দিন</button>
@@ -1976,6 +2185,7 @@
         customer_name: document.getElementById('customer-name').value.trim(),
         mobile: document.getElementById('customer-mobile').value.trim(),
         address: document.getElementById('customer-address').value.trim(),
+        image: null,
         amount: 0,
         date: '',
         note: '',
@@ -2190,7 +2400,7 @@
       );
 
       if (providerTransactions.length > 0) {
-        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।', 'warning');
+        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন。', 'warning');
         playSound('warning');
         deleteConfirmId = null;
         return;
@@ -2283,6 +2493,11 @@
       // Close modal on overlay click
       document.getElementById('modal-overlay').addEventListener('click', (e) => {
         if (e.target.id === 'modal-overlay') closeModal();
+      });
+
+      // Close image upload modal on overlay click
+      document.getElementById('image-upload-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'image-upload-modal') closeImageUploadModal();
       });
 
       // Close menus when clicking outside
