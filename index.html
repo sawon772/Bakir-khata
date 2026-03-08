@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="true">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="বাকির খাতা">
-  <title>বাকির খাতা - আপডেটেড ভার্সন</title>
+  <title>বাকির খাতা - ফাইনাল ভার্সন</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -19,7 +19,17 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  
+
+  <!-- EmailJS - ফ্রি ইমেইল সার্ভিস (নতুন public key দিয়ে) -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      // নতুন public key দিয়ে initialization
+      emailjs.init('HvDdMrLNNGeINm2DI');
+      console.log('✅ EmailJS initialized with new public key');
+    })();
+  </script>
+ 
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
   
@@ -118,7 +128,7 @@
       </div>
     </div>
 
-    <!-- Shop Name Change Modal (নতুন) -->
+    <!-- Shop Name Change Modal -->
     <div id="shop-name-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
       <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
         <h2 id="shop-name-title" class="text-xl font-bold text-gray-800 mb-4">দোকানের নাম পরিবর্তন</h2>
@@ -144,7 +154,7 @@
             </div>
           </div>
           
-          <!-- ইমেইল ভেরিফিকেশন (গুগল ইউজারদের জন্য) -->
+          <!-- ইমেইল ভেরিফিকেশন (গুগল ইউজারদের জন্য) - EmailJS দিয়ে -->
           <div id="email-verification" class="hidden">
             <p id="email-text" class="text-sm text-gray-600 mb-4">আপনার ইমেইলে একটি ভেরিফিকেশন কোড পাঠানো হয়েছে</p>
             <input type="text" id="verification-code" placeholder="৬-ডিজিটের কোড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
@@ -295,7 +305,7 @@
       </div>
     </div>
     
-    <!-- Header - আপডেট করা হয়েছে (ডান পাশে Google ছবি) -->
+    <!-- Header - ডান পাশে Google ছবি -->
     <header id="app-header" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-lg hidden">
       <div class="max-w-4xl mx-auto flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -315,7 +325,7 @@
       </div>
     </header>
     
-    <!-- Main Menu (Three Dots Menu) - আপডেট করা হয়েছে (ভাষা ও সাউন্ড যোগ) -->
+    <!-- Main Menu (Three Dots Menu) - ভাষা ও সাউন্ড সহ -->
     <div id="main-menu" class="absolute top-20 left-4 bg-white rounded-xl shadow-xl p-3 w-80 hidden z-30" onclick="event.stopPropagation()">
       <div class="flex justify-between items-center border-b pb-2 mb-2">
         <p class="font-bold text-gray-800">📋 মেনু</p>
@@ -344,7 +354,7 @@
         </div>
       </div>
       
-      <!-- 🌐 ভাষা সেটিংস (নতুন) -->
+      <!-- 🌐 ভাষা সেটিংস -->
       <div class="mb-3 p-2 bg-blue-50 rounded-lg">
         <p class="text-sm font-medium text-blue-800 mb-2">🌐 ভাষা / Language</p>
         <div class="flex gap-2">
@@ -353,7 +363,7 @@
         </div>
       </div>
       
-      <!-- 🔊 সাউন্ড সেটিংস (নতুন - ফ্লোটিং বাটন সরিয়ে এখানে আনা হয়েছে) -->
+      <!-- 🔊 সাউন্ড সেটিংস (ফ্লোটিং বাটন সরিয়ে এখানে আনা হয়েছে) -->
       <div class="mb-3 p-2 bg-amber-50 rounded-lg">
         <p class="text-sm font-medium text-amber-800 mb-2">🔊 সাউন্ড সেটিংস</p>
         <div class="flex items-center justify-between">
@@ -366,7 +376,7 @@
         <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
       </div>
       
-      <!-- 🏪 দোকানের নাম পরিবর্তন (নতুন) -->
+      <!-- 🏪 দোকানের নাম পরিবর্তন -->
       <div class="mb-3 p-2 bg-purple-50 rounded-lg">
         <p class="text-sm font-medium text-purple-800 mb-2">🏪 দোকানের নাম পরিবর্তন</p>
         <button onclick="openShopNameChangeModal()" class="w-full text-left text-sm text-purple-600 hover:bg-purple-100 p-2 rounded-lg transition-colors">
@@ -446,19 +456,19 @@
     <div class="max-w-4xl mx-auto w-full px-4 py-4">
       <div class="grid grid-cols-4 gap-2">
         <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="text-xs text-emerald-600 font-medium">মোট কাস্টমার</p>
+          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</p>
           <p id="total-customers" class="text-lg font-bold text-emerald-700">০</p>
         </div>
         <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="text-xs text-emerald-600 font-medium">মোট পাওনা</p>
+          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট পাওনা" data-en="Total Due">মোট পাওনা</p>
           <p id="total-due" class="text-lg font-bold text-red-600">৳০</p>
         </div>
         <div class="fund-stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="text-xs text-purple-600 font-medium">মোট ফান্ড</p>
+          <p class="stat-label text-xs text-purple-600 font-medium" data-bn="মোট ফান্ড" data-en="Total Fund">মোট ফান্ড</p>
           <p id="total-fund" class="text-lg font-bold text-purple-700">৳০</p>
         </div>
         <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="text-xs text-emerald-600 font-medium">আজকের বাকি</p>
+          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="আজকের বাকি" data-en="Today's Due">আজকের বাকি</p>
           <p id="today-due" class="text-lg font-bold text-orange-600">৳০</p>
         </div>
       </div>
@@ -467,10 +477,10 @@
     <!-- Navigation Tabs -->
     <div class="max-w-4xl mx-auto w-full px-4">
       <div class="flex bg-white rounded-xl p-1 card-shadow">
-        <button onclick="showTab('customers')" id="tab-customers" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active">👥 কাস্টমার</button>
-        <button onclick="showTab('funds')" id="tab-funds" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">💰 ফান্ড</button>
-        <button onclick="showTab('transactions')" id="tab-transactions" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">📝 লেনদেন</button>
-        <button onclick="showTab('reports')" id="tab-reports" class="flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600">📊 রিপোর্ট</button>
+        <button onclick="showTab('customers')" id="tab-customers" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active" data-bn="👥 কাস্টমার" data-en="👥 Customers">👥 কাস্টমার</button>
+        <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
+        <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="📝 লেনদেন" data-en="📝 Transactions">📝 লেনদেন</button>
+        <button onclick="showTab('reports')" id="tab-reports" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="📊 রিপোর্ট" data-en="📊 Reports">📊 রিপোর্ট</button>
       </div>
     </div>
     
@@ -488,16 +498,16 @@
         <div id="customers-list" class="space-y-2"></div>
         <div id="no-customers" class="text-center py-10 text-gray-500 hidden">
           <p class="text-4xl mb-2">👥</p>
-          <p>কোনো কাস্টমার নেই</p>
-          <p class="text-sm">নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন</p>
+          <p class="no-customers-text" data-bn="কোনো কাস্টমার নেই" data-en="No customers">কোনো কাস্টমার নেই</p>
+          <p class="text-sm add-customer-hint" data-bn="নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন" data-en="Click the button below to add customer">নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন</p>
         </div>
       </div>
       
       <!-- Funds Tab -->
       <div id="content-funds" class="space-y-3 hidden">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="font-bold text-lg text-purple-800">ফান্ড দাতা তালিকা</h2>
-          <button onclick="openModal('fund-provider')" class="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700">+ নতুন দাতা</button>
+          <h2 class="fund-providers-title font-bold text-lg text-purple-800" data-bn="ফান্ড দাতা তালিকা" data-en="Fund Providers List">ফান্ড দাতা তালিকা</h2>
+          <button onclick="openModal('fund-provider')" class="add-provider-btn px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700" data-bn="+ নতুন দাতা" data-en="+ Add Provider">+ নতুন দাতা</button>
         </div>
         
         <!-- Fund Providers List -->
@@ -505,79 +515,79 @@
         
         <!-- Fund Transactions Filters -->
         <div class="flex gap-2 mb-3 mt-4">
-          <button onclick="filterFunds('all')" id="fund-filter-all" class="px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white">সব</button>
-          <button onclick="filterFunds('receive')" id="fund-filter-receive" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">গ্রহণ</button>
-          <button onclick="filterFunds('payment')" id="fund-filter-payment" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">পরিশোধ</button>
+          <button onclick="filterFunds('all')" id="fund-filter-all" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white" data-bn="সব" data-en="All">সব</button>
+          <button onclick="filterFunds('receive')" id="fund-filter-receive" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="গ্রহণ" data-en="Receive">গ্রহণ</button>
+          <button onclick="filterFunds('payment')" id="fund-filter-payment" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
         </div>
         
         <!-- Fund Transactions List -->
         <div id="funds-list" class="space-y-2"></div>
         <div id="no-funds" class="text-center py-10 text-gray-500 hidden">
           <p class="text-4xl mb-2">💰</p>
-          <p>কোনো ফান্ড লেনদেন নেই</p>
-          <p class="text-sm">নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন</p>
+          <p class="no-funds-text" data-bn="কোনো ফান্ড লেনদেন নেই" data-en="No fund transactions">কোনো ফান্ড লেনদেন নেই</p>
+          <p class="text-sm add-fund-hint" data-bn="নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন" data-en="Click the button below to add fund">নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন</p>
         </div>
       </div>
       
       <!-- Transactions Tab -->
       <div id="content-transactions" class="space-y-3 hidden">
         <div class="flex gap-2 mb-3">
-          <button onclick="filterTransactions('all')" id="filter-all" class="px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white">সব</button>
-          <button onclick="filterTransactions('due')" id="filter-due" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">বাকি</button>
-          <button onclick="filterTransactions('payment')" id="filter-payment" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">পরিশোধ</button>
-          <button onclick="filterTransactions('fund')" id="filter-fund" class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700">ফান্ড</button>
+          <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white" data-bn="সব" data-en="All">সব</button>
+          <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="বাকি" data-en="Due">বাকি</button>
+          <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
+          <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
         </div>
         <div id="transactions-list" class="space-y-2"></div>
         <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
           <p class="text-4xl mb-2">📝</p>
-          <p>কোনো লেনদেন নেই</p>
+          <p class="no-transactions-text" data-bn="কোনো লেনদেন নেই" data-en="No transactions">কোনো লেনদেন নেই</p>
         </div>
       </div>
       
       <!-- Reports Tab -->
       <div id="content-reports" class="space-y-4 hidden">
         <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="font-bold text-lg text-gray-800 mb-3">📈 সারাংশ</h3>
+          <h3 class="reports-summary-title font-bold text-lg text-gray-800 mb-3" data-bn="📈 সারাংশ" data-en="📈 Summary">📈 সারাংশ</h3>
           <div class="space-y-2">
             <div class="flex justify-between py-2 border-b">
-              <span class="text-gray-600">মোট কাস্টমার</span>
+              <span class="total-customers-label text-gray-600" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</span>
               <span id="report-total-customers" class="font-bold">০</span>
             </div>
             <div class="flex justify-between py-2 border-b">
-              <span class="text-gray-600">মোট বাকি দেওয়া হয়েছে</span>
+              <span class="total-given-label text-gray-600" data-bn="মোট বাকি দেওয়া হয়েছে" data-en="Total Due Given">মোট বাকি দেওয়া হয়েছে</span>
               <span id="report-total-given" class="font-bold text-red-600">৳০</span>
             </div>
             <div class="flex justify-between py-2 border-b">
-              <span class="text-gray-600">মোট পরিশোধ হয়েছে</span>
+              <span class="total-received-label text-gray-600" data-bn="মোট পরিশোধ হয়েছে" data-en="Total Payment Received">মোট পরিশোধ হয়েছে</span>
               <span id="report-total-received" class="font-bold text-emerald-600">৳০</span>
             </div>
             <div class="flex justify-between py-2 border-b bg-purple-50">
-              <span class="text-gray-600">মোট ফান্ড নেওয়া</span>
+              <span class="total-fund-received-label text-gray-600" data-bn="মোট ফান্ড নেওয়া" data-en="Total Fund Received">মোট ফান্ড নেওয়া</span>
               <span id="report-total-fund-received" class="font-bold text-purple-600">৳০</span>
             </div>
             <div class="flex justify-between py-2 border-b bg-purple-50">
-              <span class="text-gray-600">মোট ফান্ড পরিশোধ</span>
+              <span class="total-fund-paid-label text-gray-600" data-bn="মোট ফান্ড পরিশোধ" data-en="Total Fund Paid">মোট ফান্ড পরিশোধ</span>
               <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
             </div>
             <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
-              <span class="text-gray-800 font-medium">মোট পাওনা (কাস্টমার)</span>
+              <span class="net-due-label text-gray-800 font-medium" data-bn="মোট পাওনা (কাস্টমার)" data-en="Net Due (Customers)">মোট পাওনা (কাস্টমার)</span>
               <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
             </div>
             <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
-              <span class="text-gray-800 font-medium">মোট ফান্ড দায়</span>
+              <span class="net-fund-label text-gray-800 font-medium" data-bn="মোট ফান্ড দায়" data-en="Net Fund Liability">মোট ফান্ড দায়</span>
               <span id="report-net-fund" class="font-bold text-xl text-purple-600">৳০</span>
             </div>
           </div>
         </div>
         <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="font-bold text-lg text-gray-800 mb-3">🏆 সর্বোচ্চ বাকিদার</h3>
+          <h3 class="top-debtors-title font-bold text-lg text-gray-800 mb-3" data-bn="🏆 সর্বোচ্চ বাকিদার" data-en="🏆 Top Debtors">🏆 সর্বোচ্চ বাকিদার</h3>
           <div id="top-debtors" class="space-y-2"></div>
         </div>
         <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="font-bold text-lg text-gray-800 mb-3">💰 ফান্ড দাতা</h3>
+          <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 ফান্ড দাতা" data-en="💰 Fund Providers">💰 ফান্ড দাতা</h3>
           <div id="top-lenders" class="space-y-2"></div>
         </div>
-        <button onclick="exportData()" class="w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
+        <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
       </div>
     </div>
     
@@ -600,6 +610,15 @@
   </div>
 
   <script>
+    // EmailJS Configuration - নতুন public key দিয়ে
+    const EMAILJS_CONFIG = {
+      serviceId: 'service_t3kmc0z',
+      templateId: 'template_wt55pdr',
+      publicKey: 'HvDdMrLNNGeINm2DI'
+    };
+
+    // EmailJS initialization (Head section-এ করা আছে, এখানে আর দরকার নেই)
+
     // Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBIlO1I012tDbTfERJa9woj9B0qzQ4ZlzI",
@@ -624,12 +643,13 @@
     const database = firebase.database();
 
     // ============================================
-    // নতুন: ভাষা সেটিংস
+    // ভাষা সেটিংস - Translations
     // ============================================
     const translations = {
       bn: {
+        // General
         'app_name': 'বাকির খাতা',
-        'shop_name': 'আপনার দোকানের হিসাব',
+        'shop_name_placeholder': 'আপনার দোকানের হিসাব',
         'total_customers': 'মোট কাস্টমার',
         'total_due': 'মোট পাওনা',
         'total_fund': 'মোট ফান্ড',
@@ -638,15 +658,39 @@
         'funds_tab': '💰 ফান্ড',
         'transactions_tab': '📝 লেনদেন',
         'reports_tab': '📊 রিপোর্ট',
-        'search': '🔍 নাম বা মোবাইল দিয়ে খুঁজুন...',
-        'cancel': 'বাতিল',
-        'save': 'সংরক্ষণ',
+        'search_placeholder': '🔍 নাম বা মোবাইল দিয়ে খুঁজুন...',
+        'no_customers': 'কোনো কাস্টমার নেই',
+        'add_customer_hint': 'নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন',
+        'no_funds': 'কোনো ফান্ড লেনদেন নেই',
+        'add_fund_hint': 'নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন',
+        'no_transactions': 'কোনো লেনদেন নেই',
+        'summary': '📈 সারাংশ',
+        'top_debtors': '🏆 সর্বোচ্চ বাকিদার',
+        'top_lenders': '💰 ফান্ড দাতা',
+        'total_given': 'মোট বাকি দেওয়া হয়েছে',
+        'total_received': 'মোট পরিশোধ হয়েছে',
+        'total_fund_received': 'মোট ফান্ড নেওয়া',
+        'total_fund_paid': 'মোট ফান্ড পরিশোধ',
+        'net_due': 'মোট পাওনা (কাস্টমার)',
+        'net_fund': 'মোট ফান্ড দায়',
+        'fund_providers': 'ফান্ড দাতা তালিকা',
+        'add_provider': '+ নতুন দাতা',
+        'all': 'সব',
+        'receive': 'গ্রহণ',
+        'payment': 'পরিশোধ',
+        'due': 'বাকি',
+        'fund': 'ফান্ড',
         'on': 'অন',
-        'off': 'অফ'
+        'off': 'অফ',
+        'code_sent': 'ভেরিফিকেশন কোড পাঠানো হয়েছে!',
+        'email_error': 'ইমেইল পাঠাতে সমস্যা হয়েছে',
+        'code_expired': 'কোডের মেয়াদ শেষ হয়েছে',
+        'invalid_code': 'ভুল ভেরিফিকেশন কোড'
       },
       en: {
+        // General
         'app_name': 'Bakir Khata',
-        'shop_name': 'Your Shop Account',
+        'shop_name_placeholder': 'Your Shop Account',
         'total_customers': 'Total Customers',
         'total_due': 'Total Due',
         'total_fund': 'Total Fund',
@@ -655,11 +699,34 @@
         'funds_tab': '💰 Fund',
         'transactions_tab': '📝 Transactions',
         'reports_tab': '📊 Reports',
-        'search': '🔍 Search by name or mobile...',
-        'cancel': 'Cancel',
-        'save': 'Save',
+        'search_placeholder': '🔍 Search by name or mobile...',
+        'no_customers': 'No customers',
+        'add_customer_hint': 'Click the button below to add customer',
+        'no_funds': 'No fund transactions',
+        'add_fund_hint': 'Click the button below to add fund',
+        'no_transactions': 'No transactions',
+        'summary': '📈 Summary',
+        'top_debtors': '🏆 Top Debtors',
+        'top_lenders': '💰 Fund Providers',
+        'total_given': 'Total Due Given',
+        'total_received': 'Total Payment Received',
+        'total_fund_received': 'Total Fund Received',
+        'total_fund_paid': 'Total Fund Paid',
+        'net_due': 'Net Due (Customers)',
+        'net_fund': 'Net Fund Liability',
+        'fund_providers': 'Fund Providers List',
+        'add_provider': '+ Add Provider',
+        'all': 'All',
+        'receive': 'Receive',
+        'payment': 'Payment',
+        'due': 'Due',
+        'fund': 'Fund',
         'on': 'On',
-        'off': 'Off'
+        'off': 'Off',
+        'code_sent': 'Verification code sent!',
+        'email_error': 'Failed to send email',
+        'code_expired': 'Code expired',
+        'invalid_code': 'Invalid verification code'
       }
     };
 
@@ -667,14 +734,30 @@
 
     function setLanguage(lang) {
       currentLanguage = lang;
+      
+      // Update language buttons
       document.getElementById('lang-bn').className = lang === 'bn' ? 'language-btn language-active' : 'language-btn language-inactive';
       document.getElementById('lang-en').className = lang === 'en' ? 'language-btn language-active' : 'language-btn language-inactive';
-      updateUIText();
+      
+      // Update all elements with data-bn and data-en attributes
+      document.querySelectorAll('[data-bn]').forEach(el => {
+        el.textContent = currentLanguage === 'bn' ? el.dataset.bn : el.dataset.en;
+      });
+      
+      // Update specific elements
+      document.getElementById('main-title').textContent = '📒 ' + translations[lang]['app_name'];
+      document.getElementById('shop-name').textContent = defaultConfig.shop_name || translations[lang]['shop_name_placeholder'];
+      document.getElementById('search-input').placeholder = translations[lang]['search_placeholder'];
+      
+      // Update sound button text
+      document.getElementById('menu-sound-text').textContent = soundEnabled ? translations[lang]['on'] : translations[lang]['off'];
+      
+      // Re-render current view to update dynamic content
+      renderCurrentView();
     }
 
-    function updateUIText() {
-      // Update text based on language
-      document.getElementById('search-input').placeholder = currentLanguage === 'bn' ? translations.bn.search : translations.en.search;
+    function t(key) {
+      return translations[currentLanguage][key] || key;
     }
 
     // State
@@ -693,132 +776,70 @@
     let soundEnabled = true; // ডিফল্ট অন
     let currentImageUploadContext = null;
     let currentImageUploadCustomerId = null;
-    
-    // নতুন: দোকানের নাম পরিবর্তনের জন্য ভেরিয়েবল
     let verificationCode = null;
+    let verificationExpiry = null;
 
     // ============================================
-    // নতুন: Google Profile Image ফাংশন
+    // ইমেইল ভেরিফিকেশন ফাংশন (EmailJS দিয়ে) - আপডেট করা হয়েছে
     // ============================================
-    function updateGoogleProfileImage(user) {
-      const googleProfileImg = document.getElementById('google-profile-img');
-      const userMenuImg = document.getElementById('user-menu-profile-image');
-      
-      if (user && user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') {
-        // Google Sign-In - use Google profile picture
-        const photoURL = user.photoURL;
-        if (photoURL) {
-          googleProfileImg.src = photoURL;
-          userMenuImg.src = photoURL;
-        }
-      } else {
-        // Email/Password or Guest - use default avatar
-        const name = user ? user.displayName || 'User' : 'User';
-        googleProfileImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
-        userMenuImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
-      }
-    }
-
-    // ============================================
-    // নতুন: দোকানের নাম পরিবর্তন ফাংশন
-    // ============================================
-    function openShopNameChangeModal() {
-      const modal = document.getElementById('shop-name-modal');
-      
-      document.getElementById('guest-name-change').classList.add('hidden');
-      document.getElementById('password-verification').classList.add('hidden');
-      document.getElementById('email-verification').classList.add('hidden');
-      document.getElementById('new-name-field').classList.add('hidden');
-      
-      if (isGuest) {
-        document.getElementById('guest-name-change').classList.remove('hidden');
-      } else if (currentUser) {
-        const providers = currentUser.providerData.map(p => p.providerId);
-        if (providers.includes('google.com')) {
-          sendVerificationCode();
-          document.getElementById('email-verification').classList.remove('hidden');
-        } else {
-          document.getElementById('password-verification').classList.remove('hidden');
-        }
+    async function sendVerificationCodeWithEmailJS(email) {
+      if (!email) {
+        console.error('Email address is empty');
+        showToast('ইমেইল ঠিকানা খালি!', 'error');
+        return false;
       }
       
-      modal.classList.remove('hidden');
-    }
-
-    function closeShopNameModal() {
-      document.getElementById('shop-name-modal').classList.add('hidden');
-      verificationCode = null;
-    }
-
-    function sendVerificationCode() {
-      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log('Verification code:', verificationCode);
-      showToast('ভেরিফিকেশন কোড পাঠানো হয়েছে!', 'info');
-    }
-
-    function resendVerificationCode() {
-      sendVerificationCode();
-    }
-
-    function verifyCodeAndShowNameField() {
-      const enteredCode = document.getElementById('verification-code').value;
-      if (enteredCode === verificationCode) {
-        document.getElementById('email-verification').classList.add('hidden');
-        document.getElementById('new-name-field').classList.remove('hidden');
-      } else {
-        alert('ভুল ভেরিফিকেশন কোড');
-        playSound('error');
-      }
-    }
-
-    async function verifyPasswordAndShowNameField() {
-      const password = document.getElementById('verify-password').value;
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Save code to localStorage with expiry (5 minutes)
+      const codeData = {
+        code: code,
+        expires: Date.now() + 5 * 60 * 1000,
+        email: email
+      };
+      localStorage.setItem('verification_code', JSON.stringify(codeData));
+      verificationCode = code;
+      verificationExpiry = Date.now() + 5 * 60 * 1000;
+      
+      console.log('Sending email to:', email);
+      console.log('Verification code:', code);
+      
       try {
-        const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
-        await currentUser.reauthenticateWithCredential(credential);
-        document.getElementById('password-verification').classList.add('hidden');
-        document.getElementById('new-name-field').classList.remove('hidden');
+        const response = await emailjs.send(
+          EMAILJS_CONFIG.serviceId,
+          EMAILJS_CONFIG.templateId,
+          {
+            email: email,      // টেমপ্লেটে {{email}} আছে
+            otp: code,          // টেমপ্লেটে {{otp}} আছে
+            from_name: 'বাকির খাতা'
+          }
+        );
+        console.log('Email sent successfully:', response);
+        showToast(t('code_sent'), 'success');
+        return true;
       } catch (error) {
-        alert('ভুল পাসওয়ার্ড');
-        playSound('error');
+        console.error('Email send error:', error);
+        showToast(t('email_error') + ': ' + (error.text || error.message), 'error');
+        return false;
       }
     }
 
-    async function updateShopName() {
-      const newName = document.getElementById('new-shop-name').value.trim();
-      if (!newName) return;
+    function verifyCode(enteredCode) {
+      const saved = localStorage.getItem('verification_code');
+      if (!saved) return false;
       
-      if (!isGuest && currentUser) {
-        await database.ref(`users/${currentUser.uid}/shop_name`).set(newName);
-      } else {
-        localStorage.setItem('guest_shop_name', newName);
+      const data = JSON.parse(saved);
+      if (Date.now() > data.expires) {
+        localStorage.removeItem('verification_code');
+        showToast(t('code_expired'), 'error');
+        return false;
       }
       
-      defaultConfig.shop_name = newName;
-      document.getElementById('shop-name').textContent = newName;
-      document.getElementById('profile-shop-name').textContent = newName;
-      
-      showToast('দোকানের নাম আপডেট হয়েছে!', 'success');
-      playSound('success');
-      closeShopNameModal();
-    }
-
-    function updateShopNameGuest() {
-      const newName = document.getElementById('new-shop-name-guest').value.trim();
-      if (!newName) return;
-      
-      localStorage.setItem('guest_shop_name', newName);
-      defaultConfig.shop_name = newName;
-      document.getElementById('shop-name').textContent = newName;
-      document.getElementById('profile-shop-name').textContent = newName;
-      
-      showToast('দোকানের নাম আপডেট হয়েছে!', 'success');
-      playSound('success');
-      closeShopNameModal();
+      return data.code === enteredCode;
     }
 
     // ============================================
-    // সাউন্ড ফাংশন (আপডেট করা হয়েছে)
+    // সাউন্ড ফাংশন
     // ============================================
     
     // Load sound preference
@@ -837,12 +858,12 @@
       
       if (soundEnabled) {
         menuIcon.textContent = '🔊';
-        menuText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+        menuText.textContent = t('on');
         localStorage.setItem('sound_enabled', 'true');
         playSound('success');
       } else {
         menuIcon.textContent = '🔇';
-        menuText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+        menuText.textContent = t('off');
         localStorage.setItem('sound_enabled', 'false');
       }
     }
@@ -945,9 +966,9 @@
       const contextText = document.getElementById('image-upload-context');
       
       if (context === 'profile') {
-        contextText.textContent = 'প্রোফাইল ছবি আপলোড করুন';
+        contextText.textContent = currentLanguage === 'bn' ? 'প্রোফাইল ছবি আপলোড করুন' : 'Upload profile image';
       } else if (context === 'customer') {
-        contextText.textContent = 'কাস্টমারের ছবি আপলোড করুন';
+        contextText.textContent = currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড করুন' : 'Upload customer image';
       }
       
       modal.classList.remove('hidden');
@@ -973,12 +994,12 @@
       if (!file) return;
 
       if (file.size > 5 * 1024 * 1024) {
-        alert('ছবির সাইজ ৫MB এর কম হতে হবে');
+        alert(currentLanguage === 'bn' ? 'ছবির সাইজ ৫MB এর কম হতে হবে' : 'Image size must be less than 5MB');
         event.target.value = '';
         return;
       }
 
-      alert('ছবি আপলোড শুরু হচ্ছে...');
+      alert(currentLanguage === 'bn' ? 'ছবি আপলোড শুরু হচ্ছে...' : 'Uploading image...');
 
       const formData = new FormData();
       formData.append('file', file);
@@ -994,7 +1015,7 @@
         const data = await response.json();
         
         if (data.secure_url) {
-          alert('আপলোড সফল!');
+          alert(currentLanguage === 'bn' ? 'আপলোড সফল!' : 'Upload successful!');
           
           if (currentImageUploadContext === 'profile') {
             if (!isGuest && currentUser) {
@@ -1004,7 +1025,7 @@
             }
             
             document.getElementById('profile-image').src = data.secure_url;
-            alert('প্রোফাইল ছবি আপলোড হয়েছে!');
+            alert(currentLanguage === 'bn' ? 'প্রোফাইল ছবি আপলোড হয়েছে!' : 'Profile image uploaded!');
             
           } else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
             const customerIndex = allData.findIndex(d => d.customer_id === currentImageUploadCustomerId && d.type === 'customer');
@@ -1012,20 +1033,145 @@
               allData[customerIndex].image = data.secure_url;
               await updateData(allData[customerIndex]);
               renderCustomers();
-              alert('কাস্টমারের ছবি আপলোড হয়েছে!');
+              alert(currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড হয়েছে!' : 'Customer image uploaded!');
             }
           }
           
           playSound('success');
         }
       } catch (error) {
-        alert('Error: ' + error.message);
+        alert(currentLanguage === 'bn' ? 'Error: ' + error.message : 'Error: ' + error.message);
         playSound('error');
       }
 
       currentImageUploadContext = null;
       currentImageUploadCustomerId = null;
       event.target.value = '';
+    }
+
+    // ============================================
+    // দোকানের নাম পরিবর্তন ফাংশন
+    // ============================================
+
+    function openShopNameChangeModal() {
+      const modal = document.getElementById('shop-name-modal');
+      
+      document.getElementById('guest-name-change').classList.add('hidden');
+      document.getElementById('password-verification').classList.add('hidden');
+      document.getElementById('email-verification').classList.add('hidden');
+      document.getElementById('new-name-field').classList.add('hidden');
+      
+      // Update modal texts based on language
+      document.getElementById('shop-name-title').textContent = currentLanguage === 'bn' ? 'দোকানের নাম পরিবর্তন' : 'Change Shop Name';
+      document.getElementById('guest-name-text').textContent = currentLanguage === 'bn' ? 'নতুন দোকানের নাম দিন' : 'Enter new shop name';
+      document.getElementById('password-text').textContent = currentLanguage === 'bn' ? 'নিরাপত্তার জন্য আপনার পাসওয়ার্ড দিন' : 'Enter your password for security';
+      document.getElementById('email-text').textContent = currentLanguage === 'bn' ? 'আপনার ইমেইলে একটি ভেরিফিকেশন কোড পাঠানো হয়েছে' : 'A verification code has been sent to your email';
+      document.getElementById('new-name-text').textContent = currentLanguage === 'bn' ? 'নতুন দোকানের নাম দিন' : 'Enter new shop name';
+      
+      if (isGuest) {
+        document.getElementById('guest-name-change').classList.remove('hidden');
+      } else if (currentUser) {
+        const providers = currentUser.providerData.map(p => p.providerId);
+        if (providers.includes('google.com')) {
+          // Google Sign-In - use EmailJS
+          sendVerificationCodeWithEmailJS(currentUser.email);
+          document.getElementById('email-verification').classList.remove('hidden');
+        } else {
+          // Email/Password Sign-In
+          document.getElementById('password-verification').classList.remove('hidden');
+        }
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    function closeShopNameModal() {
+      document.getElementById('shop-name-modal').classList.add('hidden');
+      verificationCode = null;
+    }
+
+    async function resendVerificationCode() {
+      if (currentUser) {
+        await sendVerificationCodeWithEmailJS(currentUser.email);
+      }
+    }
+
+    function verifyCodeAndShowNameField() {
+      const enteredCode = document.getElementById('verification-code').value;
+      
+      if (verifyCode(enteredCode)) {
+        document.getElementById('email-verification').classList.add('hidden');
+        document.getElementById('new-name-field').classList.remove('hidden');
+        showToast(currentLanguage === 'bn' ? 'ভেরিফিকেশন সফল!' : 'Verification successful!', 'success');
+        playSound('success');
+      } else {
+        alert(t('invalid_code'));
+        playSound('error');
+      }
+    }
+
+    async function verifyPasswordAndShowNameField() {
+      const password = document.getElementById('verify-password').value;
+      try {
+        const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
+        await currentUser.reauthenticateWithCredential(credential);
+        document.getElementById('password-verification').classList.add('hidden');
+        document.getElementById('new-name-field').classList.remove('hidden');
+      } catch (error) {
+        alert(currentLanguage === 'bn' ? 'ভুল পাসওয়ার্ড' : 'Wrong password');
+        playSound('error');
+      }
+    }
+
+    async function updateShopName() {
+      const newName = document.getElementById('new-shop-name').value.trim();
+      if (!newName) return;
+      
+      if (!isGuest && currentUser) {
+        await database.ref(`users/${currentUser.uid}/shop_name`).set(newName);
+      } else {
+        localStorage.setItem('guest_shop_name', newName);
+      }
+      
+      defaultConfig.shop_name = newName;
+      document.getElementById('shop-name').textContent = newName;
+      document.getElementById('profile-shop-name').textContent = newName;
+      
+      showToast(currentLanguage === 'bn' ? 'দোকানের নাম আপডেট হয়েছে!' : 'Shop name updated!', 'success');
+      playSound('success');
+      closeShopNameModal();
+    }
+
+    function updateShopNameGuest() {
+      const newName = document.getElementById('new-shop-name-guest').value.trim();
+      if (!newName) return;
+      
+      localStorage.setItem('guest_shop_name', newName);
+      defaultConfig.shop_name = newName;
+      document.getElementById('shop-name').textContent = newName;
+      document.getElementById('profile-shop-name').textContent = newName;
+      
+      showToast(currentLanguage === 'bn' ? 'দোকানের নাম আপডেট হয়েছে!' : 'Shop name updated!', 'success');
+      playSound('success');
+      closeShopNameModal();
+    }
+
+    // ============================================
+    // Google Profile Image ফাংশন
+    // ============================================
+    function updateGoogleProfileImage(user) {
+      const googleProfileImg = document.getElementById('google-profile-img');
+      const userMenuImg = document.getElementById('user-menu-profile-image');
+      
+      if (user && user.photoURL) {
+        googleProfileImg.src = user.photoURL;
+        userMenuImg.src = user.photoURL;
+      } else {
+        // Email/Password or Guest - use default avatar
+        const name = user ? user.displayName || 'User' : 'User';
+        googleProfileImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
+        userMenuImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
+      }
     }
 
     // Toast ফাংশন
@@ -1050,17 +1196,17 @@
       
       if (/wv|WebView|Android.*Version\/[\d.]+.*Chrome|Linux; Android.*wv/i.test(userAgent)) {
         isAPK = true;
-        document.getElementById('platform-badge').textContent = '📱 APK ভার্সন';
+        document.getElementById('platform-badge').textContent = currentLanguage === 'bn' ? '📱 APK ভার্সন' : '📱 APK Version';
         document.getElementById('guest-warning').classList.remove('hidden');
         
         const googleBtn = document.getElementById('google-signin-btn');
         if (googleBtn) {
           googleBtn.classList.add('opacity-50', 'cursor-not-allowed');
           googleBtn.style.pointerEvents = 'none';
-          googleBtn.title = 'Google Sign-In APK তে কাজ করে না';
+          googleBtn.title = currentLanguage === 'bn' ? 'Google Sign-In APK তে কাজ করে না' : 'Google Sign-In does not work in APK';
         }
       } else {
-        document.getElementById('platform-badge').textContent = '🌐 ব্রাউজার ভার্সন';
+        document.getElementById('platform-badge').textContent = currentLanguage === 'bn' ? '🌐 ব্রাউজার ভার্সন' : '🌐 Browser Version';
       }
     }
 
@@ -1076,8 +1222,11 @@
     // Update profile info in menu
     function updateProfileInfo() {
       document.getElementById('profile-shop-name').textContent = defaultConfig.shop_name;
-      document.getElementById('profile-mode').textContent = isGuest ? 'গেস্ট মোড' : 'সাইন ইন';
-      document.getElementById('profile-name').textContent = currentUser?.displayName || 'ব্যবহারকারী';
+      document.getElementById('profile-mode').textContent = isGuest ? 
+        (currentLanguage === 'bn' ? 'গেস্ট মোড' : 'Guest Mode') : 
+        (currentLanguage === 'bn' ? 'সাইন ইন' : 'Signed In');
+      document.getElementById('profile-name').textContent = currentUser?.displayName || 
+        (currentLanguage === 'bn' ? 'ব্যবহারকারী' : 'User');
       document.getElementById('profile-email-menu').textContent = currentUser?.email || 'guest@local';
       
       const profileImg = document.getElementById('profile-image');
@@ -1116,6 +1265,8 @@
 
     // Auth State Observer
     auth.onAuthStateChanged(async (user) => {
+      console.log('Auth state changed:', user ? user.email : 'No user');
+      
       if (user) {
         currentUser = user;
         isGuest = false;
@@ -1150,14 +1301,14 @@
     // Sign in with Google
     function signInWithGoogle() {
       if (isAPK) {
-        showToast('Google Sign-In APK তে কাজ করে না। গেস্ট মোড ব্যবহার করুন।', 'warning');
+        showToast(currentLanguage === 'bn' ? 'Google Sign-In APK তে কাজ করে না। গেস্ট মোড ব্যবহার করুন।' : 'Google Sign-In does not work in APK. Use Guest Mode.', 'warning');
         playSound('warning');
         return;
       }
       
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch(error => {
-        showToast('সাইন ইন ব্যর্থ হয়েছে: ' + error.message, 'error');
+        showToast(currentLanguage === 'bn' ? 'সাইন ইন ব্যর্থ হয়েছে: ' + error.message : 'Sign in failed: ' + error.message, 'error');
         playSound('error');
       });
     }
@@ -1170,17 +1321,17 @@
       const password = document.getElementById('email-login-password').value;
       
       if (!email || !password) {
-        showToast('ইমেইল ও পাসওয়ার্ড দিন', 'warning');
+        showToast(currentLanguage === 'bn' ? 'ইমেইল ও পাসওয়ার্ড দিন' : 'Enter email and password', 'warning');
         playSound('warning');
         return;
       }
       
       try {
         await auth.signInWithEmailAndPassword(email, password);
-        showToast('সাইন ইন সফল হয়েছে!', 'success');
+        showToast(currentLanguage === 'bn' ? 'সাইন ইন সফল হয়েছে!' : 'Sign in successful!', 'success');
         playSound('success');
       } catch (error) {
-        showToast('সাইন ইন ব্যর্থ: ' + error.message, 'error');
+        showToast(currentLanguage === 'bn' ? 'সাইন ইন ব্যর্থ: ' + error.message : 'Sign in failed: ' + error.message, 'error');
         playSound('error');
       }
     }
@@ -1194,13 +1345,13 @@
       const password = document.getElementById('email-register-password').value;
       
       if (!email || !password) {
-        showToast('ইমেইল ও পাসওয়ার্ড দিন', 'warning');
+        showToast(currentLanguage === 'bn' ? 'ইমেইল ও পাসওয়ার্ড দিন' : 'Enter email and password', 'warning');
         playSound('warning');
         return;
       }
       
       if (password.length < 6) {
-        showToast('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে', 'warning');
+        showToast(currentLanguage === 'bn' ? 'পাসওয়ার্ড কমপক্ষে ৬ অক্ষর হতে হবে' : 'Password must be at least 6 characters', 'warning');
         playSound('warning');
         return;
       }
@@ -1214,13 +1365,13 @@
           });
         }
         
-        showToast('রেজিস্ট্রেশন সফল হয়েছে! দোকানের নাম দিন।', 'success');
+        showToast(currentLanguage === 'bn' ? 'রেজিস্ট্রেশন সফল হয়েছে! দোকানের নাম দিন।' : 'Registration successful! Enter shop name.', 'success');
         playSound('success');
         
         document.getElementById('auth-screen').classList.add('hidden');
         document.getElementById('setup-screen').classList.remove('hidden');
       } catch (error) {
-        showToast('রেজিস্ট্রেশন ব্যর্থ: ' + error.message, 'error');
+        showToast(currentLanguage === 'bn' ? 'রেজিস্ট্রেশন ব্যর্থ: ' + error.message : 'Registration failed: ' + error.message, 'error');
         playSound('error');
       }
     }
@@ -1239,18 +1390,18 @@
       const email = document.getElementById('reset-email').value;
       
       if (!email) {
-        showToast('ইমেইল দিন', 'warning');
+        showToast(currentLanguage === 'bn' ? 'ইমেইল দিন' : 'Enter email', 'warning');
         playSound('warning');
         return;
       }
       
       try {
         await auth.sendPasswordResetEmail(email);
-        showToast('পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে!', 'success');
+        showToast(currentLanguage === 'bn' ? 'পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে!' : 'Password reset link sent!', 'success');
         playSound('success');
         closeForgotPassword();
       } catch (error) {
-        showToast('ব্যর্থ: ' + error.message, 'error');
+        showToast(currentLanguage === 'bn' ? 'ব্যর্থ: ' + error.message : 'Failed: ' + error.message, 'error');
         playSound('error');
       }
     }
@@ -1263,7 +1414,7 @@
       
       if (isAPK) {
         setTimeout(() => {
-          showToast('⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।', 'warning', 5000);
+          showToast(currentLanguage === 'bn' ? '⚠️ গেস্ট মোড: ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।' : '⚠️ Guest Mode: Data is stored only on this device. Take regular backup.', 'warning', 5000);
           playSound('warning');
         }, 500);
       }
@@ -1312,20 +1463,22 @@
       const userEmailEl = document.getElementById('user-email');
       
       if (user) {
-        userNameEl.textContent = user.displayName || 'ব্যবহারকারী';
+        userNameEl.textContent = user.displayName || (currentLanguage === 'bn' ? 'ব্যবহারকারী' : 'User');
         userEmailEl.textContent = user.email || '';
       } else {
-        userNameEl.textContent = 'অতিথি';
+        userNameEl.textContent = currentLanguage === 'bn' ? 'অতিথি' : 'Guest';
         userEmailEl.textContent = 'guest@local';
       }
     }
 
     // Load user data from Firebase
     function loadUserData(userId) {
+      console.log('Loading data for user:', userId);
       const userRef = database.ref(`users/${userId}/data`);
       
       userRef.on('value', (snapshot) => {
         const data = snapshot.val();
+        console.log('Data loaded:', data);
         if (data) {
           allData = Object.keys(data).map(key => ({
             ...data[key],
@@ -1423,7 +1576,7 @@
       const shopName = document.getElementById('setup-shop-name').value.trim();
       
       if (!shopName) {
-        showToast('দোকানের নাম দিন', 'warning');
+        showToast(currentLanguage === 'bn' ? 'দোকানের নাম দিন' : 'Enter shop name', 'warning');
         playSound('warning');
         return;
       }
@@ -1443,7 +1596,7 @@
         loadGuestData();
       }
       
-      showToast('স্বাগতম! ' + shopName);
+      showToast(currentLanguage === 'bn' ? 'স্বাগতম! ' + shopName : 'Welcome! ' + shopName, 'success');
       playSound('success');
     }
 
@@ -1567,15 +1720,15 @@
       
       if (balance > 0) {
         infoDiv.className = 'balance-info positive-balance';
-        infoDiv.innerHTML = `পূর্বের বকেয়া: ${formatCurrency(balance)}`;
+        infoDiv.innerHTML = (currentLanguage === 'bn' ? 'পূর্বের বকেয়া: ' : 'Previous due: ') + formatCurrency(balance);
         infoDiv.classList.remove('hidden');
       } else if (balance < 0) {
         infoDiv.className = 'balance-info negative-balance';
-        infoDiv.innerHTML = `অগ্রিম ব্যালেন্স: ${formatCurrency(Math.abs(balance))}`;
+        infoDiv.innerHTML = (currentLanguage === 'bn' ? 'অগ্রিম ব্যালেন্স: ' : 'Advance balance: ') + formatCurrency(Math.abs(balance));
         infoDiv.classList.remove('hidden');
       } else {
         infoDiv.className = 'balance-info zero-balance';
-        infoDiv.innerHTML = 'পূর্বের কোনো বাকি নেই';
+        infoDiv.innerHTML = currentLanguage === 'bn' ? 'পূর্বের কোনো বাকি নেই' : 'No previous due';
         infoDiv.classList.remove('hidden');
       }
     }
@@ -1589,15 +1742,15 @@
       
       if (balance > 0) {
         infoDiv.className = 'balance-info positive-balance';
-        infoDiv.innerHTML = `পূর্বের পাওনা: ${formatCurrency(balance)}`;
+        infoDiv.innerHTML = (currentLanguage === 'bn' ? 'পূর্বের পাওনা: ' : 'Previous due: ') + formatCurrency(balance);
         infoDiv.classList.remove('hidden');
       } else if (balance < 0) {
         infoDiv.className = 'balance-info negative-balance';
-        infoDiv.innerHTML = `অতিরিক্ত পরিশোধ: ${formatCurrency(Math.abs(balance))}`;
+        infoDiv.innerHTML = (currentLanguage === 'bn' ? 'অতিরিক্ত পরিশোধ: ' : 'Excess payment: ') + formatCurrency(Math.abs(balance));
         infoDiv.classList.remove('hidden');
       } else {
         infoDiv.className = 'balance-info zero-balance';
-        infoDiv.innerHTML = 'পূর্বের কোনো লেনদেন নেই';
+        infoDiv.innerHTML = currentLanguage === 'bn' ? 'পূর্বের কোনো লেনদেন নেই' : 'No previous transaction';
         infoDiv.classList.remove('hidden');
       }
     }
@@ -1664,6 +1817,12 @@
         const isConfirming = deleteConfirmId === c.__backendId;
         const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
         
+        const balanceText = balance > 0 ? 
+          (currentLanguage === 'bn' ? 'বাকি' : 'Due') : 
+          balance < 0 ? 
+          (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
+          (currentLanguage === 'bn' ? 'পরিশোধিত' : 'Settled');
+        
         return `
           <div class="bg-white rounded-xl p-4 card-shadow" data-id="${c.__backendId}">
             <div class="flex items-center justify-between">
@@ -1676,24 +1835,24 @@
                 </div>
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                  <p class="text-sm text-gray-500">${c.mobile || 'মোবাইল নেই'} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : '<p class="text-xs text-gray-400">ঠিকানা দেওয়া হয়নি</p>'}
+                  <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : `<p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'ঠিকানা দেওয়া হয়নি' : 'No address'}</p>`}
                 </div>
               </div>
               <div class="text-right">
                 <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
                   <p class="font-bold ${balanceColor}">${formatCurrency(balance)}</p>
-                  <p class="text-xs text-gray-400">${balance > 0 ? 'বাকি' : balance < 0 ? 'অগ্রিম' : 'পরিশোধিত'}</p>
+                  <p class="text-xs text-gray-400">${balanceText}</p>
                 </div>
                 ${isConfirming ? `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ ${currentLanguage === 'bn' ? 'এডিট' : 'Edit'}</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ${currentLanguage === 'bn' ? 'ডিলিট' : 'Delete'}</button>
                   </div>
                 `}
               </div>
@@ -1708,7 +1867,7 @@
       const container = document.getElementById('fund-providers-list');
       
       if (providers.length === 0) {
-        container.innerHTML = '<div class="text-center py-4 text-gray-500 bg-purple-50 rounded-lg">কোনো ফান্ড দাতা নেই। নতুন দাতা যোগ করুন।</div>';
+        container.innerHTML = `<div class="text-center py-4 text-gray-500 bg-purple-50 rounded-lg">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই। নতুন দাতা যোগ করুন।' : 'No fund providers. Add new provider.'}</div>`;
         return;
       }
 
@@ -1725,23 +1884,23 @@
                 </div>
                 <div>
                   <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
-                  <p class="text-xs text-gray-500">${p.mobile || 'মোবাইল নেই'} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>
+                  <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>
                 </div>
               </div>
               <div class="text-right">
                 <p class="font-bold text-purple-600">${formatCurrency(balance)}</p>
-                <p class="text-xs text-gray-400">পাওনা</p>
+                <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'পাওনা' : 'Due'}</p>
               </div>
             </div>
             ${isConfirming ? `
               <div class="flex gap-2 mt-2 justify-end">
-                <button onclick="confirmDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
-                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                <button onclick="confirmDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
               </div>
             ` : `
               <div class="flex gap-2 mt-2 justify-end">
-                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ এডিট</button>
-                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ডিলিট</button>
+                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ ${currentLanguage === 'bn' ? 'এডিট' : 'Edit'}</button>
+                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ${currentLanguage === 'bn' ? 'ডিলিট' : 'Delete'}</button>
               </div>
             `}
           </div>
@@ -1776,7 +1935,9 @@
         const icon = f.type === 'fund-receive' ? '💰' : '💸';
         const color = f.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600';
         const bgColor = f.type === 'fund-receive' ? 'bg-purple-50' : 'bg-indigo-50';
-        const typeText = f.type === 'fund-receive' ? 'গ্রহণ' : 'পরিশোধ';
+        const typeText = f.type === 'fund-receive' ? 
+          (currentLanguage === 'bn' ? 'গ্রহণ' : 'Receive') : 
+          (currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment');
         const isConfirming = deleteConfirmId === f.__backendId;
         
         return `
@@ -1798,15 +1959,15 @@
                 </div>
                 ${isConfirming ? `
                   <div class="flex gap-1">
-                    <button onclick="confirmDeleteFund('${f.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                    <button onclick="confirmDeleteFund('${f.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
                   </div>
                 ` : `
                   <button onclick="initiateDeleteFund('${f.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
                 `}
               </div>
             </div>
-            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>` : '<p class="mt-2 text-xs text-gray-400">নোট দেওয়া হয়নি</p>'}
+            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>` : `<p class="mt-2 text-xs text-gray-400">${currentLanguage === 'bn' ? 'নোট দেওয়া হয়নি' : 'No note'}</p>`}
           </div>
         `;
       }).join('');
@@ -1847,25 +2008,25 @@
           icon = '📝';
           color = 'text-red-600';
           bgColor = 'bg-red-50';
-          typeText = 'বাকি';
+          typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
           name = t.customer_name;
         } else if (t.type === 'payment') {
           icon = '💰';
           color = 'text-emerald-600';
           bgColor = 'bg-emerald-50';
-          typeText = 'পরিশোধ';
+          typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
           name = t.customer_name;
         } else if (t.type === 'fund-receive') {
           icon = '💰';
           color = 'text-purple-600';
           bgColor = 'bg-purple-50';
-          typeText = 'ফান্ড গ্রহণ';
+          typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
           name = t.provider_name;
         } else if (t.type === 'fund-payment') {
           icon = '💸';
           color = 'text-indigo-600';
           bgColor = 'bg-indigo-50';
-          typeText = 'ফান্ড পরিশোধ';
+          typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
           name = t.provider_name;
         }
         
@@ -1890,15 +2051,15 @@
                 </div>
                 ${isConfirming ? `
                   <div class="flex gap-1">
-                    <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">হ্যাঁ</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">না</button>
+                    <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
                   </div>
                 ` : `
                   <button onclick="initiateDeleteTransaction('${t.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
                 `}
               </div>
             </div>
-            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note} <span class="text-xs text-gray-400">(ঐচ্ছিক)</span></p>` : '<p class="mt-2 text-xs text-gray-400">নোট দেওয়া হয়নি</p>'}
+            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>` : `<p class="mt-2 text-xs text-gray-400">${currentLanguage === 'bn' ? 'নোট দেওয়া হয়নি' : 'No note'}</p>`}
           </div>
         `;
       }).join('');
@@ -1937,7 +2098,7 @@
 
       const topDebtorsContainer = document.getElementById('top-debtors');
       if (debtors.length === 0) {
-        topDebtorsContainer.innerHTML = '<p class="text-gray-500 text-center py-4">কোনো বাকিদার নেই</p>';
+        topDebtorsContainer.innerHTML = `<p class="text-gray-500 text-center py-4">${currentLanguage === 'bn' ? 'কোনো বাকিদার নেই' : 'No debtors'}</p>`;
       } else {
         topDebtorsContainer.innerHTML = debtors.map((d, i) => `
           <div class="flex items-center justify-between py-2 ${i < debtors.length - 1 ? 'border-b' : ''}">
@@ -1958,7 +2119,7 @@
 
       const topLendersContainer = document.getElementById('top-lenders');
       if (lenders.length === 0) {
-        topLendersContainer.innerHTML = '<p class="text-gray-500 text-center py-4">কোনো ফান্ড দাতা নেই</p>';
+        topLendersContainer.innerHTML = `<p class="text-gray-500 text-center py-4">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই' : 'No fund providers'}</p>`;
       } else {
         topLendersContainer.innerHTML = lenders.map((l, i) => `
           <div class="flex items-center justify-between py-2 ${i < lenders.length - 1 ? 'border-b' : ''}">
@@ -1979,31 +2140,31 @@
       
       if (type === 'customer') {
         content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">➕ নতুন কাস্টমার</h2>
+          <h2 class="text-xl font-bold text-gray-800 mb-4">${currentLanguage === 'bn' ? '➕ নতুন কাস্টমার' : '➕ New Customer'}</h2>
           <form onsubmit="addCustomer(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম * <span class="text-xs text-gray-500 font-normal">(আবশ্যক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'আবশ্যক' : 'required'})</span></label>
                 <input type="text" id="customer-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="কাস্টমারের নাম">
+                  placeholder="${currentLanguage === 'bn' ? 'কাস্টমারের নাম' : 'Customer name'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="tel" id="customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="০১XXXXXXXXX">
+                  placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="text" id="customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="ঠিকানা">
+                  placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
-              <button type="submit" id="submit-customer-btn" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">সংরক্ষণ</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+              <button type="submit" id="submit-customer-btn" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">${currentLanguage === 'bn' ? 'সংরক্ষণ' : 'Save'}</button>
             </div>
           </form>
         `;
@@ -2012,61 +2173,61 @@
         if (!customer) return;
         
         content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ কাস্টমার এডিট</h2>
+          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ ${currentLanguage === 'bn' ? 'কাস্টমার এডিট' : 'Edit Customer'}</h2>
           <form onsubmit="updateCustomer(event, '${personId}')">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input type="text" id="edit-customer-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="কাস্টমারের নাম" value="${customer.customer_name}">
+                  placeholder="${currentLanguage === 'bn' ? 'কাস্টমারের নাম' : 'Customer name'}" value="${customer.customer_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="tel" id="edit-customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="০১XXXXXXXXX" value="${customer.mobile || ''}">
+                  placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}" value="${customer.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="text" id="edit-customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="ঠিকানা" value="${customer.address || ''}">
+                  placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}" value="${customer.address || ''}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
-              <button type="submit" id="update-customer-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">আপডেট</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+              <button type="submit" id="update-customer-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">${currentLanguage === 'bn' ? 'আপডেট' : 'Update'}</button>
             </div>
           </form>
         `;
       } else if (type === 'fund-provider') {
         content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">➕ নতুন ফান্ড দাতা</h2>
+          <h2 class="text-xl font-bold text-gray-800 mb-4">${currentLanguage === 'bn' ? '➕ নতুন ফান্ড দাতা' : '➕ New Fund Provider'}</h2>
           <form onsubmit="addFundProvider(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম * <span class="text-xs text-gray-500 font-normal">(আবশ্যক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'আবশ্যক' : 'required'})</span></label>
                 <input type="text" id="provider-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="যেমন: রহিম, Sonali Bank">
+                  placeholder="${currentLanguage === 'bn' ? 'যেমন: রহিম, Sonali Bank' : 'e.g., Rahim, Sonali Bank'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="tel" id="provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="০১XXXXXXXXX">
+                  placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="text" id="provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="ঠিকানা">
+                  placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
-              <button type="submit" id="submit-provider-btn" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700">সংরক্ষণ</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+              <button type="submit" id="submit-provider-btn" class="flex-1 py-3 rounded-xl bg-purple-600 text-white font-medium hover:bg-purple-700">${currentLanguage === 'bn' ? 'সংরক্ষণ' : 'Save'}</button>
             </div>
           </form>
         `;
@@ -2075,38 +2236,42 @@
         if (!provider) return;
         
         content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ ফান্ড দাতা এডিট</h2>
+          <h2 class="text-xl font-bold text-gray-800 mb-4">✏️ ${currentLanguage === 'bn' ? 'ফান্ড দাতা এডিট' : 'Edit Fund Provider'}</h2>
           <form onsubmit="updateFundProvider(event, '${personId}')">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নাম *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input type="text" id="edit-provider-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="নাম" value="${provider.provider_name}">
+                  placeholder="${currentLanguage === 'bn' ? 'নাম' : 'Name'}" value="${provider.provider_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">মোবাইল নম্বর <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="tel" id="edit-provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="০১XXXXXXXXX" value="${provider.mobile || ''}">
+                  placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}" value="${provider.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ঠিকানা <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <input type="text" id="edit-provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="ঠিকানা" value="${provider.address || ''}">
+                  placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}" value="${provider.address || ''}">
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
-              <button type="submit" id="update-provider-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">আপডেট</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+              <button type="submit" id="update-provider-btn" class="flex-1 py-3 rounded-xl btn-warning text-white font-medium">${currentLanguage === 'bn' ? 'আপডেট' : 'Update'}</button>
             </div>
           </form>
         `;
       } else if (type === 'due' || type === 'payment') {
         const customers = getCustomers();
-        const title = type === 'due' ? '📝 বাকি এন্ট্রি' : '💳 পেমেন্ট এন্ট্রি';
-        const btnText = type === 'due' ? 'বাকি যোগ করুন' : 'পেমেন্ট যোগ করুন';
+        const title = type === 'due' ? 
+          (currentLanguage === 'bn' ? '📝 বাকি এন্ট্রি' : '📝 Due Entry') : 
+          (currentLanguage === 'bn' ? '💳 পেমেন্ট এন্ট্রি' : '💳 Payment Entry');
+        const btnText = type === 'due' ? 
+          (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
+          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
         const btnClass = type === 'due' ? 'btn-danger' : 'btn-blue';
         
         content.innerHTML = `
@@ -2114,35 +2279,35 @@
           <form onsubmit="addTransaction(event, '${type}')">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">কাস্টমার *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'কাস্টমার *' : 'Customer *'}</label>
                 <select id="transaction-customer" required onchange="showCustomerBalance(this.value)"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-                  <option value="">কাস্টমার নির্বাচন করুন</option>
+                  <option value="">${currentLanguage === 'bn' ? 'কাস্টমার নির্বাচন করুন' : 'Select customer'}</option>
                   ${customers.map(c => `<option value="${c.customer_id}" data-name="${c.customer_name}" ${personId === c.customer_id ? 'selected' : ''}>${c.customer_name}</option>`).join('')}
                 </select>
                 <div id="customer-balance-info" class="balance-info hidden"></div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'টাকার পরিমাণ *' : 'Amount *'}</label>
                 <input type="number" id="transaction-amount" required min="1"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="০">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">তারিখ *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'তারিখ *' : 'Date *'}</label>
                 <input type="date" id="transaction-date" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নোট <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <textarea id="transaction-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
-                  placeholder="কি জিনিসের জন্য..."></textarea>
+                  placeholder="${currentLanguage === 'bn' ? 'কি জিনিসের জন্য...' : 'What for...'}"></textarea>
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
               <button type="submit" id="submit-transaction-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium">${btnText}</button>
             </div>
           </form>
@@ -2153,15 +2318,19 @@
         }
       } else if (type === 'fund-receive' || type === 'fund-payment') {
         const providers = getFundProviders();
-        const title = type === 'fund-receive' ? '💰 ফান্ড গ্রহণ' : '💸 ফান্ড পরিশোধ';
-        const btnText = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
+        const title = type === 'fund-receive' ? 
+          (currentLanguage === 'bn' ? '💰 ফান্ড গ্রহণ' : '💰 Fund Receive') : 
+          (currentLanguage === 'bn' ? '💸 ফান্ড পরিশোধ' : '💸 Fund Payment');
+        const btnText = type === 'fund-receive' ? 
+          (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
+          (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
         const btnClass = type === 'fund-receive' ? 'bg-purple-600' : 'bg-indigo-600';
         
         if (providers.length === 0) {
           content.innerHTML = `
             <div class="text-center py-6">
-              <p class="text-gray-600 mb-4">কোনো ফান্ড দাতা নেই। প্রথমে ফান্ড দাতা যোগ করুন।</p>
-              <button onclick="closeModal(); openModal('fund-provider')" class="px-4 py-2 bg-purple-600 text-white rounded-lg">+ ফান্ড দাতা যোগ করুন</button>
+              <p class="text-gray-600 mb-4">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই। প্রথমে ফান্ড দাতা যোগ করুন।' : 'No fund providers. Add a provider first.'}</p>
+              <button onclick="closeModal(); openModal('fund-provider')" class="px-4 py-2 bg-purple-600 text-white rounded-lg">${currentLanguage === 'bn' ? '+ ফান্ড দাতা যোগ করুন' : '+ Add Provider'}</button>
             </div>
           `;
           overlay.classList.remove('hidden');
@@ -2173,35 +2342,35 @@
           <form onsubmit="addFundTransaction(event, '${type}')">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">ফান্ড দাতা *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ফান্ড দাতা *' : 'Provider *'}</label>
                 <select id="fund-provider" required onchange="showFundProviderBalance(this.value)"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
-                  <option value="">ফান্ড দাতা নির্বাচন করুন</option>
+                  <option value="">${currentLanguage === 'bn' ? 'ফান্ড দাতা নির্বাচন করুন' : 'Select provider'}</option>
                   ${providers.map(p => `<option value="${p.provider_id}" data-name="${p.provider_name}">${p.provider_name} ${p.mobile ? ' - ' + p.mobile : ''}</option>`).join('')}
                 </select>
                 <div id="provider-balance-info" class="balance-info hidden"></div>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">টাকার পরিমাণ *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'টাকার পরিমাণ *' : 'Amount *'}</label>
                 <input type="number" id="fund-amount" required min="1"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="০">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">তারিখ *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'তারিখ *' : 'Date *'}</label>
                 <input type="date" id="fund-date" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">নোট <span class="text-xs text-gray-500 font-normal">(ঐচ্ছিক)</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
                 <textarea id="fund-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="বিশেষ তথ্য..."></textarea>
+                  placeholder="${currentLanguage === 'bn' ? 'বিশেষ তথ্য...' : 'Additional info...'}"></textarea>
               </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
               <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium hover:opacity-90">${btnText}</button>
             </div>
           </form>
@@ -2213,6 +2382,12 @@
         const balance = getCustomerBalance(personId);
         const transactions = getTransactions().filter(t => t.customer_id === personId);
         const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64`;
+        
+        const balanceText = balance > 0 ? 
+          (currentLanguage === 'bn' ? 'বাকি' : 'Due') : 
+          balance < 0 ? 
+          (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
+          (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
         
         content.innerHTML = `
           <div class="flex items-center justify-between mb-4">
@@ -2228,25 +2403,26 @@
             </div>
             <div class="flex-1">
               <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
-                <p class="text-sm opacity-80">বর্তমান বাকি</p>
+                <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান বাকি' : 'Current Due'}</p>
                 <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
+                <p class="text-xs mt-1">${balanceText}</p>
                 ${customer.mobile ? `<p class="text-sm mt-2">📞 ${customer.mobile}</p>` : ''}
                 ${customer.address ? `<p class="text-sm">📍 ${customer.address}</p>` : ''}
               </div>
             </div>
           </div>
           <div class="flex gap-2 mb-4">
-            <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 বাকি দিন</button>
-            <button onclick="closeModal(); openModal('payment', '${personId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 পেমেন্ট নিন</button>
+            <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}</button>
+            <button onclick="closeModal(); openModal('payment', '${personId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}</button>
           </div>
-          <h3 class="font-semibold text-gray-700 mb-2">লেনদেনের ইতিহাস</h3>
+          <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
           <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
-            ${transactions.length === 0 ? '<p class="text-center text-gray-500 py-4">কোনো লেনদেন নেই</p>' : 
+            ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>` : 
               transactions.map(t => `
                 <div class="flex items-center justify-between py-2 border-b">
                   <div>
                     <p class="text-sm font-medium ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
-                      ${t.type === 'due' ? '📝 বাকি' : '💰 পরিশোধ'}
+                      ${t.type === 'due' ? '📝 ' + (currentLanguage === 'bn' ? 'বাকি' : 'Due') : '💰 ' + (currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment')}
                     </p>
                     <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
                     ${t.note ? `<p class="text-xs text-gray-400">${t.note}</p>` : ''}
@@ -2258,7 +2434,7 @@
               `).join('')
             }
           </div>
-          <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বন্ধ করুন</button>
+          <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বন্ধ করুন' : 'Close'}</button>
         `;
       }
       
@@ -2287,7 +2463,7 @@
       
       const btn = document.getElementById('submit-provider-btn');
       btn.disabled = true;
-      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
       const providerId = generateId();
       const providerData = {
@@ -2303,17 +2479,18 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('ফান্ড দাতা যোগ হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'ফান্ড দাতা যোগ হয়েছে!' : 'Fund provider added!', 'success');
         playSound('success');
         closeModal();
       } else {
-        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = 'সংরক্ষণ';
+        btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ' : 'Save';
       }
     }
 
@@ -2322,7 +2499,7 @@
       
       const btn = document.getElementById('update-provider-btn');
       btn.disabled = true;
-      btn.textContent = 'আপডেট হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'আপডেট হচ্ছে...' : 'Updating...';
 
       const provider = allData.find(d => d.provider_id === providerId && d.type === 'fund-provider');
       if (!provider) return;
@@ -2335,17 +2512,18 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('ফান্ড দাতা আপডেট হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'ফান্ড দাতা আপডেট হয়েছে!' : 'Fund provider updated!', 'success');
         playSound('success');
         closeModal();
       } else {
-        showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'আপডেট ব্যর্থ হয়েছে' : 'Update failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = 'আপডেট';
+        btn.textContent = currentLanguage === 'bn' ? 'আপডেট' : 'Update';
       }
     }
 
@@ -2354,14 +2532,14 @@
       e.preventDefault();
       
       if (allData.filter(d => d.type === 'customer').length >= 999) {
-        showToast('সর্বোচ্চ ৯৯৯ কাস্টমার যোগ করা যাবে!', 'error');
+        showToast(currentLanguage === 'bn' ? 'সর্বোচ্চ ৯৯৯ কাস্টমার যোগ করা যাবে!' : 'Maximum 999 customers allowed!', 'error');
         playSound('error');
         return;
       }
 
       const btn = document.getElementById('submit-customer-btn');
       btn.disabled = true;
-      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
       const customerId = generateId();
       const customerData = {
@@ -2381,17 +2559,18 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('কাস্টমার যোগ হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'কাস্টমার যোগ হয়েছে!' : 'Customer added!', 'success');
         playSound('success');
         closeModal();
       } else {
-        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = 'সংরক্ষণ';
+        btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ' : 'Save';
       }
     }
 
@@ -2400,7 +2579,7 @@
       
       const btn = document.getElementById('update-customer-btn');
       btn.disabled = true;
-      btn.textContent = 'আপডেট হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'আপডেট হচ্ছে...' : 'Updating...';
 
       const customer = allData.find(d => d.customer_id === customerId && d.type === 'customer');
       if (!customer) return;
@@ -2413,17 +2592,18 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('কাস্টমার আপডেট হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'কাস্টমার আপডেট হয়েছে!' : 'Customer updated!', 'success');
         playSound('success');
         closeModal();
       } else {
-        showToast('আপডেট ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'আপডেট ব্যর্থ হয়েছে' : 'Update failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = 'আপডেট';
+        btn.textContent = currentLanguage === 'bn' ? 'আপডেট' : 'Update';
       }
     }
 
@@ -2431,14 +2611,14 @@
       e.preventDefault();
       
       if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
-        showToast('সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!', 'error');
+        showToast(currentLanguage === 'bn' ? 'সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!' : 'Maximum transaction limit reached!', 'error');
         playSound('error');
         return;
       }
 
       const btn = document.getElementById('submit-transaction-btn');
       btn.disabled = true;
-      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
       const select = document.getElementById('transaction-customer');
       const selectedOption = select.options[select.selectedIndex];
@@ -2457,17 +2637,22 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast(type === 'due' ? 'বাকি যোগ হয়েছে!' : 'পেমেন্ট যোগ হয়েছে!');
+        showToast(type === 'due' ? 
+          (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
+          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
         playSound('cash');
         closeModal();
       } else {
-        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = type === 'due' ? 'বাকি যোগ করুন' : 'পেমেন্ট যোগ করুন';
+        btn.textContent = type === 'due' ? 
+          (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
+          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
       }
     }
 
@@ -2476,7 +2661,7 @@
       
       const btn = document.getElementById('submit-fund-btn');
       btn.disabled = true;
-      btn.textContent = 'সংরক্ষণ হচ্ছে...';
+      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
       const select = document.getElementById('fund-provider');
       const selectedOption = select.options[select.selectedIndex];
@@ -2495,17 +2680,22 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast(type === 'fund-receive' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'ফান্ড পরিশোধ করা হয়েছে!');
+        showToast(type === 'fund-receive' ? 
+          (currentLanguage === 'bn' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'Fund received!') : 
+          (currentLanguage === 'bn' ? 'ফান্ড পরিশোধ করা হয়েছে!' : 'Fund paid!'), 'success');
         playSound('cash');
         closeModal();
       } else {
-        showToast('সংরক্ষণ ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
         playSound('error');
         btn.disabled = false;
-        btn.textContent = type === 'fund-receive' ? 'গ্রহণ করুন' : 'পরিশোধ করুন';
+        btn.textContent = type === 'fund-receive' ? 
+          (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
+          (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
       }
     }
 
@@ -2551,13 +2741,14 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('কাস্টমার মুছে ফেলা হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'কাস্টমার মুছে ফেলা হয়েছে!' : 'Customer deleted!', 'success');
         playSound('success');
       } else {
-        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
         playSound('error');
       }
       deleteConfirmId = null;
@@ -2572,7 +2763,7 @@
       );
 
       if (providerTransactions.length > 0) {
-        showToast('এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।', 'warning');
+        showToast(currentLanguage === 'bn' ? 'এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।' : 'This provider has transactions. Delete them first.', 'warning');
         playSound('warning');
         deleteConfirmId = null;
         return;
@@ -2582,13 +2773,14 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('ফান্ড দাতা মুছে ফেলা হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'ফান্ড দাতা মুছে ফেলা হয়েছে!' : 'Provider deleted!', 'success');
         playSound('success');
       } else {
-        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
         playSound('error');
       }
       deleteConfirmId = null;
@@ -2602,13 +2794,14 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('লেনদেন মুছে ফেলা হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'লেনদেন মুছে ফেলা হয়েছে!' : 'Transaction deleted!', 'success');
         playSound('success');
       } else {
-        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
         playSound('error');
       }
       deleteConfirmId = null;
@@ -2622,13 +2815,14 @@
       
       if (result.isOk) {
         if (!isGuest && currentUser) {
+          // Firebase auto-updates via listener
         } else {
           loadGuestData();
         }
-        showToast('ফান্ড লেনদেন মুছে ফেলা হয়েছে!');
+        showToast(currentLanguage === 'bn' ? 'ফান্ড লেনদেন মুছে ফেলা হয়েছে!' : 'Fund transaction deleted!', 'success');
         playSound('success');
       } else {
-        showToast('মুছে ফেলা ব্যর্থ হয়েছে', 'error');
+        showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
         playSound('error');
       }
       deleteConfirmId = null;
@@ -2651,7 +2845,7 @@
       a.download = `bakir-khata-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('ব্যাকআপ ডাউনলোড হয়েছে!');
+      showToast(currentLanguage === 'bn' ? 'ব্যাকআপ ডাউনলোড হয়েছে!' : 'Backup downloaded!', 'success');
       playSound('success');
     }
 
@@ -2696,7 +2890,7 @@
       // Set default sound
       if (soundEnabled) {
         document.getElementById('menu-sound-icon').textContent = '🔊';
-        document.getElementById('menu-sound-text').textContent = 'অন';
+        document.getElementById('menu-sound-text').textContent = currentLanguage === 'bn' ? 'অন' : 'On';
       }
     }
 
