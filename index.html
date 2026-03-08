@@ -20,13 +20,12 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-  <!-- EmailJS - ফ্রি ইমেইল সার্ভিস (নতুন public key দিয়ে) -->
+  <!-- EmailJS -->
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
     (function() {
-      // নতুন public key দিয়ে initialization
       emailjs.init('HvDdMrLNNGeINm2DI');
-      console.log('✅ EmailJS initialized with new public key');
+      console.log('✅ EmailJS initialized');
     })();
   </script>
  
@@ -92,10 +91,100 @@
     .language-inactive { background: #e5e7eb; color: #4b5563; }
     .google-profile-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; object-fit: cover; }
     .sound-menu-btn { padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
+    
+    /* স্টিকি হেডার - z-index কমানো হয়েছে */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+    }
+    
+    /* কন্টেন্ট এরিয়া স্ক্রলেবল */
+    .scrollable-content {
+      height: calc(100vh - 280px);
+      overflow-y: auto;
+      padding-bottom: 80px;
+    }
+    
+    /* মাইক বাটন অ্যানিমেশন */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    .text-red-500 {
+      color: #ef4444;
+    }
+    
+    /* ক্লিয়ার বাটন */
+    .clear-btn {
+      display: none;
+    }
+    .search-input:not(:placeholder-shown) ~ .clear-btn {
+      display: block;
+    }
+    
+    /* মেনু - z-index বাড়ানো হয়েছে এবং স্ক্রল যোগ করা হয়েছে */
+    #main-menu {
+      position: fixed;
+      top: 80px;
+      left: 16px;
+      z-index: 100;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 0.75rem;
+      width: 20rem;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+    }
+    
+    #user-menu {
+      position: fixed;
+      top: 80px;
+      right: 16px;
+      z-index: 100;
+      background: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 0.5rem;
+      width: 14rem;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+    }
+    
+    /* মডাল ওভারলে সবার উপরে */
+    .modal-overlay {
+      z-index: 200;
+    }
+    
+    /* টোস্ট কন্টেইনার সবার উপরে */
+    #toast-container {
+      z-index: 300;
+    }
+    
+    /* ছোট স্ক্রিনের জন্য মেনু অ্যাডজাস্টমেন্ট */
+    @media (max-width: 640px) {
+      #main-menu {
+        left: 8px;
+        width: calc(100% - 16px);
+        max-width: 20rem;
+      }
+      #user-menu {
+        right: 8px;
+        width: calc(100% - 16px);
+        max-width: 14rem;
+      }
+    }
   </style>
 </head>
-<body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
-  <div id="app" class="w-full min-h-full flex flex-col">
+<body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
+  <div id="app" class="w-full h-full flex flex-col">
     <!-- সাউন্ড বাটন সরানো হয়েছে (ফ্লোটিং বাটন নেই) -->
 
     <!-- Hidden file inputs for image upload -->
@@ -144,7 +233,7 @@
             </div>
           </div>
           
-          <!-- পাসওয়ার্ড ভেরিফিকেশন (ইমেইল/পাসওয়ার্ড ইউজারদের জন্য) -->
+          <!-- পাসওয়ার্ড ভেরিফিকেশন -->
           <div id="password-verification" class="hidden">
             <p id="password-text" class="text-sm text-gray-600 mb-4">নিরাপত্তার জন্য আপনার পাসওয়ার্ড দিন</p>
             <input type="password" id="verify-password" placeholder="পাসওয়ার্ড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
@@ -154,7 +243,7 @@
             </div>
           </div>
           
-          <!-- ইমেইল ভেরিফিকেশন (গুগল ইউজারদের জন্য) - EmailJS দিয়ে -->
+          <!-- ইমেইল ভেরিফিকেশন -->
           <div id="email-verification" class="hidden">
             <p id="email-text" class="text-sm text-gray-600 mb-4">আপনার ইমেইলে একটি ভেরিফিকেশন কোড পাঠানো হয়েছে</p>
             <input type="text" id="verification-code" placeholder="৬-ডিজিটের কোড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
@@ -187,7 +276,7 @@
           <p class="text-gray-600">আপনার ব্যবসায়িক হিসাব ব্যবস্থাপনা</p>
         </div>
         
-        <!-- Guest Mode Warning (শুধুমাত্র APK তে দেখাবে) -->
+        <!-- Guest Mode Warning -->
         <div id="guest-warning" class="warning-box p-3 rounded-lg mb-4 hidden">
           <div class="flex items-start gap-2">
             <span class="text-xl">⚠️</span>
@@ -305,7 +394,7 @@
       </div>
     </div>
     
-    <!-- Header - ডান পাশে Google ছবি -->
+    <!-- Header -->
     <header id="app-header" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-lg hidden">
       <div class="max-w-4xl mx-auto flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -318,16 +407,16 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <!-- Google Profile Image (ডান পাশে) -->
+          <!-- Google Profile Image -->
           <img id="google-profile-img" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
                class="google-profile-img" onclick="toggleUserMenu()" alt="Profile">
         </div>
       </div>
     </header>
     
-    <!-- Main Menu (Three Dots Menu) - ভাষা ও সাউন্ড সহ -->
-    <div id="main-menu" class="absolute top-20 left-4 bg-white rounded-xl shadow-xl p-3 w-80 hidden z-30" onclick="event.stopPropagation()">
-      <div class="flex justify-between items-center border-b pb-2 mb-2">
+    <!-- Main Menu (স্ক্রলযোগ্য) -->
+    <div id="main-menu" class="hidden" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center border-b pb-2 mb-2 sticky top-0 bg-white">
         <p class="font-bold text-gray-800">📋 মেনু</p>
         <button onclick="toggleMainMenu()" class="text-gray-500 hover:text-gray-700">✕</button>
       </div>
@@ -354,7 +443,7 @@
         </div>
       </div>
       
-      <!-- 🌐 ভাষা সেটিংস -->
+      <!-- ভাষা সেটিংস -->
       <div class="mb-3 p-2 bg-blue-50 rounded-lg">
         <p class="text-sm font-medium text-blue-800 mb-2">🌐 ভাষা / Language</p>
         <div class="flex gap-2">
@@ -363,7 +452,7 @@
         </div>
       </div>
       
-      <!-- 🔊 সাউন্ড সেটিংস (ফ্লোটিং বাটন সরিয়ে এখানে আনা হয়েছে) -->
+      <!-- সাউন্ড সেটিংস -->
       <div class="mb-3 p-2 bg-amber-50 rounded-lg">
         <p class="text-sm font-medium text-amber-800 mb-2">🔊 সাউন্ড সেটিংস</p>
         <div class="flex items-center justify-between">
@@ -376,7 +465,7 @@
         <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
       </div>
       
-      <!-- 🏪 দোকানের নাম পরিবর্তন -->
+      <!-- দোকানের নাম পরিবর্তন -->
       <div class="mb-3 p-2 bg-purple-50 rounded-lg">
         <p class="text-sm font-medium text-purple-800 mb-2">🏪 দোকানের নাম পরিবর্তন</p>
         <button onclick="openShopNameChangeModal()" class="w-full text-left text-sm text-purple-600 hover:bg-purple-100 p-2 rounded-lg transition-colors">
@@ -424,7 +513,7 @@
         </div>
       </div>
       
-      <!-- গেস্ট মোড সতর্কতা (শুধুমাত্র গেস্ট মোডে) -->
+      <!-- গেস্ট মোড সতর্কতা -->
       <div id="menu-guest-warning" class="mb-3 hidden">
         <div class="warning-box p-2 text-xs">
           <p class="font-bold mb-1">⚠️ গেস্ট মোড সতর্কতা</p>
@@ -437,9 +526,9 @@
       </button>
     </div>
     
-    <!-- User Menu Dropdown (ডান পাশের মেনু) -->
-    <div id="user-menu" class="absolute top-20 right-4 bg-white rounded-xl shadow-xl p-2 w-56 hidden z-30">
-      <div class="px-3 py-2 border-b flex items-center gap-3">
+    <!-- User Menu Dropdown (স্ক্রলযোগ্য) -->
+    <div id="user-menu" class="hidden">
+      <div class="px-3 py-2 border-b flex items-center gap-3 sticky top-0 bg-white">
         <img id="user-menu-profile-image" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
              class="w-10 h-10 rounded-full object-cover" alt="Profile">
         <div>
@@ -452,30 +541,32 @@
       </button>
     </div>
 
-    <!-- Stats Summary -->
-    <div class="max-w-4xl mx-auto w-full px-4 py-4">
-      <div class="grid grid-cols-4 gap-2">
-        <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</p>
-          <p id="total-customers" class="text-lg font-bold text-emerald-700">০</p>
-        </div>
-        <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট পাওনা" data-en="Total Due">মোট পাওনা</p>
-          <p id="total-due" class="text-lg font-bold text-red-600">৳০</p>
-        </div>
-        <div class="fund-stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="stat-label text-xs text-purple-600 font-medium" data-bn="মোট ফান্ড" data-en="Total Fund">মোট ফান্ড</p>
-          <p id="total-fund" class="text-lg font-bold text-purple-700">৳০</p>
-        </div>
-        <div class="stat-card rounded-xl p-2 text-center card-shadow">
-          <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="আজকের বাকি" data-en="Today's Due">আজকের বাকি</p>
-          <p id="today-due" class="text-lg font-bold text-orange-600">৳০</p>
+    <!-- স্টিকি হেডার - স্ট্যাটস কার্ড -->
+    <div class="sticky-header">
+      <div class="max-w-4xl mx-auto w-full px-4 py-2">
+        <div class="grid grid-cols-4 gap-2">
+          <div class="stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</p>
+            <p id="total-customers" class="text-lg font-bold text-emerald-700">০</p>
+          </div>
+          <div class="stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট পাওনা" data-en="Total Due">মোট পাওনা</p>
+            <p id="total-due" class="text-lg font-bold text-red-600">৳০</p>
+          </div>
+          <div class="fund-stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-purple-600 font-medium" data-bn="মোট ফান্ড" data-en="Total Fund">মোট ফান্ড</p>
+            <p id="total-fund" class="text-lg font-bold text-purple-700">৳০</p>
+          </div>
+          <div class="stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="আজকের বাকি" data-en="Today's Due">আজকের বাকি</p>
+            <p id="today-due" class="text-lg font-bold text-orange-600">৳০</p>
+          </div>
         </div>
       </div>
     </div>
     
     <!-- Navigation Tabs -->
-    <div class="max-w-4xl mx-auto w-full px-4">
+    <div class="max-w-4xl mx-auto w-full px-4 py-2">
       <div class="flex bg-white rounded-xl p-1 card-shadow">
         <button onclick="showTab('customers')" id="tab-customers" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active" data-bn="👥 কাস্টমার" data-en="👥 Customers">👥 কাস্টমার</button>
         <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
@@ -484,114 +575,136 @@
       </div>
     </div>
     
-    <!-- Search Bar -->
-    <div class="max-w-4xl mx-auto w-full px-4 py-3">
+    <!-- সার্চ বার (ভয়েস সহ) -->
+    <div class="max-w-4xl mx-auto w-full px-4 py-2">
       <div class="relative">
-        <input type="text" id="search-input" placeholder="🔍 নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full px-4 py-3 rounded-xl border-2 border-emerald-100 focus:border-emerald-400 focus:outline-none transition-all" oninput="handleSearch(this.value)">
+        <input type="text" id="search-input" placeholder="🔍 নাম বা মোবাইল দিয়ে খুঁজুন..." 
+               class="search-input w-full px-4 py-3 rounded-xl border-2 border-emerald-100 focus:border-emerald-400 focus:outline-none transition-all pr-20"
+               oninput="handleSearch(this.value)">
+        
+        <!-- ক্লিয়ার বাটন (×) -->
+        <button id="clear-search" onclick="clearSearch()" 
+                class="clear-btn absolute right-12 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                title="মুছুন">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        
+        <!-- ভয়েস সার্চ বাটন -->
+        <button id="voice-search-btn" onclick="startVoiceSearch()" 
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-emerald-600 transition-colors"
+                title="ভয়েস দিয়ে খুঁজুন">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.915A7.002 7.002 0 0016 8a1 1 0 00-2 0 5 5 0 11-10 0 1 1 0 00-2 0 7.002 7.002 0 006 6.915V18H6a1 1 0 100 2h8a1 1 0 100-2h-3v-1.085z" clip-rule="evenodd" />
+          </svg>
+        </button>
       </div>
     </div>
     
-    <!-- Main Content Area -->
-    <div class="flex-1 max-w-4xl mx-auto w-full px-4 pb-24">
-      <!-- Customers Tab -->
-      <div id="content-customers" class="space-y-3">
-        <div id="customers-list" class="space-y-2"></div>
-        <div id="no-customers" class="text-center py-10 text-gray-500 hidden">
-          <p class="text-4xl mb-2">👥</p>
-          <p class="no-customers-text" data-bn="কোনো কাস্টমার নেই" data-en="No customers">কোনো কাস্টমার নেই</p>
-          <p class="text-sm add-customer-hint" data-bn="নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন" data-en="Click the button below to add customer">নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন</p>
-        </div>
-      </div>
-      
-      <!-- Funds Tab -->
-      <div id="content-funds" class="space-y-3 hidden">
-        <div class="flex justify-between items-center mb-2">
-          <h2 class="fund-providers-title font-bold text-lg text-purple-800" data-bn="ফান্ড দাতা তালিকা" data-en="Fund Providers List">ফান্ড দাতা তালিকা</h2>
-          <button onclick="openModal('fund-provider')" class="add-provider-btn px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700" data-bn="+ নতুন দাতা" data-en="+ Add Provider">+ নতুন দাতা</button>
-        </div>
-        
-        <!-- Fund Providers List -->
-        <div id="fund-providers-list" class="space-y-2 mb-4"></div>
-        
-        <!-- Fund Transactions Filters -->
-        <div class="flex gap-2 mb-3 mt-4">
-          <button onclick="filterFunds('all')" id="fund-filter-all" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white" data-bn="সব" data-en="All">সব</button>
-          <button onclick="filterFunds('receive')" id="fund-filter-receive" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="গ্রহণ" data-en="Receive">গ্রহণ</button>
-          <button onclick="filterFunds('payment')" id="fund-filter-payment" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
-        </div>
-        
-        <!-- Fund Transactions List -->
-        <div id="funds-list" class="space-y-2"></div>
-        <div id="no-funds" class="text-center py-10 text-gray-500 hidden">
-          <p class="text-4xl mb-2">💰</p>
-          <p class="no-funds-text" data-bn="কোনো ফান্ড লেনদেন নেই" data-en="No fund transactions">কোনো ফান্ড লেনদেন নেই</p>
-          <p class="text-sm add-fund-hint" data-bn="নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন" data-en="Click the button below to add fund">নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন</p>
-        </div>
-      </div>
-      
-      <!-- Transactions Tab -->
-      <div id="content-transactions" class="space-y-3 hidden">
-        <div class="flex gap-2 mb-3">
-          <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white" data-bn="সব" data-en="All">সব</button>
-          <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="বাকি" data-en="Due">বাকি</button>
-          <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
-          <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
-        </div>
-        <div id="transactions-list" class="space-y-2"></div>
-        <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
-          <p class="text-4xl mb-2">📝</p>
-          <p class="no-transactions-text" data-bn="কোনো লেনদেন নেই" data-en="No transactions">কোনো লেনদেন নেই</p>
-        </div>
-      </div>
-      
-      <!-- Reports Tab -->
-      <div id="content-reports" class="space-y-4 hidden">
-        <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="reports-summary-title font-bold text-lg text-gray-800 mb-3" data-bn="📈 সারাংশ" data-en="📈 Summary">📈 সারাংশ</h3>
-          <div class="space-y-2">
-            <div class="flex justify-between py-2 border-b">
-              <span class="total-customers-label text-gray-600" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</span>
-              <span id="report-total-customers" class="font-bold">০</span>
-            </div>
-            <div class="flex justify-between py-2 border-b">
-              <span class="total-given-label text-gray-600" data-bn="মোট বাকি দেওয়া হয়েছে" data-en="Total Due Given">মোট বাকি দেওয়া হয়েছে</span>
-              <span id="report-total-given" class="font-bold text-red-600">৳০</span>
-            </div>
-            <div class="flex justify-between py-2 border-b">
-              <span class="total-received-label text-gray-600" data-bn="মোট পরিশোধ হয়েছে" data-en="Total Payment Received">মোট পরিশোধ হয়েছে</span>
-              <span id="report-total-received" class="font-bold text-emerald-600">৳০</span>
-            </div>
-            <div class="flex justify-between py-2 border-b bg-purple-50">
-              <span class="total-fund-received-label text-gray-600" data-bn="মোট ফান্ড নেওয়া" data-en="Total Fund Received">মোট ফান্ড নেওয়া</span>
-              <span id="report-total-fund-received" class="font-bold text-purple-600">৳০</span>
-            </div>
-            <div class="flex justify-between py-2 border-b bg-purple-50">
-              <span class="total-fund-paid-label text-gray-600" data-bn="মোট ফান্ড পরিশোধ" data-en="Total Fund Paid">মোট ফান্ড পরিশোধ</span>
-              <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
-            </div>
-            <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
-              <span class="net-due-label text-gray-800 font-medium" data-bn="মোট পাওনা (কাস্টমার)" data-en="Net Due (Customers)">মোট পাওনা (কাস্টমার)</span>
-              <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
-            </div>
-            <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
-              <span class="net-fund-label text-gray-800 font-medium" data-bn="মোট ফান্ড দায়" data-en="Net Fund Liability">মোট ফান্ড দায়</span>
-              <span id="report-net-fund" class="font-bold text-xl text-purple-600">৳০</span>
-            </div>
+    <!-- স্ক্রলেবল কন্টেন্ট এরিয়া -->
+    <div class="scrollable-content">
+      <div class="max-w-4xl mx-auto w-full px-4">
+        <!-- Customers Tab -->
+        <div id="content-customers" class="space-y-3">
+          <div id="customers-list" class="space-y-2"></div>
+          <div id="no-customers" class="text-center py-10 text-gray-500 hidden">
+            <p class="text-4xl mb-2">👥</p>
+            <p class="no-customers-text" data-bn="কোনো কাস্টমার নেই" data-en="No customers">কোনো কাস্টমার নেই</p>
+            <p class="text-sm add-customer-hint" data-bn="নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন" data-en="Click the button below to add customer">নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন</p>
           </div>
         </div>
-        <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="top-debtors-title font-bold text-lg text-gray-800 mb-3" data-bn="🏆 সর্বোচ্চ বাকিদার" data-en="🏆 Top Debtors">🏆 সর্বোচ্চ বাকিদার</h3>
-          <div id="top-debtors" class="space-y-2"></div>
+        
+        <!-- Funds Tab -->
+        <div id="content-funds" class="space-y-3 hidden">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="fund-providers-title font-bold text-lg text-purple-800" data-bn="ফান্ড দাতা তালিকা" data-en="Fund Providers List">ফান্ড দাতা তালিকা</h2>
+            <button onclick="openModal('fund-provider')" class="add-provider-btn px-3 py-1 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700" data-bn="+ নতুন দাতা" data-en="+ Add Provider">+ নতুন দাতা</button>
+          </div>
+          
+          <!-- Fund Providers List -->
+          <div id="fund-providers-list" class="space-y-2 mb-4"></div>
+          
+          <!-- Fund Transactions Filters -->
+          <div class="flex gap-2 mb-3 mt-4">
+            <button onclick="filterFunds('all')" id="fund-filter-all" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-purple-600 text-white" data-bn="সব" data-en="All">সব</button>
+            <button onclick="filterFunds('receive')" id="fund-filter-receive" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="গ্রহণ" data-en="Receive">গ্রহণ</button>
+            <button onclick="filterFunds('payment')" id="fund-filter-payment" class="fund-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
+          </div>
+          
+          <!-- Fund Transactions List -->
+          <div id="funds-list" class="space-y-2"></div>
+          <div id="no-funds" class="text-center py-10 text-gray-500 hidden">
+            <p class="text-4xl mb-2">💰</p>
+            <p class="no-funds-text" data-bn="কোনো ফান্ড লেনদেন নেই" data-en="No fund transactions">কোনো ফান্ড লেনদেন নেই</p>
+            <p class="text-sm add-fund-hint" data-bn="নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন" data-en="Click the button below to add fund">নিচের বাটনে ক্লিক করে ফান্ড যোগ করুন</p>
+          </div>
         </div>
-        <div class="bg-white rounded-xl p-4 card-shadow">
-          <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 ফান্ড দাতা" data-en="💰 Fund Providers">💰 ফান্ড দাতা</h3>
-          <div id="top-lenders" class="space-y-2"></div>
+        
+        <!-- Transactions Tab -->
+        <div id="content-transactions" class="space-y-3 hidden">
+          <div class="flex gap-2 mb-3">
+            <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white" data-bn="সব" data-en="All">সব</button>
+            <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="বাকি" data-en="Due">বাকি</button>
+            <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
+            <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
+          </div>
+          <div id="transactions-list" class="space-y-2"></div>
+          <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
+            <p class="text-4xl mb-2">📝</p>
+            <p class="no-transactions-text" data-bn="কোনো লেনদেন নেই" data-en="No transactions">কোনো লেনদেন নেই</p>
+          </div>
         </div>
-        <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
+        
+        <!-- Reports Tab -->
+        <div id="content-reports" class="space-y-4 hidden">
+          <div class="bg-white rounded-xl p-4 card-shadow">
+            <h3 class="reports-summary-title font-bold text-lg text-gray-800 mb-3" data-bn="📈 সারাংশ" data-en="📈 Summary">📈 সারাংশ</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between py-2 border-b">
+                <span class="total-customers-label text-gray-600" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</span>
+                <span id="report-total-customers" class="font-bold">০</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="total-given-label text-gray-600" data-bn="মোট বাকি দেওয়া হয়েছে" data-en="Total Due Given">মোট বাকি দেওয়া হয়েছে</span>
+                <span id="report-total-given" class="font-bold text-red-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 border-b">
+                <span class="total-received-label text-gray-600" data-bn="মোট পরিশোধ হয়েছে" data-en="Total Payment Received">মোট পরিশোধ হয়েছে</span>
+                <span id="report-total-received" class="font-bold text-emerald-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 border-b bg-purple-50">
+                <span class="total-fund-received-label text-gray-600" data-bn="মোট ফান্ড নেওয়া" data-en="Total Fund Received">মোট ফান্ড নেওয়া</span>
+                <span id="report-total-fund-received" class="font-bold text-purple-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 border-b bg-purple-50">
+                <span class="total-fund-paid-label text-gray-600" data-bn="মোট ফান্ড পরিশোধ" data-en="Total Fund Paid">মোট ফান্ড পরিশোধ</span>
+                <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
+                <span class="net-due-label text-gray-800 font-medium" data-bn="মোট পাওনা (কাস্টমার)" data-en="Net Due (Customers)">মোট পাওনা (কাস্টমার)</span>
+                <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
+                <span class="net-fund-label text-gray-800 font-medium" data-bn="মোট ফান্ড দায়" data-en="Net Fund Liability">মোট ফান্ড দায়</span>
+                <span id="report-net-fund" class="font-bold text-xl text-purple-600">৳০</span>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl p-4 card-shadow">
+            <h3 class="top-debtors-title font-bold text-lg text-gray-800 mb-3" data-bn="🏆 সর্বোচ্চ বাকিদার" data-en="🏆 Top Debtors">🏆 সর্বোচ্চ বাকিদার</h3>
+            <div id="top-debtors" class="space-y-2"></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 card-shadow">
+            <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 ফান্ড দাতা" data-en="💰 Fund Providers">💰 ফান্ড দাতা</h3>
+            <div id="top-lenders" class="space-y-2"></div>
+          </div>
+          <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
+        </div>
       </div>
     </div>
     
-    <!-- Floating Action Buttons (সাউন্ড বাটন সরানো হয়েছে) -->
+    <!-- Floating Action Buttons -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-2">
       <button onclick="openModal('fund-payment')" class="w-12 h-12 bg-indigo-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড পরিশোধ">💸</button>
       <button onclick="openModal('fund-receive')" class="w-12 h-12 bg-purple-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড গ্রহণ">💰</button>
@@ -610,14 +723,12 @@
   </div>
 
   <script>
-    // EmailJS Configuration - নতুন public key দিয়ে
+    // EmailJS Configuration
     const EMAILJS_CONFIG = {
       serviceId: 'service_t3kmc0z',
       templateId: 'template_wt55pdr',
       publicKey: 'HvDdMrLNNGeINm2DI'
     };
-
-    // EmailJS initialization (Head section-এ করা আছে, এখানে আর দরকার নেই)
 
     // Firebase Configuration
     const firebaseConfig = {
@@ -647,7 +758,6 @@
     // ============================================
     const translations = {
       bn: {
-        // General
         'app_name': 'বাকির খাতা',
         'shop_name_placeholder': 'আপনার দোকানের হিসাব',
         'total_customers': 'মোট কাস্টমার',
@@ -685,10 +795,15 @@
         'code_sent': 'ভেরিফিকেশন কোড পাঠানো হয়েছে!',
         'email_error': 'ইমেইল পাঠাতে সমস্যা হয়েছে',
         'code_expired': 'কোডের মেয়াদ শেষ হয়েছে',
-        'invalid_code': 'ভুল ভেরিফিকেশন কোড'
+        'invalid_code': 'ভুল ভেরিফিকেশন কোড',
+        'voice_search': 'ভয়েস সার্চ',
+        'voice_search_hint': 'ভয়েস দিয়ে খুঁজুন',
+        'clear_search': 'মুছুন',
+        'speak_now': 'বলুন...',
+        'no_speech': 'কোনো কথা শোনা যায়নি',
+        'mic_permission': 'মাইক্রোফোন অনুমতি দেওয়া হয়নি'
       },
       en: {
-        // General
         'app_name': 'Bakir Khata',
         'shop_name_placeholder': 'Your Shop Account',
         'total_customers': 'Total Customers',
@@ -726,7 +841,13 @@
         'code_sent': 'Verification code sent!',
         'email_error': 'Failed to send email',
         'code_expired': 'Code expired',
-        'invalid_code': 'Invalid verification code'
+        'invalid_code': 'Invalid verification code',
+        'voice_search': 'Voice Search',
+        'voice_search_hint': 'Search by voice',
+        'clear_search': 'Clear',
+        'speak_now': 'Speak now...',
+        'no_speech': 'No speech detected',
+        'mic_permission': 'Microphone permission denied'
       }
     };
 
@@ -735,24 +856,19 @@
     function setLanguage(lang) {
       currentLanguage = lang;
       
-      // Update language buttons
       document.getElementById('lang-bn').className = lang === 'bn' ? 'language-btn language-active' : 'language-btn language-inactive';
       document.getElementById('lang-en').className = lang === 'en' ? 'language-btn language-active' : 'language-btn language-inactive';
       
-      // Update all elements with data-bn and data-en attributes
       document.querySelectorAll('[data-bn]').forEach(el => {
         el.textContent = currentLanguage === 'bn' ? el.dataset.bn : el.dataset.en;
       });
       
-      // Update specific elements
       document.getElementById('main-title').textContent = '📒 ' + translations[lang]['app_name'];
       document.getElementById('shop-name').textContent = defaultConfig.shop_name || translations[lang]['shop_name_placeholder'];
       document.getElementById('search-input').placeholder = translations[lang]['search_placeholder'];
       
-      // Update sound button text
       document.getElementById('menu-sound-text').textContent = soundEnabled ? translations[lang]['on'] : translations[lang]['off'];
       
-      // Re-render current view to update dynamic content
       renderCurrentView();
     }
 
@@ -773,14 +889,92 @@
     let isGuest = false;
     let isAPK = false;
     let guestId = 'guest_' + Date.now();
-    let soundEnabled = true; // ডিফল্ট অন
+    let soundEnabled = true;
     let currentImageUploadContext = null;
     let currentImageUploadCustomerId = null;
     let verificationCode = null;
     let verificationExpiry = null;
 
     // ============================================
-    // ইমেইল ভেরিফিকেশন ফাংশন (EmailJS দিয়ে) - আপডেট করা হয়েছে
+    // ভয়েস সার্চ ফাংশন
+    // ============================================
+    function startVoiceSearch() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        showToast(t('voice_search') + ' ' + t('no_speech'), 'error');
+        return;
+      }
+      
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = currentLanguage === 'bn' ? 'bn-BD' : 'en-US';
+      
+      const micBtn = document.getElementById('voice-search-btn');
+      micBtn.classList.add('text-red-500', 'animate-pulse');
+      
+      showToast(t('speak_now'), 'info');
+      
+      recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        
+        const searchInput = document.getElementById('search-input');
+        searchInput.value = transcript;
+        
+        handleSearch(transcript);
+        
+        checkSearchInput();
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Voice search error:', event.error);
+        
+        let errorMsg = t('voice_search') + ' ' + t('email_error');
+        if (event.error === 'not-allowed') {
+          errorMsg = t('mic_permission');
+        } else if (event.error === 'no-speech') {
+          errorMsg = t('no_speech');
+        }
+        
+        showToast(errorMsg, 'error');
+        micBtn.classList.remove('text-red-500', 'animate-pulse');
+      };
+      
+      recognition.onend = () => {
+        micBtn.classList.remove('text-red-500', 'animate-pulse');
+      };
+      
+      recognition.start();
+    }
+
+    // ============================================
+    // সার্চ ক্লিয়ার ফাংশন
+    // ============================================
+    function clearSearch() {
+      const searchInput = document.getElementById('search-input');
+      searchInput.value = '';
+      handleSearch('');
+      checkSearchInput();
+    }
+
+    function checkSearchInput() {
+      const searchInput = document.getElementById('search-input');
+      const clearBtn = document.getElementById('clear-search');
+      if (searchInput && clearBtn) {
+        if (searchInput.value.trim() !== '') {
+          clearBtn.style.display = 'block';
+        } else {
+          clearBtn.style.display = 'none';
+        }
+      }
+    }
+
+    // ============================================
+    // ইমেইল ভেরিফিকেশন ফাংশন
     // ============================================
     async function sendVerificationCodeWithEmailJS(email) {
       if (!email) {
@@ -791,7 +985,6 @@
       
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // Save code to localStorage with expiry (5 minutes)
       const codeData = {
         code: code,
         expires: Date.now() + 5 * 60 * 1000,
@@ -809,8 +1002,8 @@
           EMAILJS_CONFIG.serviceId,
           EMAILJS_CONFIG.templateId,
           {
-            email: email,      // টেমপ্লেটে {{email}} আছে
-            otp: code,          // টেমপ্লেটে {{otp}} আছে
+            email: email,
+            otp: code,
             from_name: 'বাকির খাতা'
           }
         );
@@ -842,7 +1035,6 @@
     // সাউন্ড ফাংশন
     // ============================================
     
-    // Load sound preference
     const savedSound = localStorage.getItem('sound_enabled');
     if (savedSound === 'false') {
       soundEnabled = false;
@@ -868,7 +1060,6 @@
       }
     }
 
-    // Sound effects
     function playSound(type) {
       if (!soundEnabled) return;
       
@@ -1061,7 +1252,6 @@
       document.getElementById('email-verification').classList.add('hidden');
       document.getElementById('new-name-field').classList.add('hidden');
       
-      // Update modal texts based on language
       document.getElementById('shop-name-title').textContent = currentLanguage === 'bn' ? 'দোকানের নাম পরিবর্তন' : 'Change Shop Name';
       document.getElementById('guest-name-text').textContent = currentLanguage === 'bn' ? 'নতুন দোকানের নাম দিন' : 'Enter new shop name';
       document.getElementById('password-text').textContent = currentLanguage === 'bn' ? 'নিরাপত্তার জন্য আপনার পাসওয়ার্ড দিন' : 'Enter your password for security';
@@ -1073,11 +1263,9 @@
       } else if (currentUser) {
         const providers = currentUser.providerData.map(p => p.providerId);
         if (providers.includes('google.com')) {
-          // Google Sign-In - use EmailJS
           sendVerificationCodeWithEmailJS(currentUser.email);
           document.getElementById('email-verification').classList.remove('hidden');
         } else {
-          // Email/Password Sign-In
           document.getElementById('password-verification').classList.remove('hidden');
         }
       }
@@ -1167,7 +1355,6 @@
         googleProfileImg.src = user.photoURL;
         userMenuImg.src = user.photoURL;
       } else {
-        // Email/Password or Guest - use default avatar
         const name = user ? user.displayName || 'User' : 'User';
         googleProfileImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
         userMenuImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
@@ -2827,8 +3014,7 @@
       }
       deleteConfirmId = null;
     }
-
-    // Export data
+       // Export data
     function exportData() {
       const data = {
         exported_at: new Date().toISOString(),
@@ -2883,6 +3069,13 @@
       document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
         if (e.target.id === 'forgot-password-modal') closeForgotPassword();
       });
+
+      // সার্চ ইনপুট চেক
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', checkSearchInput);
+        searchInput.addEventListener('keyup', checkSearchInput);
+      }
 
       // Set default language
       setLanguage('bn');
