@@ -10,15 +10,19 @@
   <meta name="apple-mobile-web-app-capable" content="true">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="বাকির খাতা">
-  <title>বাকির খাতা</title>
+  <title>বাকির খাতা - আপডেটেড ভার্সন</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/_sdk/element_sdk.js"></script>
-  <script src="/_sdk/data_sdk.js"></script>
+  
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
     * { font-family: 'Hind Siliguri', sans-serif; }
     .tab-active { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; }
@@ -60,11 +64,6 @@
     .warning-box { background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; border-radius: 0.5rem; }
     .contact-info { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.5rem; transition: all 0.2s; }
     .contact-info:hover { background-color: #f3f4f6; }
-    .sound-toggle { position: fixed; top: 80px; right: 10px; z-index: 40; }
-    .sound-btn { width: 40px; height: 40px; border-radius: 50%; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; }
-    .sound-btn:hover { transform: scale(1.1); }
-    .sound-on { background: #059669; color: white; }
-    .sound-off { background: #6b7280; color: white; }
     .optional-badge { font-size: 0.7rem; color: #6b7280; margin-left: 0.5rem; font-weight: normal; }
     .profile-image-container { position: relative; width: 80px; height: 80px; margin: 0 auto; }
     .profile-image { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #059669; }
@@ -76,16 +75,18 @@
     .upload-option:hover { border-color: #059669; background: #f0fdf4; }
     .upload-option.selected { border-color: #059669; background: #f0fdf4; }
     .default-avatar { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    
+    /* নতুন স্টাইল */
+    .language-btn { padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
+    .language-active { background: #059669; color: white; }
+    .language-inactive { background: #e5e7eb; color: #4b5563; }
+    .google-profile-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; object-fit: cover; }
+    .sound-menu-btn { padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-auto">
   <div id="app" class="w-full min-h-full flex flex-col">
-    <!-- Sound Toggle Button -->
-    <div class="sound-toggle">
-      <button id="sound-toggle-btn" onclick="toggleSound()" class="sound-btn sound-off" title="সাউন্ড অফ">
-        🔇
-      </button>
-    </div>
+    <!-- সাউন্ড বাটন সরানো হয়েছে (ফ্লোটিং বাটন নেই) -->
 
     <!-- Hidden file inputs for image upload -->
     <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
@@ -113,6 +114,56 @@
         
         <div class="flex gap-3 mt-6">
           <button onclick="closeImageUploadModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shop Name Change Modal (নতুন) -->
+    <div id="shop-name-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full">
+        <h2 id="shop-name-title" class="text-xl font-bold text-gray-800 mb-4">দোকানের নাম পরিবর্তন</h2>
+        
+        <div id="verification-step" class="space-y-4">
+          <!-- গেস্ট মোড -->
+          <div id="guest-name-change" class="hidden">
+            <p id="guest-name-text" class="text-sm text-gray-600 mb-4">নতুন দোকানের নাম দিন</p>
+            <input type="text" id="new-shop-name-guest" placeholder="নতুন দোকানের নাম" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
+            <div class="flex gap-3">
+              <button onclick="closeShopNameModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button onclick="updateShopNameGuest()" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">সংরক্ষণ</button>
+            </div>
+          </div>
+          
+          <!-- পাসওয়ার্ড ভেরিফিকেশন (ইমেইল/পাসওয়ার্ড ইউজারদের জন্য) -->
+          <div id="password-verification" class="hidden">
+            <p id="password-text" class="text-sm text-gray-600 mb-4">নিরাপত্তার জন্য আপনার পাসওয়ার্ড দিন</p>
+            <input type="password" id="verify-password" placeholder="পাসওয়ার্ড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
+            <div class="flex gap-3">
+              <button onclick="closeShopNameModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button onclick="verifyPasswordAndShowNameField()" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">পরবর্তী</button>
+            </div>
+          </div>
+          
+          <!-- ইমেইল ভেরিফিকেশন (গুগল ইউজারদের জন্য) -->
+          <div id="email-verification" class="hidden">
+            <p id="email-text" class="text-sm text-gray-600 mb-4">আপনার ইমেইলে একটি ভেরিফিকেশন কোড পাঠানো হয়েছে</p>
+            <input type="text" id="verification-code" placeholder="৬-ডিজিটের কোড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
+            <div class="flex gap-3 mb-3">
+              <button onclick="closeShopNameModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button onclick="verifyCodeAndShowNameField()" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">নিশ্চিত করুন</button>
+            </div>
+            <button onclick="resendVerificationCode()" class="text-sm text-emerald-600 hover:underline w-full text-center">আবার কোড পাঠান</button>
+          </div>
+          
+          <!-- নতুন নাম ইনপুট ফিল্ড -->
+          <div id="new-name-field" class="hidden">
+            <p id="new-name-text" class="text-sm text-gray-600 mb-4">নতুন দোকানের নাম দিন</p>
+            <input type="text" id="new-shop-name" placeholder="নতুন দোকানের নাম" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-4">
+            <div class="flex gap-3">
+              <button onclick="closeShopNameModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+              <button onclick="updateShopName()" class="flex-1 py-3 rounded-xl btn-primary text-white font-medium">সংরক্ষণ</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -244,7 +295,7 @@
       </div>
     </div>
     
-    <!-- Header -->
+    <!-- Header - আপডেট করা হয়েছে (ডান পাশে Google ছবি) -->
     <header id="app-header" class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 shadow-lg hidden">
       <div class="max-w-4xl mx-auto flex justify-between items-center">
         <div class="flex items-center gap-2">
@@ -257,14 +308,14 @@
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button onclick="toggleUserMenu()" id="user-menu-btn" class="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-lg font-bold hover:bg-emerald-600 transition-colors">
-            👤
-          </button>
+          <!-- Google Profile Image (ডান পাশে) -->
+          <img id="google-profile-img" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
+               class="google-profile-img" onclick="toggleUserMenu()" alt="Profile">
         </div>
       </div>
     </header>
     
-    <!-- Main Menu (Three Dots Menu) -->
+    <!-- Main Menu (Three Dots Menu) - আপডেট করা হয়েছে (ভাষা ও সাউন্ড যোগ) -->
     <div id="main-menu" class="absolute top-20 left-4 bg-white rounded-xl shadow-xl p-3 w-80 hidden z-30" onclick="event.stopPropagation()">
       <div class="flex justify-between items-center border-b pb-2 mb-2">
         <p class="font-bold text-gray-800">📋 মেনু</p>
@@ -293,57 +344,73 @@
         </div>
       </div>
       
-      <!-- সাউন্ড সেটিংস -->
+      <!-- 🌐 ভাষা সেটিংস (নতুন) -->
+      <div class="mb-3 p-2 bg-blue-50 rounded-lg">
+        <p class="text-sm font-medium text-blue-800 mb-2">🌐 ভাষা / Language</p>
+        <div class="flex gap-2">
+          <button onclick="setLanguage('bn')" id="lang-bn" class="language-btn language-active">বাংলা</button>
+          <button onclick="setLanguage('en')" id="lang-en" class="language-btn language-inactive">English</button>
+        </div>
+      </div>
+      
+      <!-- 🔊 সাউন্ড সেটিংস (নতুন - ফ্লোটিং বাটন সরিয়ে এখানে আনা হয়েছে) -->
       <div class="mb-3 p-2 bg-amber-50 rounded-lg">
         <p class="text-sm font-medium text-amber-800 mb-2">🔊 সাউন্ড সেটিংস</p>
         <div class="flex items-center justify-between">
           <span class="text-sm text-gray-700">সাউন্ড ইফেক্ট</span>
-          <button onclick="toggleSound()" id="menu-sound-btn" class="px-3 py-1 rounded-full text-sm flex items-center gap-1 bg-gray-200">
-            <span id="menu-sound-icon">🔇</span>
-            <span id="menu-sound-text">অফ</span>
+          <button onclick="toggleSound()" id="menu-sound-btn" class="px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1">
+            <span id="menu-sound-icon">🔊</span>
+            <span id="menu-sound-text">অন</span>
           </button>
         </div>
         <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
       </div>
       
+      <!-- 🏪 দোকানের নাম পরিবর্তন (নতুন) -->
+      <div class="mb-3 p-2 bg-purple-50 rounded-lg">
+        <p class="text-sm font-medium text-purple-800 mb-2">🏪 দোকানের নাম পরিবর্তন</p>
+        <button onclick="openShopNameChangeModal()" class="w-full text-left text-sm text-purple-600 hover:bg-purple-100 p-2 rounded-lg transition-colors">
+          ✏️ নাম পরিবর্তন করুন
+        </button>
+      </div>
+      
       <!-- সহায়তা তথ্য -->
-      <div class="mb-3 p-2 bg-blue-50 rounded-lg">
-        <p class="text-sm font-medium text-blue-800 mb-2">🆘 সহায়তা</p>
+      <div class="mb-3 p-2 bg-indigo-50 rounded-lg">
+        <p class="text-sm font-medium text-indigo-800 mb-2">🆘 সহায়তা</p>
         <div class="text-sm space-y-2">
           <a href="tel:01881385068" class="contact-info">
             <span class="text-lg">📞</span>
-            <span class="text-blue-600">01881-385068</span>
+            <span class="text-indigo-600">01881-385068</span>
           </a>
           <a href="mailto:hossainsawon772@gmail.com" class="contact-info">
             <span class="text-lg">📧</span>
-            <span class="text-blue-600 break-all">hossainsawon772@gmail.com</span>
+            <span class="text-indigo-600 break-all">hossainsawon772@gmail.com</span>
           </a>
           <a href="https://sawon772.github.io/Bakir-khata/" target="_blank" class="contact-info">
             <span class="text-lg">🌐</span>
-            <span class="text-blue-600 break-all">sawon772.github.io/Bakir-khata</span>
+            <span class="text-indigo-600 break-all">sawon772.github.io/Bakir-khata</span>
           </a>
           <a href="https://www.facebook.com/share/1CW1MrZgny/" target="_blank" class="contact-info">
             <span class="text-lg">📘</span>
-            <span class="text-blue-600">Facebook Page</span>
+            <span class="text-indigo-600">Facebook Page</span>
           </a>
         </div>
       </div>
       
       <!-- ব্যবহারের নিয়ম -->
-      <div class="mb-3 p-2 bg-purple-50 rounded-lg">
-        <p class="text-sm font-medium text-purple-800 mb-2">📖 ব্যবহারের নিয়ম</p>
+      <div class="mb-3 p-2 bg-gray-50 rounded-lg">
+        <p class="text-sm font-medium text-gray-800 mb-2">📖 ব্যবহারের নিয়ম</p>
         <div class="text-xs text-gray-600 space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">প্রথম ব্যবহার:</span> দোকানের নাম দিন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা/ছবি ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📸 ছবি আপলোড:</span> ক্যামেরা বা গ্যালারি থেকে (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">💡 টিপস:</span> কাস্টমার/দাতা সিলেক্ট করলে পূর্বের বাকি দেখাবে</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">✏️ এডিট:</span> পেন্সিল আইকনে ক্লিক করে তথ্য হালনাগাদ করুন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">🗑️ ডিলিট:</span> ডিলিট করলে ডাটা স্থায়ীভাবে মুছে যাবে</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">📥 ব্যাকআপ:</span> রিপোর্ট ট্যাব থেকে JSON ডাউনলোড করুন</p>
-          <p class="flex items-start gap-1"><span class="text-purple-600">•</span> <span class="font-medium">🔊 সাউন্ড:</span> উপরের ডানদিকে বাটন দিয়ে অন/অফ করুন</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">প্রথম ব্যবহার:</span> দোকানের নাম দিন</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা/ছবি ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📸 ছবি আপলোড:</span> ক্যামেরা বা গ্যালারি থেকে (ঐচ্ছিক)</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💡 টিপস:</span> কাস্টমার/দাতা সিলেক্ট করলে পূর্বের বাকি দেখাবে</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">✏️ এডিট:</span> পেন্সিল আইকনে ক্লিক করে তথ্য হালনাগাদ করুন</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">🗑️ ডিলিট:</span> ডিলিট করলে ডাটা স্থায়ীভাবে মুছে যাবে</p>
+          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📥 ব্যাকআপ:</span> রিপোর্ট ট্যাব থেকে JSON ডাউনলোড করুন</p>
         </div>
       </div>
       
@@ -360,11 +427,15 @@
       </button>
     </div>
     
-    <!-- User Menu Dropdown -->
-    <div id="user-menu" class="absolute top-20 right-4 bg-white rounded-xl shadow-xl p-2 w-48 hidden z-30">
-      <div id="user-info" class="px-3 py-2 border-b">
-        <p id="user-name" class="font-medium text-gray-800">অতিথি</p>
-        <p id="user-email" class="text-xs text-gray-500">guest@local</p>
+    <!-- User Menu Dropdown (ডান পাশের মেনু) -->
+    <div id="user-menu" class="absolute top-20 right-4 bg-white rounded-xl shadow-xl p-2 w-56 hidden z-30">
+      <div class="px-3 py-2 border-b flex items-center gap-3">
+        <img id="user-menu-profile-image" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
+             class="w-10 h-10 rounded-full object-cover" alt="Profile">
+        <div>
+          <p id="user-name" class="font-medium text-gray-800">অতিথি</p>
+          <p id="user-email" class="text-xs text-gray-500">guest@local</p>
+        </div>
       </div>
       <button onclick="signOut()" class="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2">
         <span>🚪</span> সাইন আউট
@@ -510,7 +581,7 @@
       </div>
     </div>
     
-    <!-- Floating Action Buttons -->
+    <!-- Floating Action Buttons (সাউন্ড বাটন সরানো হয়েছে) -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-2">
       <button onclick="openModal('fund-payment')" class="w-12 h-12 bg-indigo-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড পরিশোধ">💸</button>
       <button onclick="openModal('fund-receive')" class="w-12 h-12 bg-purple-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড গ্রহণ">💰</button>
@@ -552,6 +623,60 @@
     const auth = firebase.auth();
     const database = firebase.database();
 
+    // ============================================
+    // নতুন: ভাষা সেটিংস
+    // ============================================
+    const translations = {
+      bn: {
+        'app_name': 'বাকির খাতা',
+        'shop_name': 'আপনার দোকানের হিসাব',
+        'total_customers': 'মোট কাস্টমার',
+        'total_due': 'মোট পাওনা',
+        'total_fund': 'মোট ফান্ড',
+        'today_due': 'আজকের বাকি',
+        'customers_tab': '👥 কাস্টমার',
+        'funds_tab': '💰 ফান্ড',
+        'transactions_tab': '📝 লেনদেন',
+        'reports_tab': '📊 রিপোর্ট',
+        'search': '🔍 নাম বা মোবাইল দিয়ে খুঁজুন...',
+        'cancel': 'বাতিল',
+        'save': 'সংরক্ষণ',
+        'on': 'অন',
+        'off': 'অফ'
+      },
+      en: {
+        'app_name': 'Bakir Khata',
+        'shop_name': 'Your Shop Account',
+        'total_customers': 'Total Customers',
+        'total_due': 'Total Due',
+        'total_fund': 'Total Fund',
+        'today_due': "Today's Due",
+        'customers_tab': '👥 Customers',
+        'funds_tab': '💰 Fund',
+        'transactions_tab': '📝 Transactions',
+        'reports_tab': '📊 Reports',
+        'search': '🔍 Search by name or mobile...',
+        'cancel': 'Cancel',
+        'save': 'Save',
+        'on': 'On',
+        'off': 'Off'
+      }
+    };
+
+    let currentLanguage = 'bn';
+
+    function setLanguage(lang) {
+      currentLanguage = lang;
+      document.getElementById('lang-bn').className = lang === 'bn' ? 'language-btn language-active' : 'language-btn language-inactive';
+      document.getElementById('lang-en').className = lang === 'en' ? 'language-btn language-active' : 'language-btn language-inactive';
+      updateUIText();
+    }
+
+    function updateUIText() {
+      // Update text based on language
+      document.getElementById('search-input').placeholder = currentLanguage === 'bn' ? translations.bn.search : translations.en.search;
+    }
+
     // State
     let allData = [];
     let currentTab = 'customers';
@@ -565,18 +690,161 @@
     let isGuest = false;
     let isAPK = false;
     let guestId = 'guest_' + Date.now();
-    let soundEnabled = false;
+    let soundEnabled = true; // ডিফল্ট অন
     let currentImageUploadContext = null;
     let currentImageUploadCustomerId = null;
+    
+    // নতুন: দোকানের নাম পরিবর্তনের জন্য ভেরিয়েবল
+    let verificationCode = null;
 
+    // ============================================
+    // নতুন: Google Profile Image ফাংশন
+    // ============================================
+    function updateGoogleProfileImage(user) {
+      const googleProfileImg = document.getElementById('google-profile-img');
+      const userMenuImg = document.getElementById('user-menu-profile-image');
+      
+      if (user && user.providerData && user.providerData[0] && user.providerData[0].providerId === 'google.com') {
+        // Google Sign-In - use Google profile picture
+        const photoURL = user.photoURL;
+        if (photoURL) {
+          googleProfileImg.src = photoURL;
+          userMenuImg.src = photoURL;
+        }
+      } else {
+        // Email/Password or Guest - use default avatar
+        const name = user ? user.displayName || 'User' : 'User';
+        googleProfileImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
+        userMenuImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
+      }
+    }
+
+    // ============================================
+    // নতুন: দোকানের নাম পরিবর্তন ফাংশন
+    // ============================================
+    function openShopNameChangeModal() {
+      const modal = document.getElementById('shop-name-modal');
+      
+      document.getElementById('guest-name-change').classList.add('hidden');
+      document.getElementById('password-verification').classList.add('hidden');
+      document.getElementById('email-verification').classList.add('hidden');
+      document.getElementById('new-name-field').classList.add('hidden');
+      
+      if (isGuest) {
+        document.getElementById('guest-name-change').classList.remove('hidden');
+      } else if (currentUser) {
+        const providers = currentUser.providerData.map(p => p.providerId);
+        if (providers.includes('google.com')) {
+          sendVerificationCode();
+          document.getElementById('email-verification').classList.remove('hidden');
+        } else {
+          document.getElementById('password-verification').classList.remove('hidden');
+        }
+      }
+      
+      modal.classList.remove('hidden');
+    }
+
+    function closeShopNameModal() {
+      document.getElementById('shop-name-modal').classList.add('hidden');
+      verificationCode = null;
+    }
+
+    function sendVerificationCode() {
+      verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log('Verification code:', verificationCode);
+      showToast('ভেরিফিকেশন কোড পাঠানো হয়েছে!', 'info');
+    }
+
+    function resendVerificationCode() {
+      sendVerificationCode();
+    }
+
+    function verifyCodeAndShowNameField() {
+      const enteredCode = document.getElementById('verification-code').value;
+      if (enteredCode === verificationCode) {
+        document.getElementById('email-verification').classList.add('hidden');
+        document.getElementById('new-name-field').classList.remove('hidden');
+      } else {
+        alert('ভুল ভেরিফিকেশন কোড');
+        playSound('error');
+      }
+    }
+
+    async function verifyPasswordAndShowNameField() {
+      const password = document.getElementById('verify-password').value;
+      try {
+        const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
+        await currentUser.reauthenticateWithCredential(credential);
+        document.getElementById('password-verification').classList.add('hidden');
+        document.getElementById('new-name-field').classList.remove('hidden');
+      } catch (error) {
+        alert('ভুল পাসওয়ার্ড');
+        playSound('error');
+      }
+    }
+
+    async function updateShopName() {
+      const newName = document.getElementById('new-shop-name').value.trim();
+      if (!newName) return;
+      
+      if (!isGuest && currentUser) {
+        await database.ref(`users/${currentUser.uid}/shop_name`).set(newName);
+      } else {
+        localStorage.setItem('guest_shop_name', newName);
+      }
+      
+      defaultConfig.shop_name = newName;
+      document.getElementById('shop-name').textContent = newName;
+      document.getElementById('profile-shop-name').textContent = newName;
+      
+      showToast('দোকানের নাম আপডেট হয়েছে!', 'success');
+      playSound('success');
+      closeShopNameModal();
+    }
+
+    function updateShopNameGuest() {
+      const newName = document.getElementById('new-shop-name-guest').value.trim();
+      if (!newName) return;
+      
+      localStorage.setItem('guest_shop_name', newName);
+      defaultConfig.shop_name = newName;
+      document.getElementById('shop-name').textContent = newName;
+      document.getElementById('profile-shop-name').textContent = newName;
+      
+      showToast('দোকানের নাম আপডেট হয়েছে!', 'success');
+      playSound('success');
+      closeShopNameModal();
+    }
+
+    // ============================================
+    // সাউন্ড ফাংশন (আপডেট করা হয়েছে)
+    // ============================================
+    
     // Load sound preference
     const savedSound = localStorage.getItem('sound_enabled');
-    if (savedSound === 'true') {
+    if (savedSound === 'false') {
+      soundEnabled = false;
+    } else {
       soundEnabled = true;
-      document.getElementById('sound-toggle-btn').classList.remove('sound-off');
-      document.getElementById('sound-toggle-btn').classList.add('sound-on');
-      document.getElementById('sound-toggle-btn').innerHTML = '🔊';
-      document.getElementById('sound-toggle-btn').title = 'সাউন্ড অন';
+      localStorage.setItem('sound_enabled', 'true');
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const menuIcon = document.getElementById('menu-sound-icon');
+      const menuText = document.getElementById('menu-sound-text');
+      
+      if (soundEnabled) {
+        menuIcon.textContent = '🔊';
+        menuText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+        localStorage.setItem('sound_enabled', 'true');
+        playSound('success');
+      } else {
+        menuIcon.textContent = '🔇';
+        menuText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+        localStorage.setItem('sound_enabled', 'false');
+      }
     }
 
     // Sound effects
@@ -665,48 +933,13 @@
       }
     }
 
-    // Toggle sound
-    function toggleSound() {
-      soundEnabled = !soundEnabled;
-      const btn = document.getElementById('sound-toggle-btn');
-      const menuBtn = document.getElementById('menu-sound-btn');
-      const menuIcon = document.getElementById('menu-sound-icon');
-      const menuText = document.getElementById('menu-sound-text');
-      
-      if (soundEnabled) {
-        btn.classList.remove('sound-off');
-        btn.classList.add('sound-on');
-        btn.innerHTML = '🔊';
-        btn.title = 'সাউন্ড অন';
-        if (menuIcon) menuIcon.textContent = '🔊';
-        if (menuText) menuText.textContent = 'অন';
-        localStorage.setItem('sound_enabled', 'true');
-        playSound('success');
-      } else {
-        btn.classList.remove('sound-on');
-        btn.classList.add('sound-off');
-        btn.innerHTML = '🔇';
-        btn.title = 'সাউন্ড অফ';
-        if (menuIcon) menuIcon.textContent = '🔇';
-        if (menuText) menuText.textContent = 'অফ';
-        localStorage.setItem('sound_enabled', 'false');
-      }
-    }
-
     // ============================================
-    // ইমেজ আপলোড ফাংশন - ফাইনাল ফিক্সড ভার্সন
+    // ইমেজ আপলোড ফাংশন
     // ============================================
 
-    // ইমেজ আপলোড মডেল খোলা
     function openImageUploadModal(context, customerId = null) {
-      console.log('📸 openImageUploadModal called with:', context, customerId);
-      
-      // কন্টেক্সট সেট করুন
       currentImageUploadContext = context;
       currentImageUploadCustomerId = customerId;
-      
-      console.log('✅ currentImageUploadContext set to:', currentImageUploadContext);
-      console.log('✅ currentImageUploadCustomerId set to:', currentImageUploadCustomerId);
       
       const modal = document.getElementById('image-upload-modal');
       const contextText = document.getElementById('image-upload-context');
@@ -722,7 +955,6 @@
 
     function closeImageUploadModal() {
       document.getElementById('image-upload-modal').classList.add('hidden');
-      // কন্টেক্সট রিসেট করবেন না - আপলোড শেষে রিসেট হবে
     }
 
     function openCamera() {
@@ -735,20 +967,11 @@
       closeImageUploadModal();
     }
 
-    // মেইন আপলোড ফাংশন - ফাইনাল ফিক্সড ভার্সন
     async function handleImageSelect(event) {
       const file = event.target.files[0];
       
-      console.log('📸 handleImageSelect called');
-      console.log('currentImageUploadContext:', currentImageUploadContext);
-      console.log('currentImageUploadCustomerId:', currentImageUploadCustomerId);
-      
-      if (!file) {
-        console.log('কোনো ফাইল নেই');
-        return;
-      }
+      if (!file) return;
 
-      // ফাইল সাইজ চেক
       if (file.size > 5 * 1024 * 1024) {
         alert('ছবির সাইজ ৫MB এর কম হতে হবে');
         event.target.value = '';
@@ -769,72 +992,37 @@
         });
 
         const data = await response.json();
-        console.log('Cloudinary response:', data);
         
         if (data.secure_url) {
           alert('আপলোড সফল!');
           
-          // ========================================
-          // প্রোফাইল ছবি আপলোড
-          // ========================================
           if (currentImageUploadContext === 'profile') {
-            console.log('📸 প্রোফাইল ছবি সেভ করা হচ্ছে');
-            
-            // Firebase-এ সেভ
             if (!isGuest && currentUser) {
               await database.ref(`users/${currentUser.uid}/profile_image`).set(data.secure_url);
-              console.log('✅ Firebase-এ সেভ হয়েছে');
             } else {
               localStorage.setItem('profile_image', data.secure_url);
-              console.log('✅ লোকাল স্টোরেজে সেভ হয়েছে');
             }
             
-            // UI আপডেট
-            const profileImg = document.getElementById('profile-image');
-            if (profileImg) {
-              profileImg.src = data.secure_url;
-              console.log('✅ UI আপডেট হয়েছে');
-            }
-            
+            document.getElementById('profile-image').src = data.secure_url;
             alert('প্রোফাইল ছবি আপলোড হয়েছে!');
-          } 
-          
-          // ========================================
-          // কাস্টমার ছবি আপলোড
-          // ========================================
-          else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
-            console.log('📸 কাস্টমার ছবি সেভ করা হচ্ছে, ID:', currentImageUploadCustomerId);
             
-            // ডাটা আপডেট
+          } else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
             const customerIndex = allData.findIndex(d => d.customer_id === currentImageUploadCustomerId && d.type === 'customer');
             if (customerIndex !== -1) {
               allData[customerIndex].image = data.secure_url;
               await updateData(allData[customerIndex]);
-              console.log('✅ কাস্টমারের ডাটা আপডেট হয়েছে');
-              
-              // কাস্টমার লিস্ট রি-রেন্ডার
               renderCustomers();
-              console.log('✅ কাস্টমার লিস্ট রি-রেন্ডার হয়েছে');
-              
               alert('কাস্টমারের ছবি আপলোড হয়েছে!');
-            } else {
-              console.log('❌ কাস্টমার খুঁজে পাওয়া যায়নি:', currentImageUploadCustomerId);
             }
           }
           
-          else {
-            console.log('❌ কন্টেক্সট ঠিক নেই!', currentImageUploadContext);
-            alert('আপলোড কন্টেক্সট ঠিক নেই!');
-          }
-        } else {
-          alert('আপলোড ব্যর্থ');
+          playSound('success');
         }
       } catch (error) {
-        console.error('Upload error:', error);
         alert('Error: ' + error.message);
+        playSound('error');
       }
 
-      // কন্টেক্সট রিসেট
       currentImageUploadContext = null;
       currentImageUploadCustomerId = null;
       event.target.value = '';
@@ -842,32 +1030,18 @@
 
     // Toast ফাংশন
     function showToast(message, type = 'success', duration = 3000) {
-      console.log('Toast:', message, type);
-      
       const container = document.getElementById('toast-container');
-      if (!container) {
-        console.error('Toast container not found!');
-        return;
-      }
+      if (!container) return;
       
       const toast = document.createElement('div');
       const bgColor = type === 'success' ? 'bg-emerald-500' : type === 'error' ? 'bg-red-500' : 'bg-yellow-500';
       
       toast.className = `toast ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2`;
       toast.textContent = message;
-      toast.style.opacity = '1';
-      toast.style.transition = 'opacity 0.3s';
       
       container.appendChild(toast);
       
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        setTimeout(() => {
-          if (toast.parentNode) {
-            toast.remove();
-          }
-        }, 300);
-      }, duration);
+      setTimeout(() => toast.remove(), duration);
     }
 
     // Detect if running in APK/WebView
@@ -946,6 +1120,7 @@
         currentUser = user;
         isGuest = false;
         updateUserMenu(user);
+        updateGoogleProfileImage(user);
         
         const shopNameRef = database.ref(`users/${user.uid}/shop_name`);
         const snapshot = await shopNameRef.once('value');
@@ -1106,6 +1281,7 @@
       }
       
       updateUserMenu(null);
+      updateGoogleProfileImage(null);
     }
 
     // Sign out
@@ -2491,11 +2667,15 @@
         if (e.target.id === 'image-upload-modal') closeImageUploadModal();
       });
 
+      document.getElementById('shop-name-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'shop-name-modal') closeShopNameModal();
+      });
+
       document.addEventListener('click', (e) => {
         const mainMenu = document.getElementById('main-menu');
         const menuBtn = document.querySelector('[onclick="toggleMainMenu()"]');
         const userMenu = document.getElementById('user-menu');
-        const userBtn = document.getElementById('user-menu-btn');
+        const userBtn = document.querySelector('.google-profile-img');
         
         if (mainMenu && !mainMenu.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
           mainMenu.classList.add('hidden');
@@ -2509,6 +2689,15 @@
       document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
         if (e.target.id === 'forgot-password-modal') closeForgotPassword();
       });
+
+      // Set default language
+      setLanguage('bn');
+      
+      // Set default sound
+      if (soundEnabled) {
+        document.getElementById('menu-sound-icon').textContent = '🔊';
+        document.getElementById('menu-sound-text').textContent = 'অন';
+      }
     }
 
     init();
