@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-capable" content="true">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="বাকির খাতা">
-  <title>বাকির খাতা - ফাইনাল ভার্সন</title>
+  <title>বাকির খাতা - আপডেটেড ভার্সন</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
@@ -92,7 +92,7 @@
     .google-profile-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; cursor: pointer; object-fit: cover; }
     .sound-menu-btn { padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 4px; }
     
-    /* স্টিকি হেডার - z-index কমানো হয়েছে */
+    /* স্টিকি হেডার */
     .sticky-header {
       position: sticky;
       top: 0;
@@ -129,7 +129,7 @@
       display: block;
     }
     
-    /* মেনু - z-index বাড়ানো হয়েছে এবং স্ক্রল যোগ করা হয়েছে */
+    /* মেনু */
     #main-menu {
       position: fixed;
       top: 80px;
@@ -158,35 +158,50 @@
       overflow-y: auto;
     }
     
-    /* মডাল ওভারলে সবার উপরে */
+    /* মডাল ওভারলে */
     .modal-overlay {
       z-index: 200;
     }
     
-    /* টোস্ট কন্টেইনার সবার উপরে */
+    /* টোস্ট কন্টেইনার */
     #toast-container {
       z-index: 300;
     }
     
-    /* ছোট স্ক্রিনের জন্য মেনু অ্যাডজাস্টমেন্ট */
-    @media (max-width: 640px) {
-      #main-menu {
-        left: 8px;
-        width: calc(100% - 16px);
-        max-width: 20rem;
-      }
-      #user-menu {
-        right: 8px;
-        width: calc(100% - 16px);
-        max-width: 14rem;
-      }
+    /* অপশনাল সেকশন */
+    .optional-section {
+      border-top: 1px dashed #d1d5db;
+      margin-top: 1rem;
+      padding-top: 1rem;
+    }
+    .initial-due-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #059669;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    .initial-due-label span {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: normal;
+    }
+    
+    /* সর্বশেষ লেনদেনের ব্যাজ */
+    .latest-badge {
+      background-color: #059669;
+      color: white;
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 12px;
+      margin-left: 8px;
+      display: inline-block;
     }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
   <div id="app" class="w-full h-full flex flex-col">
-    <!-- সাউন্ড বাটন সরানো হয়েছে (ফ্লোটিং বাটন নেই) -->
-
     <!-- Hidden file inputs for image upload -->
     <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
     <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
@@ -414,7 +429,7 @@
       </div>
     </header>
     
-    <!-- Main Menu (স্ক্রলযোগ্য) -->
+    <!-- Main Menu -->
     <div id="main-menu" class="hidden" onclick="event.stopPropagation()">
       <div class="flex justify-between items-center border-b pb-2 mb-2 sticky top-0 bg-white">
         <p class="font-bold text-gray-800">📋 মেনু</p>
@@ -526,7 +541,7 @@
       </button>
     </div>
     
-    <!-- User Menu Dropdown (স্ক্রলযোগ্য) -->
+    <!-- User Menu Dropdown -->
     <div id="user-menu" class="hidden">
       <div class="px-3 py-2 border-b flex items-center gap-3 sticky top-0 bg-white">
         <img id="user-menu-profile-image" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
@@ -801,7 +816,10 @@
         'clear_search': 'মুছুন',
         'speak_now': 'বলুন...',
         'no_speech': 'কোনো কথা শোনা যায়নি',
-        'mic_permission': 'মাইক্রোফোন অনুমতি দেওয়া হয়নি'
+        'mic_permission': 'মাইক্রোফোন অনুমতি দেওয়া হয়নি',
+        'initial_due': 'প্রাথমিক বাকি',
+        'initial_due_hint': 'ঐচ্ছিক - নতুন কাস্টমারের প্রাথমিক বাকি পরিমাণ',
+        'latest_badge': 'সর্বশেষ'
       },
       en: {
         'app_name': 'Bakir Khata',
@@ -847,7 +865,10 @@
         'clear_search': 'Clear',
         'speak_now': 'Speak now...',
         'no_speech': 'No speech detected',
-        'mic_permission': 'Microphone permission denied'
+        'mic_permission': 'Microphone permission denied',
+        'initial_due': 'Initial Due',
+        'initial_due_hint': 'Optional - initial due amount for new customer',
+        'latest_badge': 'Latest'
       }
     };
 
@@ -1798,13 +1819,42 @@
       renderCurrentView();
     }
 
-    // Get customers from data
+    // ============================================
+    // কাস্টমার লিস্ট সাজানো - সর্বশেষ লেনদেন যার, তার নাম সবার উপরে
+    // ============================================
     function getCustomers() {
       const customerMap = new Map();
       allData.filter(d => d.type === 'customer').forEach(c => {
         customerMap.set(c.customer_id, c);
       });
-      return Array.from(customerMap.values());
+      
+      const customers = Array.from(customerMap.values());
+      
+      const customersWithLastTransaction = customers.map(customer => {
+        const customerTransactions = allData.filter(d => 
+          d.customer_id === customer.customer_id && 
+          (d.type === 'due' || d.type === 'payment')
+        );
+        
+        let lastTransactionDate = null;
+        if (customerTransactions.length > 0) {
+          customerTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+          lastTransactionDate = customerTransactions[0].date;
+        }
+        
+        return {
+          ...customer,
+          last_transaction_date: lastTransactionDate || customer.created_at
+        };
+      });
+      
+      customersWithLastTransaction.sort((a, b) => {
+        if (a.last_transaction_date && !b.last_transaction_date) return -1;
+        if (!a.last_transaction_date && b.last_transaction_date) return 1;
+        return new Date(b.last_transaction_date) - new Date(a.last_transaction_date);
+      });
+      
+      return customersWithLastTransaction;
     }
 
     // Get fund providers
@@ -2348,6 +2398,17 @@
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
+              
+              <!-- অপশনাল প্রাথমিক বাকি ফিল্ড -->
+              <div class="optional-section">
+                <div class="initial-due-label">
+                  <span>💰 ${t('initial_due')}</span>
+                  <span>${t('initial_due_hint')}</span>
+                </div>
+                <input type="number" id="customer-initial-due" min="0" step="1"
+                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+                  placeholder="০">
+              </div>
             </div>
             <div class="flex gap-3 mt-6">
               <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
@@ -2729,6 +2790,8 @@
       btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
       const customerId = generateId();
+      const initialDue = parseFloat(document.getElementById('customer-initial-due').value) || 0;
+      
       const customerData = {
         type: 'customer',
         customer_id: customerId,
@@ -2736,15 +2799,26 @@
         mobile: document.getElementById('customer-mobile').value.trim(),
         address: document.getElementById('customer-address').value.trim(),
         image: null,
-        amount: 0,
-        date: '',
-        note: '',
         created_at: new Date().toISOString()
       };
 
       const result = await saveData(customerData);
       
       if (result.isOk) {
+        // যদি প্রাথমিক বাকি দেওয়া থাকে, তাহলে আলাদা একটি due এন্ট্রি তৈরি করুন
+        if (initialDue > 0) {
+          const dueData = {
+            type: 'due',
+            customer_id: customerId,
+            customer_name: customerData.customer_name,
+            amount: initialDue,
+            date: new Date().toISOString().split('T')[0],
+            note: currentLanguage === 'bn' ? 'প্রাথমিক বাকি' : 'Initial due',
+            created_at: new Date().toISOString()
+          };
+          await saveData(dueData);
+        }
+        
         if (!isGuest && currentUser) {
           // Firebase auto-updates via listener
         } else {
@@ -2941,21 +3015,31 @@
       deleteConfirmId = null;
     }
 
+    // ============================================
+    // আপডেট করা ফান্ড দাতা ডিলিট ফাংশন
+    // এখন শুধু ব্যালেন্স চেক করে, লেনদেন মুছতে বলে না
+    // ============================================
     async function confirmDeleteFundProvider(backendId) {
       const provider = allData.find(d => d.__backendId === backendId);
       if (!provider) return;
 
-      const providerTransactions = allData.filter(d => 
-        d.provider_id === provider.provider_id && (d.type === 'fund-receive' || d.type === 'fund-payment')
-      );
-
-      if (providerTransactions.length > 0) {
-        showToast(currentLanguage === 'bn' ? 'এই দাতার লেনদেন আছে। প্রথমে লেনদেন মুছুন।' : 'This provider has transactions. Delete them first.', 'warning');
+      // শুধু ব্যালেন্স চেক করুন - যদি শূন্য না হয় তাহলে ডিলিট করতে দিবে না
+      const balance = getFundProviderBalance(provider.provider_id);
+      
+      if (balance !== 0) {
+        showToast(
+          currentLanguage === 'bn' ? 
+          'এই দাতার কাছে আপনার ' + formatCurrency(balance) + ' টাকা পাওনা আছে। প্রথমে ব্যালেন্স শূন্য করুন।' : 
+          'You have ' + formatCurrency(balance) + ' due to this provider. Clear balance first.', 
+          'warning'
+        );
         playSound('warning');
         deleteConfirmId = null;
         return;
       }
 
+      // ব্যালেন্স শূন্য হলে শুধু দাতা প্রোফাইল ডিলিট করুন
+      // লেনদেনগুলো আগের মতোই থাকবে
       const result = await deleteData(provider);
       
       if (result.isOk) {
@@ -2964,10 +3048,20 @@
         } else {
           loadGuestData();
         }
-        showToast(currentLanguage === 'bn' ? 'ফান্ড দাতা মুছে ফেলা হয়েছে!' : 'Provider deleted!', 'success');
+        showToast(
+          currentLanguage === 'bn' ? 
+          'ফান্ড দাতা মুছে ফেলা হয়েছে! (লেনদেন অপরিবর্তিত)' : 
+          'Provider deleted! (Transactions unchanged)', 
+          'success'
+        );
         playSound('success');
       } else {
-        showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
+        showToast(
+          currentLanguage === 'bn' ? 
+          'মুছে ফেলা ব্যর্থ হয়েছে' : 
+          'Delete failed', 
+          'error'
+        );
         playSound('error');
       }
       deleteConfirmId = null;
