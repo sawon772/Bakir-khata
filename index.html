@@ -168,7 +168,7 @@
       z-index: 300;
     }
     
-    /* অপশনাল সেকশন */
+    /* অপショナル সেকশন */
     .optional-section {
       border-top: 1px dashed #d1d5db;
       margin-top: 1rem;
@@ -198,9 +198,41 @@
       margin-left: 8px;
       display: inline-block;
     }
+
+    /* SIMPLE LOADER CSS */
+    .app-loader-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(2px);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .app-loader-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #059669;
+      border-radius: 50%;
+      animation: spin-loader 1s linear infinite;
+    }
+    @keyframes spin-loader {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
+  
+  <!-- App Loader Element -->
+  <div id="app-global-loader" class="app-loader-overlay hidden">
+    <div class="app-loader-spinner"></div>
+    <p class="mt-4 text-emerald-800 font-medium" id="app-loader-text">অপেক্ষা করুন...</p>
+  </div>
+
   <div id="app" class="w-full h-full flex flex-col">
     <!-- Hidden file inputs for image upload -->
     <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
@@ -352,7 +384,7 @@
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
             Google দিয়ে সাইন ইন
           </button>
@@ -738,6 +770,18 @@
   </div>
 
   <script>
+    /* LOADER HELPERS */
+    function showGlobalLoader(text = "অপেক্ষা করুন...") {
+      const loader = document.getElementById('app-global-loader');
+      const textEl = document.getElementById('app-loader-text');
+      if(textEl) textEl.textContent = text;
+      if(loader) loader.classList.remove('hidden');
+    }
+    function hideGlobalLoader() {
+      const loader = document.getElementById('app-global-loader');
+      if(loader) loader.classList.add('hidden');
+    }
+
     // EmailJS Configuration
     const EMAILJS_CONFIG = {
       serviceId: 'service_t3kmc0z',
@@ -1004,6 +1048,7 @@
         return false;
       }
       
+      showGlobalLoader("কোড পাঠানো হচ্ছে...");
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       
       const codeData = {
@@ -1015,9 +1060,6 @@
       verificationCode = code;
       verificationExpiry = Date.now() + 5 * 60 * 1000;
       
-      console.log('Sending email to:', email);
-      console.log('Verification code:', code);
-      
       try {
         const response = await emailjs.send(
           EMAILJS_CONFIG.serviceId,
@@ -1028,13 +1070,13 @@
             from_name: 'বাকির খাতা'
           }
         );
-        console.log('Email sent successfully:', response);
         showToast(t('code_sent'), 'success');
         return true;
       } catch (error) {
-        console.error('Email send error:', error);
         showToast(t('email_error') + ': ' + (error.text || error.message), 'error');
         return false;
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1211,7 +1253,7 @@
         return;
       }
 
-      alert(currentLanguage === 'bn' ? 'ছবি আপলোড শুরু হচ্ছে...' : 'Uploading image...');
+      showGlobalLoader("ছবি আপলোড হচ্ছে...");
 
       const formData = new FormData();
       formData.append('file', file);
@@ -1227,8 +1269,6 @@
         const data = await response.json();
         
         if (data.secure_url) {
-          alert(currentLanguage === 'bn' ? 'আপলোড সফল!' : 'Upload successful!');
-          
           if (currentImageUploadContext === 'profile') {
             if (!isGuest && currentUser) {
               await database.ref(`users/${currentUser.uid}/profile_image`).set(data.secure_url);
@@ -1237,7 +1277,7 @@
             }
             
             document.getElementById('profile-image').src = data.secure_url;
-            alert(currentLanguage === 'bn' ? 'প্রোফাইল ছবি আপলোড হয়েছে!' : 'Profile image uploaded!');
+            showToast(currentLanguage === 'bn' ? 'প্রোফাইল ছবি আপলোড হয়েছে!' : 'Profile image uploaded!', 'success');
             
           } else if (currentImageUploadContext === 'customer' && currentImageUploadCustomerId) {
             const customerIndex = allData.findIndex(d => d.customer_id === currentImageUploadCustomerId && d.type === 'customer');
@@ -1245,7 +1285,7 @@
               allData[customerIndex].image = data.secure_url;
               await updateData(allData[customerIndex]);
               renderCustomers();
-              alert(currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড হয়েছে!' : 'Customer image uploaded!');
+              showToast(currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড হয়েছে!' : 'Customer image uploaded!', 'success');
             }
           }
           
@@ -1254,6 +1294,8 @@
       } catch (error) {
         alert(currentLanguage === 'bn' ? 'Error: ' + error.message : 'Error: ' + error.message);
         playSound('error');
+      } finally {
+        hideGlobalLoader();
       }
 
       currentImageUploadContext = null;
@@ -1321,6 +1363,7 @@
 
     async function verifyPasswordAndShowNameField() {
       const password = document.getElementById('verify-password').value;
+      showGlobalLoader("যাচাই হচ্ছে...");
       try {
         const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, password);
         await currentUser.reauthenticateWithCredential(credential);
@@ -1329,6 +1372,8 @@
       } catch (error) {
         alert(currentLanguage === 'bn' ? 'ভুল পাসওয়ার্ড' : 'Wrong password');
         playSound('error');
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1336,19 +1381,24 @@
       const newName = document.getElementById('new-shop-name').value.trim();
       if (!newName) return;
       
-      if (!isGuest && currentUser) {
-        await database.ref(`users/${currentUser.uid}/shop_name`).set(newName);
-      } else {
-        localStorage.setItem('guest_shop_name', newName);
+      showGlobalLoader("সংরক্ষণ হচ্ছে...");
+      try {
+        if (!isGuest && currentUser) {
+          await database.ref(`users/${currentUser.uid}/shop_name`).set(newName);
+        } else {
+          localStorage.setItem('guest_shop_name', newName);
+        }
+        
+        defaultConfig.shop_name = newName;
+        document.getElementById('shop-name').textContent = newName;
+        document.getElementById('profile-shop-name').textContent = newName;
+        
+        showToast(currentLanguage === 'bn' ? 'দোকানের নাম আপডেট হয়েছে!' : 'Shop name updated!', 'success');
+        playSound('success');
+        closeShopNameModal();
+      } finally {
+        hideGlobalLoader();
       }
-      
-      defaultConfig.shop_name = newName;
-      document.getElementById('shop-name').textContent = newName;
-      document.getElementById('profile-shop-name').textContent = newName;
-      
-      showToast(currentLanguage === 'bn' ? 'দোকানের নাম আপডেট হয়েছে!' : 'Shop name updated!', 'success');
-      playSound('success');
-      closeShopNameModal();
     }
 
     function updateShopNameGuest() {
@@ -1514,11 +1564,12 @@
         return;
       }
       
+      showGlobalLoader("লগইন হচ্ছে...");
       const provider = new firebase.auth.GoogleAuthProvider();
       auth.signInWithPopup(provider).catch(error => {
         showToast(currentLanguage === 'bn' ? 'সাইন ইন ব্যর্থ হয়েছে: ' + error.message : 'Sign in failed: ' + error.message, 'error');
         playSound('error');
-      });
+      }).finally(() => hideGlobalLoader());
     }
 
     // Sign in with Email/Password
@@ -1534,6 +1585,7 @@
         return;
       }
       
+      showGlobalLoader("সাইন ইন হচ্ছে...");
       try {
         await auth.signInWithEmailAndPassword(email, password);
         showToast(currentLanguage === 'bn' ? 'সাইন ইন সফল হয়েছে!' : 'Sign in successful!', 'success');
@@ -1541,6 +1593,8 @@
       } catch (error) {
         showToast(currentLanguage === 'bn' ? 'সাইন ইন ব্যর্থ: ' + error.message : 'Sign in failed: ' + error.message, 'error');
         playSound('error');
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1564,6 +1618,7 @@
         return;
       }
       
+      showGlobalLoader("রেজিস্ট্রেশন হচ্ছে...");
       try {
         const result = await auth.createUserWithEmailAndPassword(email, password);
         
@@ -1581,6 +1636,8 @@
       } catch (error) {
         showToast(currentLanguage === 'bn' ? 'রেজিস্ট্রেশন ব্যর্থ: ' + error.message : 'Registration failed: ' + error.message, 'error');
         playSound('error');
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1603,6 +1660,7 @@
         return;
       }
       
+      showGlobalLoader("লিঙ্ক পাঠানো হচ্ছে...");
       try {
         await auth.sendPasswordResetEmail(email);
         showToast(currentLanguage === 'bn' ? 'পাসওয়ার্ড রিসেট লিঙ্ক পাঠানো হয়েছে!' : 'Password reset link sent!', 'success');
@@ -1611,6 +1669,8 @@
       } catch (error) {
         showToast(currentLanguage === 'bn' ? 'ব্যর্থ: ' + error.message : 'Failed: ' + error.message, 'error');
         playSound('error');
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1645,18 +1705,21 @@
 
     // Sign out
     function signOut() {
-      if (isGuest) {
-        isGuest = false;
-        guestId = 'guest_' + Date.now();
-        document.getElementById('auth-screen').classList.remove('hidden');
-        document.getElementById('app-header').classList.add('hidden');
-        document.getElementById('main-menu').classList.add('hidden');
-        document.getElementById('user-menu').classList.add('hidden');
+      showGlobalLoader("সাইন আউট হচ্ছে...");
+      setTimeout(() => {
+        if (isGuest) {
+          isGuest = false;
+          guestId = 'guest_' + Date.now();
+          document.getElementById('auth-screen').classList.remove('hidden');
+          document.getElementById('app-header').classList.add('hidden');
+          document.getElementById('main-menu').classList.add('hidden');
+          document.getElementById('user-menu').classList.add('hidden');
+        } else {
+          auth.signOut();
+        }
         playSound('success');
-      } else {
-        auth.signOut();
-        playSound('success');
-      }
+        hideGlobalLoader();
+      }, 500);
     }
 
     // Toggle user menu
@@ -1712,48 +1775,63 @@
 
     // Save data
     async function saveData(item) {
-      if (!isGuest && currentUser) {
-        const userRef = database.ref(`users/${currentUser.uid}/data`);
-        const newRef = userRef.push();
-        await newRef.set(item);
-        return { isOk: true, id: newRef.key };
-      } else {
-        item.__backendId = generateId();
-        allData.push(item);
-        localStorage.setItem('guest_data', JSON.stringify(allData));
-        return { isOk: true };
+      showGlobalLoader("সংরক্ষণ হচ্ছে...");
+      try {
+        if (!isGuest && currentUser) {
+          const userRef = database.ref(`users/${currentUser.uid}/data`);
+          const newRef = userRef.push();
+          await newRef.set(item);
+          return { isOk: true, id: newRef.key };
+        } else {
+          item.__backendId = generateId();
+          allData.push(item);
+          localStorage.setItem('guest_data', JSON.stringify(allData));
+          return { isOk: true };
+        }
+      } finally {
+        hideGlobalLoader();
       }
     }
 
     // Update data
     async function updateData(item) {
-      if (!isGuest && currentUser) {
-        const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
-        await userRef.set(item);
-        return { isOk: true };
-      } else {
-        const index = allData.findIndex(d => d.__backendId === item.__backendId);
-        if (index > -1) {
-          allData[index] = item;
-          localStorage.setItem('guest_data', JSON.stringify(allData));
+      showGlobalLoader("আপডেট হচ্ছে...");
+      try {
+        if (!isGuest && currentUser) {
+          const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
+          await userRef.set(item);
+          return { isOk: true };
+        } else {
+          const index = allData.findIndex(d => d.__backendId === item.__backendId);
+          if (index > -1) {
+            allData[index] = item;
+            localStorage.setItem('guest_data', JSON.stringify(allData));
+          }
+          return { isOk: true };
         }
-        return { isOk: true };
+      } finally {
+        hideGlobalLoader();
       }
     }
 
     // Delete data
     async function deleteData(item) {
-      if (!isGuest && currentUser) {
-        const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
-        await userRef.remove();
-        return { isOk: true };
-      } else {
-        const index = allData.findIndex(d => d.__backendId === item.__backendId);
-        if (index > -1) {
-          allData.splice(index, 1);
-          localStorage.setItem('guest_data', JSON.stringify(allData));
+      showGlobalLoader("মুছে ফেলা হচ্ছে...");
+      try {
+        if (!isGuest && currentUser) {
+          const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
+          await userRef.remove();
+          return { isOk: true };
+        } else {
+          const index = allData.findIndex(d => d.__backendId === item.__backendId);
+          if (index > -1) {
+            allData.splice(index, 1);
+            localStorage.setItem('guest_data', JSON.stringify(allData));
+          }
+          return { isOk: true };
         }
-        return { isOk: true };
+      } finally {
+        hideGlobalLoader();
       }
     }
 
@@ -1789,23 +1867,28 @@
         return;
       }
       
-      if (!isGuest && currentUser) {
-        await database.ref(`users/${currentUser.uid}/shop_name`).set(shopName);
-      } else {
-        localStorage.setItem('guest_shop_name', shopName);
+      showGlobalLoader("সেটআপ হচ্ছে...");
+      try {
+        if (!isGuest && currentUser) {
+          await database.ref(`users/${currentUser.uid}/shop_name`).set(shopName);
+        } else {
+          localStorage.setItem('guest_shop_name', shopName);
+        }
+        
+        defaultConfig.shop_name = shopName;
+        document.getElementById('shop-name').textContent = shopName;
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('app-header').classList.remove('hidden');
+        
+        if (isGuest) {
+          loadGuestData();
+        }
+        
+        showToast(currentLanguage === 'bn' ? 'স্বাগতম! ' + shopName : 'Welcome! ' + shopName, 'success');
+        playSound('success');
+      } finally {
+        hideGlobalLoader();
       }
-      
-      defaultConfig.shop_name = shopName;
-      document.getElementById('shop-name').textContent = shopName;
-      document.getElementById('setup-screen').classList.add('hidden');
-      document.getElementById('app-header').classList.remove('hidden');
-      
-      if (isGuest) {
-        loadGuestData();
-      }
-      
-      showToast(currentLanguage === 'bn' ? 'স্বাগতম! ' + shopName : 'Welcome! ' + shopName, 'success');
-      playSound('success');
     }
 
     // Tab navigation
@@ -2348,7 +2431,7 @@
         `).join('');
       }
 
-      // Top lenders
+      // Get lenders
       const lenders = providers.map(p => ({
         name: p.provider_name,
         balance: getFundProviderBalance(p.provider_id)
@@ -3017,13 +3100,11 @@
 
     // ============================================
     // আপডেট করা ফান্ড দাতা ডিলিট ফাংশন
-    // এখন শুধু ব্যালেন্স চেক করে, লেনদেন মুছতে বলে না
     // ============================================
     async function confirmDeleteFundProvider(backendId) {
       const provider = allData.find(d => d.__backendId === backendId);
       if (!provider) return;
 
-      // শুধু ব্যালেন্স চেক করুন - যদি শূন্য না হয় তাহলে ডিলিট করতে দিবে না
       const balance = getFundProviderBalance(provider.provider_id);
       
       if (balance !== 0) {
@@ -3038,8 +3119,6 @@
         return;
       }
 
-      // ব্যালেন্স শূন্য হলে শুধু দাতা প্রোফাইল ডিলিট করুন
-      // লেনদেনগুলো আগের মতোই থাকবে
       const result = await deleteData(provider);
       
       if (result.isOk) {
@@ -3108,7 +3187,8 @@
       }
       deleteConfirmId = null;
     }
-       // Export data
+
+    // Export data
     function exportData() {
       const data = {
         exported_at: new Date().toISOString(),
