@@ -46,6 +46,8 @@
     .btn-purple { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
     .btn-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
     .stat-card { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+    .advance-stat-card { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
+    .non-due-stat-card { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
     .fund-stat-card { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); }
     .scrollbar-thin::-webkit-scrollbar { width: 6px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
@@ -63,9 +65,12 @@
     .delete-btn { background: #ef4444; color: white; }
     .delete-btn:hover { background: #dc2626; }
     .fund-provider-card { border-left: 4px solid #9333ea; }
+    .due-customer-card { border-left: 4px solid #dc2626; }
+    .advance-customer-card { border-left: 4px solid #f59e0b; }
+    .non-due-customer-card { border-left: 4px solid #6b7280; }
     .balance-info { font-size: 0.875rem; padding: 0.5rem; border-radius: 0.5rem; margin-top: 0.5rem; }
     .positive-balance { background-color: #fee2e2; color: #b91c1c; border-left: 4px solid #dc2626; }
-    .negative-balance { background-color: #d1fae5; color: #065f46; border-left: 4px solid #059669; }
+    .negative-balance { background-color: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
     .zero-balance { background-color: #f3f4f6; color: #4b5563; border-left: 4px solid #9ca3af; }
     .menu-button { transition: all 0.2s; }
     .menu-button:hover { background-color: #f3f4f6; }
@@ -168,7 +173,7 @@
       z-index: 300;
     }
     
-    /* অপショナル সেকশন */
+    /* অপশনাল সেকশন */
     .optional-section {
       border-top: 1px dashed #d1d5db;
       margin-top: 1rem;
@@ -591,22 +596,26 @@
     <!-- স্টিকি হেডার - স্ট্যাটস কার্ড -->
     <div class="sticky-header">
       <div class="max-w-4xl mx-auto w-full px-4 py-2">
-        <div class="grid grid-cols-4 gap-2">
+        <div class="grid grid-cols-5 gap-2">
           <div class="stat-card rounded-xl p-2 text-center card-shadow">
             <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</p>
             <p id="total-customers" class="text-lg font-bold text-emerald-700">০</p>
           </div>
           <div class="stat-card rounded-xl p-2 text-center card-shadow">
-            <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="মোট পাওনা" data-en="Total Due">মোট পাওনা</p>
+            <p class="stat-label text-xs text-red-600 font-medium" data-bn="মোট পাওনা" data-en="Total Due">মোট পাওনা</p>
             <p id="total-due" class="text-lg font-bold text-red-600">৳০</p>
+          </div>
+          <div class="advance-stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-yellow-600 font-medium" data-bn="মোট অগ্রিম" data-en="Total Advance">মোট অগ্রিম</p>
+            <p id="total-advance" class="text-lg font-bold text-yellow-700">৳০</p>
           </div>
           <div class="fund-stat-card rounded-xl p-2 text-center card-shadow">
             <p class="stat-label text-xs text-purple-600 font-medium" data-bn="মোট ফান্ড" data-en="Total Fund">মোট ফান্ড</p>
             <p id="total-fund" class="text-lg font-bold text-purple-700">৳০</p>
           </div>
-          <div class="stat-card rounded-xl p-2 text-center card-shadow">
-            <p class="stat-label text-xs text-emerald-600 font-medium" data-bn="আজকের বাকি" data-en="Today's Due">আজকের বাকি</p>
-            <p id="today-due" class="text-lg font-bold text-orange-600">৳০</p>
+          <div class="non-due-stat-card rounded-xl p-2 text-center card-shadow">
+            <p class="stat-label text-xs text-blue-600 font-medium" data-bn="নন-ডিউ" data-en="Non-Due">নন-ডিউ</p>
+            <p id="total-non-due" class="text-lg font-bold text-blue-700">০</p>
           </div>
         </div>
       </div>
@@ -614,11 +623,13 @@
     
     <!-- Navigation Tabs -->
     <div class="max-w-4xl mx-auto w-full px-4 py-2">
-      <div class="flex bg-white rounded-xl p-1 card-shadow">
-        <button onclick="showTab('customers')" id="tab-customers" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active" data-bn="👥 কাস্টমার" data-en="👥 Customers">👥 কাস্টমার</button>
-        <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
-        <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="📝 লেনদেন" data-en="📝 Transactions">📝 লেনদেন</button>
-        <button onclick="showTab('reports')" id="tab-reports" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600" data-bn="📊 রিপোর্ট" data-en="📊 Reports">📊 রিপোর্ট</button>
+      <div class="flex bg-white rounded-xl p-1 card-shadow overflow-x-auto">
+        <button onclick="showTab('customers')" id="tab-customers" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active whitespace-nowrap" data-bn="👥 বাকি" data-en="👥 Due">👥 বাকি</button>
+        <button onclick="showTab('advance')" id="tab-advance" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="💰 অগ্রিম" data-en="💰 Advance">💰 অগ্রিম</button>
+        <button onclick="showTab('non-due')" id="tab-non-due" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="✅ শূন্য" data-en="✅ Zero">✅ শূন্য</button>
+        <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
+        <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📝 লেনদেন" data-en="📝 Transactions">📝 লেনদেন</button>
+        <button onclick="showTab('reports')" id="tab-reports" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📊 রিপোর্ট" data-en="📊 Reports">📊 রিপোর্ট</button>
       </div>
     </div>
     
@@ -652,13 +663,41 @@
     <!-- স্ক্রলেবল কন্টেন্ট এরিয়া -->
     <div class="scrollable-content">
       <div class="max-w-4xl mx-auto w-full px-4">
-        <!-- Customers Tab -->
+        <!-- Due Customers Tab -->
         <div id="content-customers" class="space-y-3">
-          <div id="customers-list" class="space-y-2"></div>
-          <div id="no-customers" class="text-center py-10 text-gray-500 hidden">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="font-bold text-lg text-red-800" data-bn="📝 বাকি কাস্টমার" data-en="📝 Due Customers">📝 বাকি কাস্টমার</h2>
+            <button onclick="openModal('customer')" class="add-customer-btn px-3 py-1 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700" data-bn="+ নতুন কাস্টমার" data-en="+ Add Customer">+ নতুন কাস্টমার</button>
+          </div>
+          <div id="due-customers-list" class="space-y-2"></div>
+          <div id="no-due-customers" class="text-center py-10 text-gray-500 hidden">
+            <p class="text-4xl mb-2">✅</p>
+            <p class="no-customers-text" data-bn="কোনো বাকি কাস্টমার নেই" data-en="No due customers">কোনো বাকি কাস্টমার নেই</p>
+          </div>
+        </div>
+        
+        <!-- Advance Tab -->
+        <div id="content-advance" class="space-y-3 hidden">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="font-bold text-lg text-yellow-800" data-bn="💰 অগ্রিম কাস্টমার" data-en="💰 Advance Customers">💰 অগ্রিম কাস্টমার</h2>
+            <span class="text-sm text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full" id="total-advance-amount">মোট অগ্রিম: ৳০</span>
+          </div>
+          <div id="advance-customers-list" class="space-y-2"></div>
+          <div id="no-advance-customers" class="text-center py-10 text-gray-500 hidden">
+            <p class="text-4xl mb-2">💰</p>
+            <p class="no-advance-text" data-bn="কোনো অগ্রিম কাস্টমার নেই" data-en="No advance customers">কোনো অগ্রিম কাস্টমার নেই</p>
+          </div>
+        </div>
+        
+        <!-- Non-Due (Zero Balance) Tab -->
+        <div id="content-non-due" class="space-y-3 hidden">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="font-bold text-lg text-blue-800" data-bn="✅ শূন্য ব্যালেন্স" data-en="✅ Zero Balance">✅ শূন্য ব্যালেন্স</h2>
+          </div>
+          <div id="non-due-customers-list" class="space-y-2"></div>
+          <div id="no-non-due-customers" class="text-center py-10 text-gray-500 hidden">
             <p class="text-4xl mb-2">👥</p>
-            <p class="no-customers-text" data-bn="কোনো কাস্টমার নেই" data-en="No customers">কোনো কাস্টমার নেই</p>
-            <p class="text-sm add-customer-hint" data-bn="নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন" data-en="Click the button below to add customer">নিচের বাটনে ক্লিক করে কাস্টমার যোগ করুন</p>
+            <p class="no-non-due-text" data-bn="কোনো শূন্য ব্যালেন্সের কাস্টমার নেই" data-en="No zero balance customers">কোনো শূন্য ব্যালেন্সের কাস্টমার নেই</p>
           </div>
         </div>
         
@@ -690,11 +729,11 @@
         
         <!-- Transactions Tab -->
         <div id="content-transactions" class="space-y-3 hidden">
-          <div class="flex gap-2 mb-3">
-            <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white" data-bn="সব" data-en="All">সব</button>
-            <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="বাকি" data-en="Due">বাকি</button>
-            <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
-            <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
+          <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+            <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white whitespace-nowrap" data-bn="সব" data-en="All">সব</button>
+            <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="বাকি" data-en="Due">বাকি</button>
+            <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
+            <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
           </div>
           <div id="transactions-list" class="space-y-2"></div>
           <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
@@ -713,12 +752,16 @@
                 <span id="report-total-customers" class="font-bold">০</span>
               </div>
               <div class="flex justify-between py-2 border-b">
-                <span class="total-given-label text-gray-600" data-bn="মোট বাকি দেওয়া হয়েছে" data-en="Total Due Given">মোট বাকি দেওয়া হয়েছে</span>
+                <span class="total-given-label text-gray-600" data-bn="মোট বাকি দেওয়া" data-en="Total Due Given">মোট বাকি দেওয়া</span>
                 <span id="report-total-given" class="font-bold text-red-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 border-b">
-                <span class="total-received-label text-gray-600" data-bn="মোট পরিশোধ হয়েছে" data-en="Total Payment Received">মোট পরিশোধ হয়েছে</span>
+                <span class="total-received-label text-gray-600" data-bn="মোট পরিশোধ নেওয়া" data-en="Total Payment Received">মোট পরিশোধ নেওয়া</span>
                 <span id="report-total-received" class="font-bold text-emerald-600">৳০</span>
+              </div>
+              <div class="flex justify-between py-2 border-b bg-yellow-50">
+                <span class="total-advance-label text-gray-600" data-bn="মোট অগ্রিম জমা" data-en="Total Advance Received">মোট অগ্রিম জমা</span>
+                <span id="report-total-advance" class="font-bold text-yellow-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 border-b bg-purple-50">
                 <span class="total-fund-received-label text-gray-600" data-bn="মোট ফান্ড নেওয়া" data-en="Total Fund Received">মোট ফান্ড নেওয়া</span>
@@ -729,11 +772,11 @@
                 <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
-                <span class="net-due-label text-gray-800 font-medium" data-bn="মোট পাওনা (কাস্টমার)" data-en="Net Due (Customers)">মোট পাওনা (কাস্টমার)</span>
+                <span class="net-due-label text-gray-800 font-medium" data-bn="নিট পাওনা (বাকি - অগ্রিম)" data-en="Net Due (Given - Advance)">নিট পাওনা (বাকি - অগ্রিম)</span>
                 <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
-                <span class="net-fund-label text-gray-800 font-medium" data-bn="মোট ফান্ড দায়" data-en="Net Fund Liability">মোট ফান্ড দায়</span>
+                <span class="net-fund-label text-gray-800 font-medium" data-bn="নিট ফান্ড দায়" data-en="Net Fund Liability">নিট ফান্ড দায়</span>
                 <span id="report-net-fund" class="font-bold text-xl text-purple-600">৳০</span>
               </div>
             </div>
@@ -741,6 +784,10 @@
           <div class="bg-white rounded-xl p-4 card-shadow">
             <h3 class="top-debtors-title font-bold text-lg text-gray-800 mb-3" data-bn="🏆 সর্বোচ্চ বাকিদার" data-en="🏆 Top Debtors">🏆 সর্বোচ্চ বাকিদার</h3>
             <div id="top-debtors" class="space-y-2"></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 card-shadow">
+            <h3 class="top-advance-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 সর্বোচ্চ অগ্রিমদাতা" data-en="💰 Top Advance Givers">💰 সর্বোচ্চ অগ্রিমদাতা</h3>
+            <div id="top-advance" class="space-y-2"></div>
           </div>
           <div class="bg-white rounded-xl p-4 card-shadow">
             <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 ফান্ড দাতা" data-en="💰 Fund Providers">💰 ফান্ড দাতা</h3>
@@ -821,9 +868,12 @@
         'shop_name_placeholder': 'আপনার দোকানের হিসাব',
         'total_customers': 'মোট কাস্টমার',
         'total_due': 'মোট পাওনা',
+        'total_advance': 'মোট অগ্রিম',
         'total_fund': 'মোট ফান্ড',
         'today_due': 'আজকের বাকি',
-        'customers_tab': '👥 কাস্টমার',
+        'customers_tab': '👥 বাকি',
+        'advance_tab': '💰 অগ্রিম',
+        'non_due_tab': '✅ শূন্য',
         'funds_tab': '💰 ফান্ড',
         'transactions_tab': '📝 লেনদেন',
         'reports_tab': '📊 রিপোর্ট',
@@ -835,13 +885,14 @@
         'no_transactions': 'কোনো লেনদেন নেই',
         'summary': '📈 সারাংশ',
         'top_debtors': '🏆 সর্বোচ্চ বাকিদার',
+        'top_advance': '💰 সর্বোচ্চ অগ্রিমদাতা',
         'top_lenders': '💰 ফান্ড দাতা',
-        'total_given': 'মোট বাকি দেওয়া হয়েছে',
-        'total_received': 'মোট পরিশোধ হয়েছে',
+        'total_given': 'মোট বাকি দেওয়া',
+        'total_received': 'মোট পরিশোধ নেওয়া',
         'total_fund_received': 'মোট ফান্ড নেওয়া',
         'total_fund_paid': 'মোট ফান্ড পরিশোধ',
-        'net_due': 'মোট পাওনা (কাস্টমার)',
-        'net_fund': 'মোট ফান্ড দায়',
+        'net_due': 'নিট পাওনা (বাকি - অগ্রিম)',
+        'net_fund': 'নিট ফান্ড দায়',
         'fund_providers': 'ফান্ড দাতা তালিকা',
         'add_provider': '+ নতুন দাতা',
         'all': 'সব',
@@ -870,9 +921,12 @@
         'shop_name_placeholder': 'Your Shop Account',
         'total_customers': 'Total Customers',
         'total_due': 'Total Due',
+        'total_advance': 'Total Advance',
         'total_fund': 'Total Fund',
         'today_due': "Today's Due",
-        'customers_tab': '👥 Customers',
+        'customers_tab': '👥 Due',
+        'advance_tab': '💰 Advance',
+        'non_due_tab': '✅ Zero',
         'funds_tab': '💰 Fund',
         'transactions_tab': '📝 Transactions',
         'reports_tab': '📊 Reports',
@@ -884,12 +938,13 @@
         'no_transactions': 'No transactions',
         'summary': '📈 Summary',
         'top_debtors': '🏆 Top Debtors',
+        'top_advance': '💰 Top Advance Givers',
         'top_lenders': '💰 Fund Providers',
         'total_given': 'Total Due Given',
         'total_received': 'Total Payment Received',
         'total_fund_received': 'Total Fund Received',
         'total_fund_paid': 'Total Fund Paid',
-        'net_due': 'Net Due (Customers)',
+        'net_due': 'Net Due (Given - Advance)',
         'net_fund': 'Net Fund Liability',
         'fund_providers': 'Fund Providers List',
         'add_provider': '+ Add Provider',
@@ -1284,7 +1339,7 @@
             if (customerIndex !== -1) {
               allData[customerIndex].image = data.secure_url;
               await updateData(allData[customerIndex]);
-              renderCustomers();
+              renderCurrentView();
               showToast(currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড হয়েছে!' : 'Customer image uploaded!', 'success');
             }
           }
@@ -1894,10 +1949,16 @@
     // Tab navigation
     function showTab(tab) {
       currentTab = tab;
-      ['customers', 'funds', 'transactions', 'reports'].forEach(t => {
-        document.getElementById(`content-${t}`).classList.toggle('hidden', t !== tab);
-        document.getElementById(`tab-${t}`).classList.toggle('tab-active', t === tab);
-        document.getElementById(`tab-${t}`).classList.toggle('text-gray-600', t !== tab);
+      ['customers', 'advance', 'non-due', 'funds', 'transactions', 'reports'].forEach(t => {
+        const element = document.getElementById(`content-${t}`);
+        if (element) {
+          element.classList.toggle('hidden', t !== tab);
+        }
+        const tabElement = document.getElementById(`tab-${t}`);
+        if (tabElement) {
+          tabElement.classList.toggle('tab-active', t === tab);
+          tabElement.classList.toggle('text-gray-600', t !== tab);
+        }
       });
       renderCurrentView();
     }
@@ -1983,7 +2044,7 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    // Calculate customer balance
+    // Calculate customer balance (positive = due, negative = advance)
     function getCustomerBalance(customerId) {
       let balance = 0;
       allData.forEach(d => {
@@ -1993,6 +2054,26 @@
         }
       });
       return balance;
+    }
+
+    // Get total due (only positive balances)
+    function getTotalDue() {
+      let total = 0;
+      getCustomers().forEach(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        if (balance > 0) total += balance;
+      });
+      return total;
+    }
+
+    // Get total advance (only negative balances, converted to positive)
+    function getTotalAdvance() {
+      let total = 0;
+      getCustomers().forEach(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        if (balance < 0) total += Math.abs(balance);
+      });
+      return total;
     }
 
     // Search handler
@@ -2078,7 +2159,9 @@
     // Render functions
     function renderCurrentView() {
       updateStats();
-      if (currentTab === 'customers') renderCustomers();
+      if (currentTab === 'customers') renderDueCustomers();
+      else if (currentTab === 'advance') renderAdvanceCustomers();
+      else if (currentTab === 'non-due') renderNonDueCustomers();
       else if (currentTab === 'funds') {
         renderFundProviders();
         renderFunds();
@@ -2089,38 +2172,33 @@
 
     function updateStats() {
       const customers = getCustomers();
-      let totalDue = 0;
-      let todayDue = 0;
-      const today = new Date().toDateString();
-
-      customers.forEach(c => {
-        totalDue += getCustomerBalance(c.customer_id);
-      });
-
-      allData.filter(d => d.type === 'due').forEach(d => {
-        if (new Date(d.date).toDateString() === today) {
-          todayDue += d.amount;
-        }
-      });
-
+      const totalDue = getTotalDue();
+      const totalAdvance = getTotalAdvance();
+      const nonDueCount = customers.filter(c => getCustomerBalance(c.customer_id) === 0).length;
       const totalFund = getTotalFundBalance();
 
       document.getElementById('total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('total-due').textContent = formatCurrency(totalDue);
+      document.getElementById('total-advance').textContent = formatCurrency(totalAdvance);
       document.getElementById('total-fund').textContent = formatCurrency(totalFund);
-      document.getElementById('today-due').textContent = formatCurrency(todayDue);
+      document.getElementById('total-non-due').textContent = toBengaliNumber(nonDueCount);
+      
+      if (document.getElementById('total-advance-amount')) {
+        document.getElementById('total-advance-amount').textContent = (currentLanguage === 'bn' ? 'মোট অগ্রিম: ' : 'Total Advance: ') + formatCurrency(totalAdvance);
+      }
     }
 
-    function renderCustomers() {
+    function renderDueCustomers() {
       const customers = getCustomers();
-      const container = document.getElementById('customers-list');
-      const noCustomers = document.getElementById('no-customers');
+      const container = document.getElementById('due-customers-list');
+      const noCustomers = document.getElementById('no-due-customers');
 
-      let filtered = customers;
+      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) > 0);
+      
       if (searchQuery) {
-        filtered = customers.filter(c => 
+        filtered = filtered.filter(c => 
           c.customer_name.toLowerCase().includes(searchQuery) ||
-          (c.mobile && c.mobile.includes(searchQuery))
+          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
         );
       }
 
@@ -2133,20 +2211,13 @@
       noCustomers.classList.add('hidden');
       container.innerHTML = filtered.map(c => {
         const balance = getCustomerBalance(c.customer_id);
-        const balanceColor = balance > 0 ? 'text-red-600' : balance < 0 ? 'text-emerald-600' : 'text-gray-600';
         const isConfirming = deleteConfirmId === c.__backendId;
         const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
         
-        const balanceText = balance > 0 ? 
-          (currentLanguage === 'bn' ? 'বাকি' : 'Due') : 
-          balance < 0 ? 
-          (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
-          (currentLanguage === 'bn' ? 'পরিশোধিত' : 'Settled');
-        
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${c.__backendId}">
+          <div class="bg-white rounded-xl p-4 card-shadow due-customer-card" data-id="${c.__backendId}">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1" onclick="viewCustomerHistory('${c.customer_id}')">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
                 <div class="relative">
                   <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
                   <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
@@ -2155,14 +2226,14 @@
                 </div>
                 <div class="flex-1">
                   <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                  <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : `<p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'ঠিকানা দেওয়া হয়নি' : 'No address'}</p>`}
+                  <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
                 </div>
               </div>
               <div class="text-right">
                 <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
-                  <p class="font-bold ${balanceColor}">${formatCurrency(balance)}</p>
-                  <p class="text-xs text-gray-400">${balanceText}</p>
+                  <p class="font-bold text-red-600">${formatCurrency(balance)}</p>
+                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'বাকি' : 'Due'}</p>
                 </div>
                 ${isConfirming ? `
                   <div class="flex gap-1 justify-end">
@@ -2171,8 +2242,137 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ ${currentLanguage === 'bn' ? 'এডিট' : 'Edit'}</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ${currentLanguage === 'bn' ? 'ডিলিট' : 'Delete'}</button>
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAdvanceCustomers() {
+      const customers = getCustomers();
+      const container = document.getElementById('advance-customers-list');
+      const noCustomers = document.getElementById('no-advance-customers');
+
+      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) < 0);
+      
+      if (searchQuery) {
+        filtered = filtered.filter(c => 
+          c.customer_name.toLowerCase().includes(searchQuery) ||
+          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+        );
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        noCustomers.classList.remove('hidden');
+        return;
+      }
+
+      noCustomers.classList.add('hidden');
+      container.innerHTML = filtered.map(c => {
+        const balance = Math.abs(getCustomerBalance(c.customer_id));
+        const isConfirming = deleteConfirmId === c.__backendId;
+        const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
+        
+        return `
+          <div class="bg-white rounded-xl p-4 card-shadow advance-customer-card" data-id="${c.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
+                <div class="relative">
+                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
+                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                    📷
+                  </button>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                  <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                </div>
+              </div>
+              <div class="text-right">
+                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                  <p class="font-bold text-yellow-600">${formatCurrency(balance)}</p>
+                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance'}</p>
+                </div>
+                ${isConfirming ? `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                  </div>
+                ` : `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
+                  </div>
+                `}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderNonDueCustomers() {
+      const customers = getCustomers();
+      const container = document.getElementById('non-due-customers-list');
+      const noCustomers = document.getElementById('no-non-due-customers');
+
+      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) === 0);
+      
+      if (searchQuery) {
+        filtered = filtered.filter(c => 
+          c.customer_name.toLowerCase().includes(searchQuery) ||
+          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+        );
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        noCustomers.classList.remove('hidden');
+        return;
+      }
+
+      noCustomers.classList.add('hidden');
+      container.innerHTML = filtered.map(c => {
+        const isConfirming = deleteConfirmId === c.__backendId;
+        const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
+        
+        return `
+          <div class="bg-white rounded-xl p-4 card-shadow non-due-customer-card" data-id="${c.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
+                <div class="relative">
+                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
+                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                    📷
+                  </button>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                  <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                </div>
+              </div>
+              <div class="text-right">
+                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                  <p class="font-bold text-gray-600">৳০</p>
+                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'শূন্য' : 'Zero'}</p>
+                </div>
+                ${isConfirming ? `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                  </div>
+                ` : `
+                  <div class="flex gap-1 justify-end">
+                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
                 `}
               </div>
@@ -2204,7 +2404,7 @@
                 </div>
                 <div>
                   <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
-                  <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>
+                  <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
                 </div>
               </div>
               <div class="text-right">
@@ -2219,8 +2419,8 @@
               </div>
             ` : `
               <div class="flex gap-2 mt-2 justify-end">
-                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️ ${currentLanguage === 'bn' ? 'এডিট' : 'Edit'}</button>
-                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️ ${currentLanguage === 'bn' ? 'ডিলিট' : 'Delete'}</button>
+                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
               </div>
             `}
           </div>
@@ -2287,7 +2487,7 @@
                 `}
               </div>
             </div>
-            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>` : `<p class="mt-2 text-xs text-gray-400">${currentLanguage === 'bn' ? 'নোট দেওয়া হয়নি' : 'No note'}</p>`}
+            ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note}</p>` : ''}
           </div>
         `;
       }).join('');
@@ -2322,7 +2522,7 @@
 
       noTransactions.classList.add('hidden');
       container.innerHTML = transactions.map(t => {
-        let icon, color, bgColor, typeText, name;
+        let icon, color, bgColor, typeText, name, sign;
         
         if (t.type === 'due') {
           icon = '📝';
@@ -2330,24 +2530,28 @@
           bgColor = 'bg-red-50';
           typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
           name = t.customer_name;
+          sign = '+';
         } else if (t.type === 'payment') {
           icon = '💰';
           color = 'text-emerald-600';
           bgColor = 'bg-emerald-50';
           typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
           name = t.customer_name;
+          sign = '-';
         } else if (t.type === 'fund-receive') {
           icon = '💰';
           color = 'text-purple-600';
           bgColor = 'bg-purple-50';
           typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
           name = t.provider_name;
+          sign = '+';
         } else if (t.type === 'fund-payment') {
           icon = '💸';
           color = 'text-indigo-600';
           bgColor = 'bg-indigo-50';
           typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
           name = t.provider_name;
+          sign = '-';
         }
         
         const isConfirming = deleteConfirmId === t.__backendId;
@@ -2366,7 +2570,7 @@
               </div>
               <div class="text-right flex items-center gap-2">
                 <div>
-                  <p class="font-bold ${color}">${(t.type === 'due' || t.type === 'fund-receive') ? '+' : '-'}${formatCurrency(t.amount)}</p>
+                  <p class="font-bold ${color}">${sign}${formatCurrency(t.amount)}</p>
                   <p class="text-xs text-gray-400">${typeText}</p>
                 </div>
                 ${isConfirming ? `
@@ -2379,7 +2583,7 @@
                 `}
               </div>
             </div>
-            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note} <span class="text-xs text-gray-400">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></p>` : `<p class="mt-2 text-xs text-gray-400">${currentLanguage === 'bn' ? 'নোট দেওয়া হয়নি' : 'No note'}</p>`}
+            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : ''}
           </div>
         `;
       }).join('');
@@ -2402,15 +2606,18 @@
         if (t.type === 'fund-payment') totalFundPaid += t.amount;
       });
 
+      const totalAdvance = getTotalAdvance();
+
       document.getElementById('report-total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('report-total-given').textContent = formatCurrency(totalGiven);
       document.getElementById('report-total-received').textContent = formatCurrency(totalReceived);
+      document.getElementById('report-total-advance').textContent = formatCurrency(totalAdvance);
       document.getElementById('report-total-fund-received').textContent = formatCurrency(totalFundReceived);
       document.getElementById('report-total-fund-paid').textContent = formatCurrency(totalFundPaid);
-      document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived);
+      document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived - totalAdvance);
       document.getElementById('report-net-fund').textContent = formatCurrency(totalFundReceived - totalFundPaid);
 
-      // Top debtors
+      // Top debtors (positive balance)
       const debtors = customers.map(c => ({
         name: c.customer_name,
         balance: getCustomerBalance(c.customer_id)
@@ -2431,7 +2638,28 @@
         `).join('');
       }
 
-      // Get lenders
+      // Top advance givers (negative balance)
+      const advanceGivers = customers.map(c => ({
+        name: c.customer_name,
+        balance: Math.abs(getCustomerBalance(c.customer_id))
+      })).filter(a => a.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
+
+      const topAdvanceContainer = document.getElementById('top-advance');
+      if (advanceGivers.length === 0) {
+        topAdvanceContainer.innerHTML = `<p class="text-gray-500 text-center py-4">${currentLanguage === 'bn' ? 'কোনো অগ্রিমদাতা নেই' : 'No advance givers'}</p>`;
+      } else {
+        topAdvanceContainer.innerHTML = advanceGivers.map((a, i) => `
+          <div class="flex items-center justify-between py-2 ${i < advanceGivers.length - 1 ? 'border-b' : ''}">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center text-sm font-bold">${toBengaliNumber(i + 1)}</span>
+              <span class="text-gray-800">${a.name}</span>
+            </div>
+            <span class="font-bold text-yellow-600">${formatCurrency(a.balance)}</span>
+          </div>
+        `).join('');
+      }
+
+      // Top fund providers
       const lenders = providers.map(p => ({
         name: p.provider_name,
         balance: getFundProviderBalance(p.provider_id)
@@ -2464,29 +2692,28 @@
           <form onsubmit="addCustomer(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'আবশ্যক' : 'required'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input type="text" id="customer-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'কাস্টমারের নাম' : 'Customer name'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'}</label>
                 <input type="tel" id="customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}</label>
                 <input type="text" id="customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
               
-              <!-- অপশনাল প্রাথমিক বাকি ফিল্ড -->
               <div class="optional-section">
                 <div class="initial-due-label">
                   <span>💰 ${t('initial_due')}</span>
-                  <span>${t('initial_due_hint')}</span>
+                  <span class="text-xs">${t('initial_due_hint')}</span>
                 </div>
                 <input type="number" id="customer-initial-due" min="0" step="1"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
@@ -2514,13 +2741,13 @@
                   placeholder="${currentLanguage === 'bn' ? 'কাস্টমারের নাম' : 'Customer name'}" value="${customer.customer_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'}</label>
                 <input type="tel" id="edit-customer-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}" value="${customer.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}</label>
                 <input type="text" id="edit-customer-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}" value="${customer.address || ''}">
@@ -2538,19 +2765,19 @@
           <form onsubmit="addFundProvider(event)">
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'আবশ্যক' : 'required'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input type="text" id="provider-name" required 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'যেমন: রহিম, Sonali Bank' : 'e.g., Rahim, Sonali Bank'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'}</label>
                 <input type="tel" id="provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}</label>
                 <input type="text" id="provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
@@ -2577,13 +2804,13 @@
                   placeholder="${currentLanguage === 'bn' ? 'নাম' : 'Name'}" value="${provider.provider_name}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'মোবাইল নম্বর' : 'Mobile'}</label>
                 <input type="tel" id="edit-provider-mobile" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? '০১XXXXXXXXX' : '01XXXXXXXXX'}" value="${provider.mobile || ''}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}</label>
                 <input type="text" id="edit-provider-address" 
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}" value="${provider.address || ''}">
@@ -2631,7 +2858,7 @@
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'}</label>
                 <textarea id="transaction-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'কি জিনিসের জন্য...' : 'What for...'}"></textarea>
@@ -2694,7 +2921,7 @@
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'} <span class="text-xs text-gray-500 font-normal">(${currentLanguage === 'bn' ? 'ঐচ্ছিক' : 'optional'})</span></label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'}</label>
                 <textarea id="fund-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'বিশেষ তথ্য...' : 'Additional info...'}"></textarea>
@@ -2720,6 +2947,9 @@
           (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
           (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
         
+        const balanceColor = balance > 0 ? 'text-red-600' : balance < 0 ? 'text-yellow-600' : 'text-gray-600';
+        const bgColor = balance > 0 ? 'from-red-500 to-red-600' : balance < 0 ? 'from-yellow-500 to-yellow-600' : 'from-gray-500 to-gray-600';
+        
         content.innerHTML = `
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-bold text-gray-800">📋 ${customer.customer_name}</h2>
@@ -2733,8 +2963,8 @@
               </button>
             </div>
             <div class="flex-1">
-              <div class="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-xl p-4 text-white">
-                <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান বাকি' : 'Current Due'}</p>
+              <div class="bg-gradient-to-r ${bgColor} rounded-xl p-4 text-white">
+                <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
                 <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
                 <p class="text-xs mt-1">${balanceText}</p>
                 ${customer.mobile ? `<p class="text-sm mt-2">📞 ${customer.mobile}</p>` : ''}
@@ -2888,7 +3118,6 @@
       const result = await saveData(customerData);
       
       if (result.isOk) {
-        // যদি প্রাথমিক বাকি দেওয়া থাকে, তাহলে আলাদা একটি due এন্ট্রি তৈরি করুন
         if (initialDue > 0) {
           const dueData = {
             type: 'due',
@@ -3046,7 +3275,7 @@
     // Delete functions
     function initiateDeleteCustomer(backendId) {
       deleteConfirmId = backendId;
-      renderCustomers();
+      renderCurrentView();
     }
 
     function initiateDeleteFundProvider(backendId) {
@@ -3098,9 +3327,6 @@
       deleteConfirmId = null;
     }
 
-    // ============================================
-    // আপডেট করা ফান্ড দাতা ডিলিট ফাংশন
-    // ============================================
     async function confirmDeleteFundProvider(backendId) {
       const provider = allData.find(d => d.__backendId === backendId);
       if (!provider) return;
@@ -3129,8 +3355,8 @@
         }
         showToast(
           currentLanguage === 'bn' ? 
-          'ফান্ড দাতা মুছে ফেলা হয়েছে! (লেনদেন অপরিবর্তিত)' : 
-          'Provider deleted! (Transactions unchanged)', 
+          'ফান্ড দাতা মুছে ফেলা হয়েছে!' : 
+          'Provider deleted!', 
           'success'
         );
         playSound('success');
@@ -3195,7 +3421,13 @@
         customers: getCustomers(),
         fund_providers: getFundProviders(),
         fund_transactions: getFunds(),
-        all_transactions: getTransactions()
+        all_transactions: getTransactions(),
+        summary: {
+          total_customers: getCustomers().length,
+          total_due: getTotalDue(),
+          total_advance: getTotalAdvance(),
+          total_fund: getTotalFundBalance()
+        }
       };
       
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -3244,17 +3476,14 @@
         if (e.target.id === 'forgot-password-modal') closeForgotPassword();
       });
 
-      // সার্চ ইনপুট চেক
       const searchInput = document.getElementById('search-input');
       if (searchInput) {
         searchInput.addEventListener('input', checkSearchInput);
         searchInput.addEventListener('keyup', checkSearchInput);
       }
 
-      // Set default language
       setLanguage('bn');
       
-      // Set default sound
       if (soundEnabled) {
         document.getElementById('menu-sound-icon').textContent = '🔊';
         document.getElementById('menu-sound-text').textContent = currentLanguage === 'bn' ? 'অন' : 'On';
