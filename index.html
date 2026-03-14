@@ -228,6 +228,31 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
+    /* অ্যাকর্ডিয়ন স্টাইল */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    .accordion-content.open {
+      max-height: 500px;
+    }
+    
+    /* লগইন কার্ড অ্যানিমেশন */
+    .login-card {
+      animation: fadeInUp 0.5s ease-out;
+    }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
@@ -319,97 +344,104 @@
       </div>
     </div>
 
-    <!-- Auth Screen (Sign In) -->
-    <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div class="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl my-4">
-        <div class="text-center mb-6">
-          <div class="text-6xl mb-4">📒</div>
-          <h1 class="text-3xl font-bold text-gray-800 mb-2">বাকির খাতা</h1>
-          <p class="text-gray-600">আপনার ব্যবসায়িক হিসাব ব্যবস্থাপনা</p>
+    <!-- Auth Screen (Sign In) - আকর্ষণীয় এবং ছোট ভার্সন -->
+    <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 z-50 flex items-center justify-center p-4 overflow-y-auto">
+      <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-6 max-w-sm w-full shadow-2xl login-card border border-white/20">
+        <!-- হেডার -->
+        <div class="text-center mb-5">
+          <div class="inline-block p-3 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl mb-3 shadow-inner">
+            <div class="text-4xl">📒</div>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-800 mb-1">বাকির খাতা</h1>
+          <p class="text-xs text-gray-500">আপনার হিসাব, আপনার নখদর্পণে</p>
         </div>
         
-        <!-- Guest Mode Warning -->
-        <div id="guest-warning" class="warning-box p-3 rounded-lg mb-4 hidden">
-          <div class="flex items-start gap-2">
-            <span class="text-xl">⚠️</span>
-            <div class="text-sm">
-              <p class="font-bold mb-1">গেস্ট মোড সতর্কতা:</p>
-              <p>আপনি APK ভার্সন ব্যবহার করছেন। গেস্ট মোডে ডাটা শুধুমাত্র এই ডিভাইসে সংরক্ষিত হবে। ফোন বদলালে বা অ্যাপ ডিলিট করলে ডাটা চলে যাবে। নিয়মিত ব্যাকআপ নিন।</p>
-            </div>
+        <!-- Guest Mode Warning (শুধু APK তে) -->
+        <div id="guest-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-2 mb-4 hidden">
+          <div class="flex items-start gap-2 text-xs">
+            <span class="text-amber-600 text-base">⚠️</span>
+            <p class="text-amber-700">APK ভার্সনে ডাটা শুধু এই ডিভাইসে সংরক্ষিত হবে। নিয়মিত ব্যাকআপ নিন।</p>
           </div>
         </div>
         
-        <!-- Email/Password Sign In -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-700 mb-3">📧 ইমেইল দিয়ে সাইন ইন</h2>
-          <form onsubmit="signInWithEmail(event)" class="space-y-3">
-            <div>
-              <input type="email" id="email-login-email" placeholder="ইমেইল" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-            </div>
-            <div>
-              <input type="password" id="email-login-password" placeholder="পাসওয়ার্ড" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-            </div>
-            <button type="submit" class="w-full btn-email text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all">
-              সাইন ইন
-            </button>
-          </form>
-          <div class="text-right mt-2">
-            <button onclick="showForgotPassword()" class="text-sm text-emerald-600 hover:underline">পাসওয়ার্ড ভুলে গেছেন?</button>
-          </div>
-        </div>
-
-        <!-- Register New Account -->
-        <div class="mb-6">
-          <h2 class="text-lg font-semibold text-gray-700 mb-3">📝 নতুন একাউন্ট</h2>
-          <form onsubmit="registerWithEmail(event)" class="space-y-3">
-            <div>
-              <input type="text" id="email-register-name" placeholder="আপনার নাম" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-              <span class="text-xs text-gray-500 optional-badge">ঐচ্ছিক</span>
-            </div>
-            <div>
-              <input type="email" id="email-register-email" placeholder="ইমেইল" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-            </div>
-            <div>
-              <input type="password" id="email-register-password" placeholder="পাসওয়ার্ড (ন্যূনতম ৬ অক্ষর)" class="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
-            </div>
-            <button type="submit" class="w-full btn-email text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all">
-              রেজিস্টার
-            </button>
-          </form>
-        </div>
-        
-        <div class="auth-divider">
-          <span>অথবা</span>
-        </div>
-        
-        <!-- Google Sign In -->
-        <div class="space-y-4 mt-6">
-          <button onclick="signInWithGoogle()" id="google-signin-btn" class="w-full btn-google text-white py-3 rounded-xl font-bold text-lg hover:shadow-lg transition-all flex items-center justify-center gap-2">
-            <svg class="w-6 h-6" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        <!-- অ্যাকর্ডিয়ন স্টাইল লগইন অপশন -->
+        <div class="space-y-2">
+          <!-- গুগল বাটন - সবসময় দেখা যাবে -->
+          <button onclick="signInWithGoogle()" id="google-signin-btn" class="w-full bg-white hover:bg-gray-50 text-gray-700 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-3 border-2 border-gray-100 shadow-sm group">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Google দিয়ে সাইন ইন
+            <span class="text-sm font-medium">Google দিয়ে চালিয়ে যান</span>
           </button>
           
-          <div class="auth-divider">
-            <span>অথবা</span>
+          <!-- ইমেইল/পাসওয়ার্ড অ্যাকর্ডিয়ন -->
+          <div class="border-2 border-gray-100 rounded-xl overflow-hidden">
+            <button onclick="toggleAccordion('email-accordion')" class="w-full bg-white px-4 py-3 flex items-center justify-between text-gray-700 hover:bg-gray-50 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-gray-500">📧</span>
+                <span class="text-sm font-medium">ইমেইল দিয়ে সাইন ইন</span>
+              </div>
+              <svg id="email-accordion-icon" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </button>
+            
+            <div id="email-accordion" class="accordion-content bg-gray-50">
+              <div class="p-4 space-y-3">
+                <form onsubmit="signInWithEmail(event)">
+                  <input type="email" id="email-login-email" placeholder="ইমেইল" class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-2">
+                  <input type="password" id="email-login-password" placeholder="পাসওয়ার্ড" class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-3">
+                  <button type="submit" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2.5 rounded-lg text-sm font-medium transition-all">
+                    সাইন ইন
+                  </button>
+                </form>
+                <button onclick="showForgotPassword()" class="text-xs text-emerald-600 hover:underline w-full text-center">পাসওয়ার্ড ভুলে গেছেন?</button>
+                <div class="relative my-3">
+                  <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div class="relative flex justify-center text-xs">
+                    <span class="px-2 bg-gray-50 text-gray-500">অথবা</span>
+                  </div>
+                </div>
+                <button onclick="toggleAccordion('register-accordion')" class="w-full text-emerald-600 border-2 border-emerald-200 hover:bg-emerald-50 py-2.5 rounded-lg text-sm font-medium transition-all">
+                  নতুন একাউন্ট খুলুন
+                </button>
+              </div>
+            </div>
           </div>
           
-          <button onclick="continueAsGuest()" id="guest-btn" class="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-bold text-lg hover:shadow-lg transition-all">
+          <!-- রেজিস্টার অ্যাকর্ডিয়ন -->
+          <div id="register-accordion" class="accordion-content border-2 border-gray-100 rounded-xl overflow-hidden">
+            <div class="bg-gray-50 p-4 space-y-3">
+              <form onsubmit="registerWithEmail(event)">
+                <input type="text" id="email-register-name" placeholder="আপনার নাম (ঐচ্ছিক)" class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-2">
+                <input type="email" id="email-register-email" placeholder="ইমেইল" class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-2">
+                <input type="password" id="email-register-password" placeholder="পাসওয়ার্ড (ন্যূনতম ৬ অক্ষর)" class="w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-3">
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-medium transition-all">
+                  রেজিস্টার
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- অতিথি বাটন -->
+          <button onclick="continueAsGuest()" id="guest-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm border-2 border-transparent hover:border-gray-300">
+            <span class="text-base">👤</span>
             অতিথি হিসেবে চালিয়ে যান
           </button>
         </div>
         
         <!-- Platform Info -->
-        <div class="mt-4 text-xs text-center">
-          <span id="platform-badge" class="inline-block px-2 py-1 bg-gray-200 rounded-full text-gray-700"></span>
+        <div class="mt-4 text-center">
+          <span id="platform-badge" class="inline-block px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"></span>
         </div>
         
-        <p class="text-xs text-gray-500 text-center mt-6">
-          সাইন ইন করলে আপনার ডাটা ক্লাউডে সংরক্ষিত হবে এবং যেকোনো ডিভাইস থেকে অ্যাক্সেস করতে পারবেন
+        <p class="text-xs text-gray-400 text-center mt-4">
+          সাইন ইন করলে আপনার ডাটা ক্লাউডে সংরক্ষিত হবে
         </p>
       </div>
     </div>
@@ -772,7 +804,7 @@
                 <span id="report-total-fund-paid" class="font-bold text-indigo-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 bg-emerald-50 rounded-lg px-3">
-                <span class="net-due-label text-gray-800 font-medium" data-bn="নিট পাওনা (বাকি - অগ্রিম)" data-en="Net Due (Given - Advance)">নিট পাওনা (বাকি - অগ্রিম)</span>
+                <span class="net-due-label text-gray-800 font-medium" data-bn="নিট বাকি" data-en="Net Due">নিট বাকি</span>
                 <span id="report-net-due" class="font-bold text-xl text-red-600">৳০</span>
               </div>
               <div class="flex justify-between py-2 bg-purple-100 rounded-lg px-3">
@@ -790,7 +822,7 @@
             <div id="top-advance" class="space-y-2"></div>
           </div>
           <div class="bg-white rounded-xl p-4 card-shadow">
-            <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 ফান্ড দাতা" data-en="💰 Fund Providers">💰 ফান্ড দাতা</h3>
+            <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 সর্বোচ্চ ফান্ড দাতা" data-en="💰 Top Fund Providers">💰 সর্বোচ্চ ফান্ড দাতা</h3>
             <div id="top-lenders" class="space-y-2"></div>
           </div>
           <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
@@ -860,6 +892,29 @@
     const database = firebase.database();
 
     // ============================================
+    // অ্যাকর্ডিয়ন ফাংশন
+    // ============================================
+    function toggleAccordion(id) {
+      const element = document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      
+      if (element.classList.contains('open')) {
+        element.classList.remove('open');
+        if (icon) icon.style.transform = 'rotate(0deg)';
+      } else {
+        element.classList.add('open');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+        
+        // রেজিস্টার অ্যাকর্ডিয়ন খুললে অটো স্ক্রোল
+        if (id === 'register-accordion') {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 100);
+        }
+      }
+    }
+
+    // ============================================
     // ভাষা সেটিংস - Translations
     // ============================================
     const translations = {
@@ -886,12 +941,12 @@
         'summary': '📈 সারাংশ',
         'top_debtors': '🏆 সর্বোচ্চ বাকিদার',
         'top_advance': '💰 সর্বোচ্চ অগ্রিমদাতা',
-        'top_lenders': '💰 ফান্ড দাতা',
+        'top_lenders': '💰 সর্বোচ্চ ফান্ড দাতা',
         'total_given': 'মোট বাকি দেওয়া',
         'total_received': 'মোট পরিশোধ নেওয়া',
         'total_fund_received': 'মোট ফান্ড নেওয়া',
         'total_fund_paid': 'মোট ফান্ড পরিশোধ',
-        'net_due': 'নিট পাওনা (বাকি - অগ্রিম)',
+        'net_due': 'নিট বাকি',
         'net_fund': 'নিট ফান্ড দায়',
         'fund_providers': 'ফান্ড দাতা তালিকা',
         'add_provider': '+ নতুন দাতা',
@@ -939,12 +994,12 @@
         'summary': '📈 Summary',
         'top_debtors': '🏆 Top Debtors',
         'top_advance': '💰 Top Advance Givers',
-        'top_lenders': '💰 Fund Providers',
+        'top_lenders': '💰 Top Fund Providers',
         'total_given': 'Total Due Given',
         'total_received': 'Total Payment Received',
         'total_fund_received': 'Total Fund Received',
         'total_fund_paid': 'Total Fund Paid',
-        'net_due': 'Net Due (Given - Advance)',
+        'net_due': 'Net Due',
         'net_fund': 'Net Fund Liability',
         'fund_providers': 'Fund Providers List',
         'add_provider': '+ Add Provider',
@@ -2076,10 +2131,58 @@
       return total;
     }
 
-    // Search handler
+    // ============================================
+    // সার্চ হ্যান্ডলার - আপডেটেড ভার্সন (Smart Search)
+    // ============================================
     function handleSearch(query) {
-      searchQuery = query.toLowerCase();
-      renderCurrentView();
+      searchQuery = query.toLowerCase().trim();
+      
+      // যদি সার্চ খালি থাকে, তাহলে আগের ট্যাবেই থাকবে
+      if (searchQuery === '') {
+        renderCurrentView();
+        return;
+      }
+      
+      // সব কাস্টমার নিয়ে আসি
+      const customers = getCustomers();
+      
+      // সার্চ কোয়েরির সাথে ম্যাচ করে এমন কাস্টমার খুঁজি
+      const matchingCustomers = customers.filter(c => 
+        c.customer_name.toLowerCase().includes(searchQuery) ||
+        (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+      );
+      
+      // যদি কোনো ম্যাচিং কাস্টমার পাওয়া যায়
+      if (matchingCustomers.length > 0) {
+        // প্রথম ম্যাচিং কাস্টমারের আইডি নিই
+        const firstMatch = matchingCustomers[0];
+        const balance = getCustomerBalance(firstMatch.customer_id);
+        
+        // ব্যালেন্স চেক করে কোন ট্যাবে দেখাতে হবে তা নির্ধারণ
+        if (balance > 0) {
+          // বাকি কাস্টমার - Due ট্যাব দেখাবে
+          if (currentTab !== 'customers') {
+            showTab('customers');
+          }
+        } else if (balance < 0) {
+          // অগ্রিম কাস্টমার - Advance ট্যাব দেখাবে
+          if (currentTab !== 'advance') {
+            showTab('advance');
+          }
+        } else {
+          // শূন্য ব্যালেন্স - Non-Due ট্যাব দেখাবে
+          if (currentTab !== 'non-due') {
+            showTab('non-due');
+          }
+        }
+        
+        // রেন্ডার করে দেখাই
+        renderCurrentView();
+        
+      } else {
+        // কোনো ম্যাচিং কাস্টমার নেই - ফাঁকা দেখাও
+        renderCurrentView();
+      }
     }
 
     // Filter transactions
@@ -2589,6 +2692,9 @@
       }).join('');
     }
 
+    // ============================================
+    // আপডেটেড রেন্ডার রিপোর্টস ফাংশন (সব সমস্যা ঠিক করা হয়েছে)
+    // ============================================
     function renderReports() {
       const customers = getCustomers();
       const providers = getFundProviders();
@@ -2606,22 +2712,28 @@
         if (t.type === 'fund-payment') totalFundPaid += t.amount;
       });
 
-      const totalAdvance = getTotalAdvance();
+      // নিট বাকি = মোট বাকি দেওয়া - মোট পরিশোধ নেওয়া (অগ্রিম বাদ)
+      const netDue = totalGiven - totalReceived;
+      const netFund = totalFundReceived - totalFundPaid;
 
       document.getElementById('report-total-customers').textContent = toBengaliNumber(customers.length);
       document.getElementById('report-total-given').textContent = formatCurrency(totalGiven);
       document.getElementById('report-total-received').textContent = formatCurrency(totalReceived);
-      document.getElementById('report-total-advance').textContent = formatCurrency(totalAdvance);
+      document.getElementById('report-total-advance').textContent = formatCurrency(getTotalAdvance());
       document.getElementById('report-total-fund-received').textContent = formatCurrency(totalFundReceived);
       document.getElementById('report-total-fund-paid').textContent = formatCurrency(totalFundPaid);
-      document.getElementById('report-net-due').textContent = formatCurrency(totalGiven - totalReceived - totalAdvance);
-      document.getElementById('report-net-fund').textContent = formatCurrency(totalFundReceived - totalFundPaid);
+      document.getElementById('report-net-due').textContent = formatCurrency(netDue);
+      document.getElementById('report-net-fund').textContent = formatCurrency(netFund);
 
-      // Top debtors (positive balance)
-      const debtors = customers.map(c => ({
-        name: c.customer_name,
-        balance: getCustomerBalance(c.customer_id)
-      })).filter(d => d.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
+      // Top debtors (যাদের কাছ থেকে পাওনা - positive balance)
+      const debtors = customers
+        .map(c => ({
+          name: c.customer_name,
+          balance: getCustomerBalance(c.customer_id)
+        }))
+        .filter(d => d.balance > 0)
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 5);
 
       const topDebtorsContainer = document.getElementById('top-debtors');
       if (debtors.length === 0) {
@@ -2638,11 +2750,15 @@
         `).join('');
       }
 
-      // Top advance givers (negative balance)
-      const advanceGivers = customers.map(c => ({
-        name: c.customer_name,
-        balance: Math.abs(getCustomerBalance(c.customer_id))
-      })).filter(a => a.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
+      // Top advance givers (যাদের অগ্রিম দিয়েছে - negative balance)
+      const advanceGivers = customers
+        .filter(c => getCustomerBalance(c.customer_id) < 0)  // শুধু নেগেটিভ ব্যালেন্স যাদের
+        .map(c => ({
+          name: c.customer_name,
+          balance: Math.abs(getCustomerBalance(c.customer_id))
+        }))
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 5);
 
       const topAdvanceContainer = document.getElementById('top-advance');
       if (advanceGivers.length === 0) {
@@ -2659,11 +2775,15 @@
         `).join('');
       }
 
-      // Top fund providers
-      const lenders = providers.map(p => ({
-        name: p.provider_name,
-        balance: getFundProviderBalance(p.provider_id)
-      })).filter(l => l.balance > 0).sort((a, b) => b.balance - a.balance).slice(0, 5);
+      // Top fund providers (যাদের কাছ থেকে ফান্ড নেওয়া হয়েছে)
+      const lenders = providers
+        .map(p => ({
+          name: p.provider_name,
+          balance: getFundProviderBalance(p.provider_id)
+        }))
+        .filter(l => l.balance > 0)  // শুধু পজিটিভ ব্যালেন্স যাদের (আমরা যাদের কাছে ঋণী)
+        .sort((a, b) => b.balance - a.balance)
+        .slice(0, 5);
 
       const topLendersContainer = document.getElementById('top-lenders');
       if (lenders.length === 0) {
@@ -2947,7 +3067,6 @@
           (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
           (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
         
-        const balanceColor = balance > 0 ? 'text-red-600' : balance < 0 ? 'text-yellow-600' : 'text-gray-600';
         const bgColor = balance > 0 ? 'from-red-500 to-red-600' : balance < 0 ? 'from-yellow-500 to-yellow-600' : 'from-gray-500 to-gray-600';
         
         content.innerHTML = `
