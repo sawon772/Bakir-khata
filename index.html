@@ -90,7 +90,16 @@
     .upload-option.selected { border-color: #059669; background: #f0fdf4; }
     .default-avatar { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     
-    /* নতুন স্টাইল */
+    /* নতুন স্টাইল - শেয়ার বাটন */
+    .share-btn { 
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      transition: all 0.2s;
+    }
+    .share-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      transform: scale(1.05);
+    }
+    
     .language-btn { padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
     .language-active { background: #059669; color: white; }
     .language-inactive { background: #e5e7eb; color: #4b5563; }
@@ -969,7 +978,10 @@
         'mic_permission': 'মাইক্রোফোন অনুমতি দেওয়া হয়নি',
         'initial_due': 'প্রাথমিক বাকি',
         'initial_due_hint': 'ঐচ্ছিক - নতুন কাস্টমারের প্রাথমিক বাকি পরিমাণ',
-        'latest_badge': 'সর্বশেষ'
+        'latest_badge': 'সর্বশেষ',
+        'share_transaction': 'শেয়ার লেনদেন',
+        'share_as_text': 'টেক্সট হিসেবে শেয়ার',
+        'share_as_image': 'ছবি হিসেবে শেয়ার'
       },
       en: {
         'app_name': 'Bakir Khata',
@@ -1022,7 +1034,10 @@
         'mic_permission': 'Microphone permission denied',
         'initial_due': 'Initial Due',
         'initial_due_hint': 'Optional - initial due amount for new customer',
-        'latest_badge': 'Latest'
+        'latest_badge': 'Latest',
+        'share_transaction': 'Share Transaction',
+        'share_as_text': 'Share as Text',
+        'share_as_image': 'Share as Image'
       }
     };
 
@@ -1069,6 +1084,80 @@
     let currentImageUploadCustomerId = null;
     let verificationCode = null;
     let verificationExpiry = null;
+
+    // ============================================
+    // শেয়ার ফাংশন - নতুন যোগ করা
+    // ============================================
+    function shareCustomerHistory(customerId) {
+      const customer = getCustomers().find(c => c.customer_id === customerId);
+      if (!customer) return;
+      
+      const balance = getCustomerBalance(customerId);
+      const transactions = getTransactions().filter(t => t.customer_id === customerId);
+      
+      // শেয়ার করার জন্য টেক্সট তৈরি
+      const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+      const date = new Date().toLocaleDateString('bn-BD');
+      
+      let shareText = `🏪 *${shopName}*\n`;
+      shareText += `👤 *${customer.customer_name}*\n`;
+      shareText += `📅 ${date}\n`;
+      shareText += `━━━━━━━━━━━━━━\n\n`;
+      
+      if (balance > 0) {
+        shareText += `📝 বর্তমান বাকি: ${formatCurrency(balance)}\n`;
+      } else if (balance < 0) {
+        shareText += `💰 বর্তমান অগ্রিম: ${formatCurrency(Math.abs(balance))}\n`;
+      } else {
+        shareText += `✅ বর্তমান ব্যালেন্স: ৳০\n`;
+      }
+      
+      if (customer.mobile) shareText += `📞 মোবাইল: ${customer.mobile}\n`;
+      if (customer.address) shareText += `📍 ঠিকানা: ${customer.address}\n`;
+      
+      shareText += `\n━━━━━━━━━━━━━━\n`;
+      shareText += `📋 *লেনদেনের ইতিহাস*\n`;
+      shareText += `━━━━━━━━━━━━━━\n\n`;
+      
+      if (transactions.length === 0) {
+        shareText += `কোনো লেনদেন নেই\n`;
+      } else {
+        transactions.slice(0, 10).forEach(t => {
+          const type = t.type === 'due' ? '📝 বাকি' : '💰 পরিশোধ';
+          shareText += `${type}: ${formatCurrency(t.amount)} - ${formatDate(t.date)}\n`;
+          if (t.note) shareText += `   📌 ${t.note}\n`;
+        });
+        
+        if (transactions.length > 10) {
+          shareText += `\n... এবং আরও ${transactions.length - 10}টি লেনদেন\n`;
+        }
+      }
+      
+      shareText += `\n━━━━━━━━━━━━━━\n`;
+      shareText += `🔗 শেয়ার করেছেন: বাকির খাতা অ্যাপ থেকে\n`;
+      
+      // ওয়েব শেয়ার API ব্যবহার (যদি সমর্থন করে)
+      if (navigator.share) {
+        navigator.share({
+          title: `${customer.customer_name} - লেনদেনের ইতিহাস`,
+          text: shareText,
+        }).catch(() => {
+          // শেয়ার ব্যর্থ হলে কপি করার অপশন
+          copyToClipboard(shareText);
+        });
+      } else {
+        // শেয়ার API না থাকলে কপি করে দেওয়া
+        copyToClipboard(shareText);
+      }
+    }
+    
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(currentLanguage === 'bn' ? 'কপি করা হয়েছে!' : 'Copied!', 'success');
+      }).catch(() => {
+        showToast(currentLanguage === 'bn' ? 'কপি ব্যর্থ হয়েছে' : 'Copy failed', 'error');
+      });
+    }
 
     // ============================================
     // ভয়েস সার্চ ফাংশন
@@ -2291,6 +2380,7 @@
       }
     }
 
+    // আপডেটেড রেন্ডার ফাংশন - শেয়ার বাটন যোগ করা হয়েছে
     function renderDueCustomers() {
       const customers = getCustomers();
       const container = document.getElementById('due-customers-list');
@@ -2345,6 +2435,7 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
+                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -2410,6 +2501,7 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
+                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -2474,6 +2566,7 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
+                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -3094,6 +3187,7 @@
           <div class="flex gap-2 mb-4">
             <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}</button>
             <button onclick="closeModal(); openModal('payment', '${personId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}</button>
+            <button onclick="shareCustomerHistory('${personId}')" class="flex-1 py-2 rounded-lg share-btn text-white text-sm font-medium">📤 ${currentLanguage === 'bn' ? 'শেয়ার' : 'Share'}</button>
           </div>
           <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
           <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
