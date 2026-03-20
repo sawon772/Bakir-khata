@@ -313,6 +313,16 @@
         transform: translateY(0);
       }
     }
+    
+    /* ডেট ফিল্টার বাটন স্টাইল */
+    .date-filter-btn {
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .date-filter-btn.active {
+      background: #059669 !important;
+      color: white !important;
+    }
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
@@ -586,7 +596,7 @@
           <p><span class="font-medium">মোড:</span> <span id="profile-mode" class="text-emerald-600">-</span></p>
         </div>
         
-        <!-- প্রোফাইল শেয়ার বাটন (ঐচ্ছিক রাখতে পারেন) -->
+        <!-- প্রোফাইল শেয়ার বাটন -->
         <button onclick="shareProfileCard()" class="w-full mt-3 btn-share text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
@@ -827,8 +837,20 @@
           </div>
         </div>
         
-        <!-- Transactions Tab -->
+        <!-- Transactions Tab - ডেট ফিল্টার যোগ করা হয়েছে -->
         <div id="content-transactions" class="space-y-3 hidden">
+          <!-- নতুন ডেট ফিল্টার বাটন গ্রুপ -->
+          <div class="bg-white rounded-xl p-3 card-shadow mb-3">
+            <p class="text-sm font-medium text-gray-700 mb-2">📅 তারিখ অনুযায়ী ফিল্টার</p>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="setDateFilter('today')" id="date-filter-today" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">আজ</button>
+              <button onclick="setDateFilter('week')" id="date-filter-week" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
+              <button onclick="setDateFilter('month')" id="date-filter-month" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
+              <button onclick="setDateFilter('year')" id="date-filter-year" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
+              <button onclick="setDateFilter('all')" id="date-filter-all" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">সব সময়</button>
+            </div>
+          </div>
+          
           <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
             <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white whitespace-nowrap" data-bn="সব" data-en="All">সব</button>
             <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="বাকি" data-en="Due">বাকি</button>
@@ -917,7 +939,7 @@
   </div>
 
   <script>
-    /* LOADER HELPERS */
+    // LOADER HELPERS
     function showGlobalLoader(text = "অপেক্ষা করুন...") {
       const loader = document.getElementById('app-global-loader');
       const textEl = document.getElementById('app-loader-text');
@@ -1131,6 +1153,7 @@
     let currentTab = 'customers';
     let currentFilter = 'all';
     let currentFundFilter = 'all';
+    let currentDateFilter = 'all'; // নতুন ভ্যারিয়েবল - ডেট ফিল্টারের জন্য
     let searchQuery = '';
     let deleteConfirmId = null;
     let editCustomerId = null;
@@ -1146,6 +1169,87 @@
     let verificationExpiry = null;
 
     // ============================================
+    // নতুন ডেট ফিল্টার ফাংশন
+    // ============================================
+    function setDateFilter(filter) {
+      currentDateFilter = filter;
+      
+      // সব ফিল্টার বাটন থেকে active ক্লাস রিমুভ করুন
+      document.querySelectorAll('.date-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+        btn.classList.remove('bg-emerald-600', 'text-white');
+      });
+      
+      // সক্রিয় বাটনে active ক্লাস যোগ করুন
+      const activeBtn = document.getElementById(`date-filter-${filter}`);
+      if (activeBtn) {
+        activeBtn.classList.add('active');
+        activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        activeBtn.classList.add('bg-emerald-600', 'text-white');
+      }
+      
+      // ট্রানজেকশন রি-রেন্ডার করুন
+      if (currentTab === 'transactions') {
+        renderTransactions();
+      }
+    }
+
+    function isDateInRange(dateStr, filter) {
+      const date = new Date(dateStr);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (filter === 'today') {
+        const compareDate = new Date(dateStr);
+        compareDate.setHours(0, 0, 0, 0);
+        return compareDate.getTime() === today.getTime();
+      }
+      else if (filter === 'week') {
+        const weekStart = new Date(today);
+        weekStart.setDate(today.getDate() - today.getDay());
+        return date >= weekStart;
+      }
+      else if (filter === 'month') {
+        return date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+      }
+      else if (filter === 'year') {
+        return date.getFullYear() === today.getFullYear();
+      }
+      return true;
+    }
+
+    // আপডেটেড getFilteredTransactionsForDisplay ফাংশন - ডেট ফিল্টার সহ
+    function getFilteredTransactionsForDisplay() {
+      let transactions = getTransactions();
+      
+      // টাইপ ফিল্টার
+      if (currentFilter !== 'all') {
+        if (currentFilter === 'fund') {
+          transactions = transactions.filter(t => t.type === 'fund-receive' || t.type === 'fund-payment');
+        } else {
+          transactions = transactions.filter(t => t.type === currentFilter);
+        }
+      }
+      
+      // ডেট ফিল্টার - নতুন যোগ করা
+      if (currentDateFilter !== 'all') {
+        transactions = transactions.filter(t => isDateInRange(t.date, currentDateFilter));
+      }
+      
+      // সার্চ ফিল্টার
+      if (searchQuery) {
+        transactions = transactions.filter(t => 
+          (t.customer_name && t.customer_name.toLowerCase().includes(searchQuery)) ||
+          (t.provider_name && t.provider_name.toLowerCase().includes(searchQuery)) ||
+          (t.note && t.note.toLowerCase().includes(searchQuery))
+        );
+      }
+      
+      return transactions;
+    }
+
+    // ============================================
     // কাস্টমার শেয়ার ফাংশন (PNG ইমেজ + লাস্ট ২ লেনদেন)
     // ============================================
     async function shareCustomerCard(customerId) {
@@ -1159,7 +1263,7 @@
         const balance = getCustomerBalance(customerId);
         const transactions = getTransactions()
           .filter(t => t.customer_id === customerId)
-          .slice(0, 2); // সর্বশেষ ২টি লেনদেন
+          .slice(0, 2);
         
         const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=80`;
         
@@ -1171,7 +1275,6 @@
         
         const balanceColor = balance > 0 ? '#dc2626' : balance < 0 ? '#d97706' : '#6b7280';
         
-        // একটি অস্থায়ী কার্ড এলিমেন্ট তৈরি করি
         const card = document.createElement('div');
         card.style.width = '380px';
         card.style.padding = '24px';
@@ -1183,7 +1286,6 @@
         card.style.top = '-9999px';
         card.style.fontFamily = "'Hind Siliguri', sans-serif";
         
-        // কার্ডের HTML
         card.innerHTML = `
           <div style="text-align: center; margin-bottom: 16px;">
             <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
@@ -1241,7 +1343,6 @@
         
         document.body.appendChild(card);
         
-        // html2canvas দিয়ে ছবি তৈরি
         const canvas = await html2canvas(card, {
           scale: 2,
           backgroundColor: null,
@@ -1252,17 +1353,14 @@
         
         document.body.removeChild(card);
         
-        // Canvas থেকে ব্লব তৈরি
         canvas.toBlob(async (blob) => {
           if (!blob) {
             showToast('ছবি তৈরি ব্যর্থ হয়েছে', 'error');
             return;
           }
           
-          // ফাইল তৈরি
           const file = new File([blob], `bakir-khata-${customer.customer_name}.png`, { type: 'image/png' });
           
-          // ওয়েব শেয়ার API (যদি সমর্থন করে)
           if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
             try {
               await navigator.share({
@@ -1276,7 +1374,6 @@
               downloadImage(canvas, customer.customer_name);
             }
           } else {
-            // শেয়ার API না থাকলে ডাউনলোড অপশন
             downloadImage(canvas, customer.customer_name);
           }
         }, 'image/png');
@@ -1297,7 +1394,6 @@
       showToast(currentLanguage === 'bn' ? 'ছবি ডাউনলোড হচ্ছে...' : 'Image downloading...', 'success');
     }
 
-    // প্রোফাইল শেয়ার ফাংশন (ঐচ্ছিক)
     async function shareProfileCard() {
       try {
         showGlobalLoader("শেয়ার কার্ড তৈরি হচ্ছে...");
@@ -2626,7 +2722,87 @@
       }
     }
 
-    // রেন্ডার ফাংশন - কাস্টমার প্রোফাইলে শেয়ার বাটন যোগ করা হয়েছে (ছোট আকারে)
+    // আপডেটেড renderTransactions ফাংশন - ডেট ফিল্টার সহ
+    function renderTransactions() {
+      const transactions = getFilteredTransactionsForDisplay();
+      const container = document.getElementById('transactions-list');
+      const noTransactions = document.getElementById('no-transactions');
+
+      if (transactions.length === 0) {
+        container.innerHTML = '';
+        noTransactions.classList.remove('hidden');
+        return;
+      }
+
+      noTransactions.classList.add('hidden');
+      container.innerHTML = transactions.map(t => {
+        let icon, color, bgColor, typeText, name, sign;
+        
+        if (t.type === 'due') {
+          icon = '📝';
+          color = 'text-red-600';
+          bgColor = 'bg-red-50';
+          typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
+          name = t.customer_name;
+          sign = '+';
+        } else if (t.type === 'payment') {
+          icon = '💰';
+          color = 'text-emerald-600';
+          bgColor = 'bg-emerald-50';
+          typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
+          name = t.customer_name;
+          sign = '-';
+        } else if (t.type === 'fund-receive') {
+          icon = '💰';
+          color = 'text-purple-600';
+          bgColor = 'bg-purple-50';
+          typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
+          name = t.provider_name;
+          sign = '+';
+        } else if (t.type === 'fund-payment') {
+          icon = '💸';
+          color = 'text-indigo-600';
+          bgColor = 'bg-indigo-50';
+          typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
+          name = t.provider_name;
+          sign = '-';
+        }
+        
+        const isConfirming = deleteConfirmId === t.__backendId;
+        
+        return `
+          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${t.__backendId}">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center">
+                  ${icon}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-800">${name}</h3>
+                  <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
+                </div>
+              </div>
+              <div class="text-right flex items-center gap-2">
+                <div>
+                  <p class="font-bold ${color}">${sign}${formatCurrency(t.amount)}</p>
+                  <p class="text-xs text-gray-400">${typeText}</p>
+                </div>
+                ${isConfirming ? `
+                  <div class="flex gap-1">
+                    <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                  </div>
+                ` : `
+                  <button onclick="initiateDeleteTransaction('${t.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
+                `}
+              </div>
+            </div>
+            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
     function renderDueCustomers() {
       const customers = getCustomers();
       const container = document.getElementById('due-customers-list');
@@ -2942,102 +3118,6 @@
               </div>
             </div>
             ${f.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${f.note}</p>` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderTransactions() {
-      let transactions = getTransactions();
-      const container = document.getElementById('transactions-list');
-      const noTransactions = document.getElementById('no-transactions');
-
-      if (currentFilter !== 'all') {
-        if (currentFilter === 'fund') {
-          transactions = transactions.filter(t => t.type === 'fund-receive' || t.type === 'fund-payment');
-        } else {
-          transactions = transactions.filter(t => t.type === currentFilter);
-        }
-      }
-
-      if (searchQuery) {
-        transactions = transactions.filter(t => 
-          (t.customer_name && t.customer_name.toLowerCase().includes(searchQuery)) ||
-          (t.provider_name && t.provider_name.toLowerCase().includes(searchQuery)) ||
-          (t.note && t.note.toLowerCase().includes(searchQuery))
-        );
-      }
-
-      if (transactions.length === 0) {
-        container.innerHTML = '';
-        noTransactions.classList.remove('hidden');
-        return;
-      }
-
-      noTransactions.classList.add('hidden');
-      container.innerHTML = transactions.map(t => {
-        let icon, color, bgColor, typeText, name, sign;
-        
-        if (t.type === 'due') {
-          icon = '📝';
-          color = 'text-red-600';
-          bgColor = 'bg-red-50';
-          typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
-          name = t.customer_name;
-          sign = '+';
-        } else if (t.type === 'payment') {
-          icon = '💰';
-          color = 'text-emerald-600';
-          bgColor = 'bg-emerald-50';
-          typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
-          name = t.customer_name;
-          sign = '-';
-        } else if (t.type === 'fund-receive') {
-          icon = '💰';
-          color = 'text-purple-600';
-          bgColor = 'bg-purple-50';
-          typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
-          name = t.provider_name;
-          sign = '+';
-        } else if (t.type === 'fund-payment') {
-          icon = '💸';
-          color = 'text-indigo-600';
-          bgColor = 'bg-indigo-50';
-          typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
-          name = t.provider_name;
-          sign = '-';
-        }
-        
-        const isConfirming = deleteConfirmId === t.__backendId;
-        
-        return `
-          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${t.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center">
-                  ${icon}
-                </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">${name}</h3>
-                  <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
-                </div>
-              </div>
-              <div class="text-right flex items-center gap-2">
-                <div>
-                  <p class="font-bold ${color}">${sign}${formatCurrency(t.amount)}</p>
-                  <p class="text-xs text-gray-400">${typeText}</p>
-                </div>
-                ${isConfirming ? `
-                  <div class="flex gap-1">
-                    <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-                  </div>
-                ` : `
-                  <button onclick="initiateDeleteTransaction('${t.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
-                `}
-              </div>
-            </div>
-            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : ''}
           </div>
         `;
       }).join('');
@@ -3861,7 +3941,9 @@
         if (!isGuest && currentUser) {
           // Firebase auto-updates via listener
         } else {
-          loadGuestData();
+          const savedData = localStorage.getItem('guest_data');
+          if (savedData) allData = JSON.parse(savedData);
+          renderCurrentView();
         }
         showToast(currentLanguage === 'bn' ? 'লেনদেন মুছে ফেলা হয়েছে!' : 'Transaction deleted!', 'success');
         playSound('success');
@@ -3967,6 +4049,9 @@
         document.getElementById('menu-sound-icon').textContent = '🔊';
         document.getElementById('menu-sound-text').textContent = currentLanguage === 'bn' ? 'অন' : 'On';
       }
+      
+      // ডেট ফিল্টার সেট করুন
+      setDateFilter('all');
     }
 
     init();
