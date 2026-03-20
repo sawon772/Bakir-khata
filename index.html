@@ -32,6 +32,9 @@
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- html2canvas for image sharing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
   <style>
     * { font-family: 'Hind Siliguri', sans-serif; }
     .tab-active { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; }
@@ -45,6 +48,7 @@
     .btn-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
     .btn-purple { background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); }
     .btn-indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+    .btn-share { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
     .stat-card { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
     .advance-stat-card { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
     .non-due-stat-card { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
@@ -90,14 +94,61 @@
     .upload-option.selected { border-color: #059669; background: #f0fdf4; }
     .default-avatar { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
     
-    /* নতুন স্টাইল - শেয়ার বাটন */
-    .share-btn { 
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    /* শেয়ার বাটন স্টাইল - ছোট ও আধুনিক */
+    .share-icon-btn { 
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+    }
+    .share-icon-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+    }
+    
+    /* অ্যাকশন বাটন গ্রুপ */
+    .action-btns-group {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 12px 0;
+      border-radius: 12px;
+      font-weight: 500;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       transition: all 0.2s;
     }
-    .share-btn:hover {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      transform: scale(1.05);
+    .action-btn-due { background: #dc2626; color: white; }
+    .action-btn-due:hover { background: #b91c1c; }
+    .action-btn-payment { background: #2563eb; color: white; }
+    .action-btn-payment:hover { background: #1d4ed8; }
+    
+    /* হেডার সেকশন - যেখানে শেয়ার বাটন থাকবে */
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .share-btn-container {
+      position: absolute;
+      top: 0;
+      right: 0;
     }
     
     .language-btn { padding: 4px 12px; border-radius: 20px; cursor: pointer; transition: all 0.2s; font-size: 0.875rem; }
@@ -353,7 +404,7 @@
       </div>
     </div>
 
-    <!-- Auth Screen (Sign In) - আকর্ষণীয় এবং ছোট ভার্সন -->
+    <!-- Auth Screen (Sign In) -->
     <div id="auth-screen" class="fixed inset-0 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-500 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div class="bg-white/95 backdrop-blur-sm rounded-3xl p-6 max-w-sm w-full shadow-2xl login-card border border-white/20">
         <!-- হেডার -->
@@ -365,7 +416,7 @@
           <p class="text-xs text-gray-500">আপনার হিসাব, আপনার নখদর্পণে</p>
         </div>
         
-        <!-- Guest Mode Warning (শুধু APK তে) -->
+        <!-- Guest Mode Warning -->
         <div id="guest-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-2 mb-4 hidden">
           <div class="flex items-start gap-2 text-xs">
             <span class="text-amber-600 text-base">⚠️</span>
@@ -375,7 +426,7 @@
         
         <!-- অ্যাকর্ডিয়ন স্টাইল লগইন অপশন -->
         <div class="space-y-2">
-          <!-- গুগল বাটন - সবসময় দেখা যাবে -->
+          <!-- গুগল বাটন -->
           <button onclick="signInWithGoogle()" id="google-signin-btn" class="w-full bg-white hover:bg-gray-50 text-gray-700 py-3 px-4 rounded-xl font-medium transition-all flex items-center justify-center gap-3 border-2 border-gray-100 shadow-sm group">
             <svg class="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -534,6 +585,14 @@
           <p><span class="font-medium">দোকান:</span> <span id="profile-shop-name" class="text-emerald-600">-</span></p>
           <p><span class="font-medium">মোড:</span> <span id="profile-mode" class="text-emerald-600">-</span></p>
         </div>
+        
+        <!-- প্রোফাইল শেয়ার বাটন (ঐচ্ছিক রাখতে পারেন) -->
+        <button onclick="shareProfileCard()" class="w-full mt-3 btn-share text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+          </svg>
+          <span class="text-sm">প্রোফাইল শেয়ার</span>
+        </button>
       </div>
       
       <!-- ভাষা সেটিংস -->
@@ -914,7 +973,6 @@
         element.classList.add('open');
         if (icon) icon.style.transform = 'rotate(180deg)';
         
-        // রেজিস্টার অ্যাকর্ডিয়ন খুললে অটো স্ক্রোল
         if (id === 'register-accordion') {
           setTimeout(() => {
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -979,9 +1037,10 @@
         'initial_due': 'প্রাথমিক বাকি',
         'initial_due_hint': 'ঐচ্ছিক - নতুন কাস্টমারের প্রাথমিক বাকি পরিমাণ',
         'latest_badge': 'সর্বশেষ',
-        'share_transaction': 'শেয়ার লেনদেন',
-        'share_as_text': 'টেক্সট হিসেবে শেয়ার',
-        'share_as_image': 'ছবি হিসেবে শেয়ার'
+        'share_customer': 'শেয়ার করুন',
+        'share_as_image': 'ছবি হিসেবে শেয়ার',
+        'share_success': 'শেয়ার করা হয়েছে!',
+        'share_error': 'শেয়ার ব্যর্থ হয়েছে'
       },
       en: {
         'app_name': 'Bakir Khata',
@@ -1035,9 +1094,10 @@
         'initial_due': 'Initial Due',
         'initial_due_hint': 'Optional - initial due amount for new customer',
         'latest_badge': 'Latest',
-        'share_transaction': 'Share Transaction',
-        'share_as_text': 'Share as Text',
-        'share_as_image': 'Share as Image'
+        'share_customer': 'Share',
+        'share_as_image': 'Share as Image',
+        'share_success': 'Shared successfully!',
+        'share_error': 'Share failed'
       }
     };
 
@@ -1086,77 +1146,281 @@
     let verificationExpiry = null;
 
     // ============================================
-    // শেয়ার ফাংশন - নতুন যোগ করা
+    // কাস্টমার শেয়ার ফাংশন (PNG ইমেজ + লাস্ট ২ লেনদেন)
     // ============================================
-    function shareCustomerHistory(customerId) {
-      const customer = getCustomers().find(c => c.customer_id === customerId);
-      if (!customer) return;
-      
-      const balance = getCustomerBalance(customerId);
-      const transactions = getTransactions().filter(t => t.customer_id === customerId);
-      
-      // শেয়ার করার জন্য টেক্সট তৈরি
-      const shopName = defaultConfig.shop_name || 'বাকির খাতা';
-      const date = new Date().toLocaleDateString('bn-BD');
-      
-      let shareText = `🏪 *${shopName}*\n`;
-      shareText += `👤 *${customer.customer_name}*\n`;
-      shareText += `📅 ${date}\n`;
-      shareText += `━━━━━━━━━━━━━━\n\n`;
-      
-      if (balance > 0) {
-        shareText += `📝 বর্তমান বাকি: ${formatCurrency(balance)}\n`;
-      } else if (balance < 0) {
-        shareText += `💰 বর্তমান অগ্রিম: ${formatCurrency(Math.abs(balance))}\n`;
-      } else {
-        shareText += `✅ বর্তমান ব্যালেন্স: ৳০\n`;
-      }
-      
-      if (customer.mobile) shareText += `📞 মোবাইল: ${customer.mobile}\n`;
-      if (customer.address) shareText += `📍 ঠিকানা: ${customer.address}\n`;
-      
-      shareText += `\n━━━━━━━━━━━━━━\n`;
-      shareText += `📋 *লেনদেনের ইতিহাস*\n`;
-      shareText += `━━━━━━━━━━━━━━\n\n`;
-      
-      if (transactions.length === 0) {
-        shareText += `কোনো লেনদেন নেই\n`;
-      } else {
-        transactions.slice(0, 10).forEach(t => {
-          const type = t.type === 'due' ? '📝 বাকি' : '💰 পরিশোধ';
-          shareText += `${type}: ${formatCurrency(t.amount)} - ${formatDate(t.date)}\n`;
-          if (t.note) shareText += `   📌 ${t.note}\n`;
+    async function shareCustomerCard(customerId) {
+      try {
+        showGlobalLoader("শেয়ার কার্ড তৈরি হচ্ছে...");
+        
+        const customer = getCustomers().find(c => c.customer_id === customerId);
+        if (!customer) return;
+        
+        const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+        const balance = getCustomerBalance(customerId);
+        const transactions = getTransactions()
+          .filter(t => t.customer_id === customerId)
+          .slice(0, 2); // সর্বশেষ ২টি লেনদেন
+        
+        const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=80`;
+        
+        const balanceText = balance > 0 ? 
+          (currentLanguage === 'bn' ? 'বাকি আছে' : 'Due') : 
+          balance < 0 ? 
+          (currentLanguage === 'bn' ? 'অগ্রিম আছে' : 'Advance') : 
+          (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
+        
+        const balanceColor = balance > 0 ? '#dc2626' : balance < 0 ? '#d97706' : '#6b7280';
+        
+        // একটি অস্থায়ী কার্ড এলিমেন্ট তৈরি করি
+        const card = document.createElement('div');
+        card.style.width = '380px';
+        card.style.padding = '24px';
+        card.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+        card.style.borderRadius = '24px';
+        card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
+        card.style.position = 'absolute';
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+        card.style.fontFamily = "'Hind Siliguri', sans-serif";
+        
+        // কার্ডের HTML
+        card.innerHTML = `
+          <div style="text-align: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+              <img src="${customerImage}" style="width: 64px; height: 64px; border-radius: 50%; border: 3px solid #059669; object-fit: cover;" alt="${customer.customer_name}">
+              <div style="text-align: left;">
+                <h2 style="font-size: 20px; font-weight: bold; color: #065f46; margin: 0;">${customer.customer_name}</h2>
+                <p style="color: #047857; font-size: 14px; margin: 4px 0;">${shopName}</p>
+                ${customer.mobile ? `<p style="color: #6b7280; font-size: 12px; margin: 2px 0;">📞 ${customer.mobile}</p>` : ''}
+              </div>
+            </div>
+          </div>
+          
+          <div style="background: white; border-radius: 16px; padding: 16px; margin: 16px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
+                <p style="font-size: 28px; font-weight: bold; color: ${balanceColor}; margin: 4px 0;">${formatCurrency(balance)}</p>
+                <p style="font-size: 12px; color: #6b7280; margin: 0;">${balanceText}</p>
+              </div>
+              ${customer.address ? `<p style="font-size: 12px; color: #6b7280; max-width: 120px;">📍 ${customer.address.substring(0, 30)}</p>` : ''}
+            </div>
+          </div>
+          
+          ${transactions.length > 0 ? `
+            <div style="background: white; border-radius: 16px; padding: 16px;">
+              <p style="font-size: 16px; font-weight: 600; color: #374151; margin: 0 0 12px 0;">📝 ${currentLanguage === 'bn' ? 'সর্বশেষ লেনদেন' : 'Latest Transactions'}</p>
+              ${transactions.map((t, index) => {
+                const typeText = t.type === 'due' ? 
+                  (currentLanguage === 'bn' ? '📝 বাকি দিয়েছেন' : '📝 Due Given') : 
+                  (currentLanguage === 'bn' ? '💰 পেমেন্ট নিয়েছেন' : '💰 Payment Taken');
+                const amountColor = t.type === 'due' ? '#dc2626' : '#059669';
+                const sign = t.type === 'due' ? '+' : '-';
+                return `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; ${index < transactions.length - 1 ? 'border-bottom: 1px solid #e5e7eb;' : ''}">
+                    <div>
+                      <p style="font-size: 14px; font-weight: 500; color: #374151; margin: 0;">${typeText}</p>
+                      <p style="font-size: 12px; color: #6b7280; margin: 2px 0 0 0;">${formatDate(t.date)}</p>
+                      ${t.note ? `<p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">📌 ${t.note.substring(0, 20)}</p>` : ''}
+                    </div>
+                    <p style="font-size: 16px; font-weight: bold; color: ${amountColor}; margin: 0;">${sign}${formatCurrency(t.amount)}</p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : `
+            <div style="background: white; border-radius: 16px; padding: 20px; text-align: center;">
+              <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>
+            </div>
+          `}
+          
+          <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 12px;">
+            <span>📱 বাকির খাতা অ্যাপ থেকে শেয়ার করা হয়েছে</span>
+          </div>
+        `;
+        
+        document.body.appendChild(card);
+        
+        // html2canvas দিয়ে ছবি তৈরি
+        const canvas = await html2canvas(card, {
+          scale: 2,
+          backgroundColor: null,
+          logging: false,
+          allowTaint: true,
+          useCORS: true
         });
         
-        if (transactions.length > 10) {
-          shareText += `\n... এবং আরও ${transactions.length - 10}টি লেনদেন\n`;
-        }
-      }
-      
-      shareText += `\n━━━━━━━━━━━━━━\n`;
-      shareText += `🔗 শেয়ার করেছেন: বাকির খাতা অ্যাপ থেকে\n`;
-      
-      // ওয়েব শেয়ার API ব্যবহার (যদি সমর্থন করে)
-      if (navigator.share) {
-        navigator.share({
-          title: `${customer.customer_name} - লেনদেনের ইতিহাস`,
-          text: shareText,
-        }).catch(() => {
-          // শেয়ার ব্যর্থ হলে কপি করার অপশন
-          copyToClipboard(shareText);
-        });
-      } else {
-        // শেয়ার API না থাকলে কপি করে দেওয়া
-        copyToClipboard(shareText);
+        document.body.removeChild(card);
+        
+        // Canvas থেকে ব্লব তৈরি
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('ছবি তৈরি ব্যর্থ হয়েছে', 'error');
+            return;
+          }
+          
+          // ফাইল তৈরি
+          const file = new File([blob], `bakir-khata-${customer.customer_name}.png`, { type: 'image/png' });
+          
+          // ওয়েব শেয়ার API (যদি সমর্থন করে)
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: `${customer.customer_name} - লেনদেন`,
+                text: 'বাকির খাতা থেকে শেয়ার করা হয়েছে',
+                files: [file]
+              });
+              showToast(t('share_success'), 'success');
+            } catch (err) {
+              console.error('Share failed:', err);
+              downloadImage(canvas, customer.customer_name);
+            }
+          } else {
+            // শেয়ার API না থাকলে ডাউনলোড অপশন
+            downloadImage(canvas, customer.customer_name);
+          }
+        }, 'image/png');
+        
+      } catch (error) {
+        console.error('Share error:', error);
+        showToast(t('share_error'), 'error');
+      } finally {
+        hideGlobalLoader();
       }
     }
     
-    function copyToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        showToast(currentLanguage === 'bn' ? 'কপি করা হয়েছে!' : 'Copied!', 'success');
-      }).catch(() => {
-        showToast(currentLanguage === 'bn' ? 'কপি ব্যর্থ হয়েছে' : 'Copy failed', 'error');
-      });
+    function downloadImage(canvas, customerName) {
+      const link = document.createElement('a');
+      link.download = `bakir-khata-${customerName}-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast(currentLanguage === 'bn' ? 'ছবি ডাউনলোড হচ্ছে...' : 'Image downloading...', 'success');
+    }
+
+    // প্রোফাইল শেয়ার ফাংশন (ঐচ্ছিক)
+    async function shareProfileCard() {
+      try {
+        showGlobalLoader("শেয়ার কার্ড তৈরি হচ্ছে...");
+        
+        const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+        const userName = document.getElementById('profile-name')?.textContent || 'ব্যবহারকারী';
+        const userEmail = document.getElementById('profile-email-menu')?.textContent || 'guest@local';
+        const userMode = isGuest ? 'গেস্ট মোড' : 'সাইন ইন';
+        
+        const transactions = getTransactions().slice(0, 2);
+        
+        const totalDue = getTotalDue();
+        const totalAdvance = getTotalAdvance();
+        const totalFund = getTotalFundBalance();
+        
+        const card = document.createElement('div');
+        card.style.width = '400px';
+        card.style.padding = '24px';
+        card.style.background = 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)';
+        card.style.borderRadius = '24px';
+        card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
+        card.style.position = 'absolute';
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+        card.style.fontFamily = "'Hind Siliguri', sans-serif";
+        
+        card.innerHTML = `
+          <div style="text-align: center; margin-bottom: 20px;">
+            <div style="width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; background: #059669; display: flex; align-items: center; justify-content: center;">
+              <span style="font-size: 40px;">📒</span>
+            </div>
+            <h2 style="font-size: 24px; font-weight: bold; color: #065f46; margin: 12px 0 4px;">${shopName}</h2>
+            <p style="color: #047857; font-size: 14px;">${userName} • ${userMode}</p>
+            <p style="color: #6b7280; font-size: 12px;">${userEmail}</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; background: white; padding: 12px; border-radius: 16px;">
+            <div style="text-align: center;">
+              <p style="font-size: 12px; color: #6b7280;">পাওনা</p>
+              <p style="font-size: 16px; font-weight: bold; color: #dc2626;">${formatCurrency(totalDue)}</p>
+            </div>
+            <div style="text-align: center;">
+              <p style="font-size: 12px; color: #6b7280;">অগ্রিম</p>
+              <p style="font-size: 16px; font-weight: bold; color: #d97706;">${formatCurrency(totalAdvance)}</p>
+            </div>
+            <div style="text-align: center;">
+              <p style="font-size: 12px; color: #6b7280;">ফান্ড</p>
+              <p style="font-size: 16px; font-weight: bold; color: #7e22ce;">${formatCurrency(totalFund)}</p>
+            </div>
+          </div>
+          
+          ${transactions.length > 0 ? `
+            <div style="background: white; border-radius: 16px; padding: 12px; margin-top: 12px;">
+              <p style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 8px;">📝 সর্বশেষ লেনদেন</p>
+              ${transactions.map(t => {
+                const typeText = t.type === 'due' ? '📝 বাকি' : 
+                                 t.type === 'payment' ? '💰 পেমেন্ট' : 
+                                 t.type === 'fund-receive' ? '💰 ফান্ড গ্রহণ' : '💸 ফান্ড পরিশোধ';
+                const amountColor = t.type === 'due' ? '#dc2626' : 
+                                   t.type === 'payment' ? '#059669' : 
+                                   t.type === 'fund-receive' ? '#9333ea' : '#4f46e5';
+                const name = t.customer_name || t.provider_name || '';
+                return `
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                    <div>
+                      <p style="font-size: 14px; font-weight: 500; color: #374151;">${name}</p>
+                      <p style="font-size: 12px; color: #6b7280;">${typeText} • ${formatDate(t.date)}</p>
+                    </div>
+                    <p style="font-size: 16px; font-weight: bold; color: ${amountColor};">${formatCurrency(t.amount)}</p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          ` : ''}
+          
+          <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 12px;">
+            <span>📱 বাকির খাতা অ্যাপ থেকে শেয়ার করা হয়েছে</span>
+          </div>
+        `;
+        
+        document.body.appendChild(card);
+        
+        const canvas = await html2canvas(card, {
+          scale: 2,
+          backgroundColor: null,
+          logging: false,
+          allowTaint: true,
+          useCORS: true
+        });
+        
+        document.body.removeChild(card);
+        
+        canvas.toBlob(async (blob) => {
+          if (!blob) {
+            showToast('ছবি তৈরি ব্যর্থ হয়েছে', 'error');
+            return;
+          }
+          
+          const file = new File([blob], 'bakir-khata-profile.png', { type: 'image/png' });
+          
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: `${shopName} - প্রোফাইল`,
+                text: 'বাকির খাতা প্রোফাইল',
+                files: [file]
+              });
+              showToast(t('share_success'), 'success');
+            } catch (err) {
+              console.error('Share failed:', err);
+              downloadImage(canvas, 'profile');
+            }
+          } else {
+            downloadImage(canvas, 'profile');
+          }
+        }, 'image/png');
+        
+      } catch (error) {
+        console.error('Share error:', error);
+        showToast(t('share_error'), 'error');
+      } finally {
+        hideGlobalLoader();
+      }
     }
 
     // ============================================
@@ -2108,7 +2372,7 @@
     }
 
     // ============================================
-    // কাস্টমার লিস্ট সাজানো - সর্বশেষ লেনদেন যার, তার নাম সবার উপরে
+    // কাস্টমার লিস্ট সাজানো
     // ============================================
     function getCustomers() {
       const customerMap = new Map();
@@ -2188,7 +2452,7 @@
         .sort((a, b) => new Date(b.date) - new Date(a.date));
     }
 
-    // Calculate customer balance (positive = due, negative = advance)
+    // Calculate customer balance
     function getCustomerBalance(customerId) {
       let balance = 0;
       allData.forEach(d => {
@@ -2200,7 +2464,7 @@
       return balance;
     }
 
-    // Get total due (only positive balances)
+    // Get total due
     function getTotalDue() {
       let total = 0;
       getCustomers().forEach(c => {
@@ -2210,7 +2474,7 @@
       return total;
     }
 
-    // Get total advance (only negative balances, converted to positive)
+    // Get total advance
     function getTotalAdvance() {
       let total = 0;
       getCustomers().forEach(c => {
@@ -2221,55 +2485,37 @@
     }
 
     // ============================================
-    // সার্চ হ্যান্ডলার - আপডেটেড ভার্সন (Smart Search)
+    // সার্চ হ্যান্ডলার
     // ============================================
     function handleSearch(query) {
       searchQuery = query.toLowerCase().trim();
       
-      // যদি সার্চ খালি থাকে, তাহলে আগের ট্যাবেই থাকবে
       if (searchQuery === '') {
         renderCurrentView();
         return;
       }
       
-      // সব কাস্টমার নিয়ে আসি
       const customers = getCustomers();
       
-      // সার্চ কোয়েরির সাথে ম্যাচ করে এমন কাস্টমার খুঁজি
       const matchingCustomers = customers.filter(c => 
         c.customer_name.toLowerCase().includes(searchQuery) ||
         (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
       );
       
-      // যদি কোনো ম্যাচিং কাস্টমার পাওয়া যায়
       if (matchingCustomers.length > 0) {
-        // প্রথম ম্যাচিং কাস্টমারের আইডি নিই
         const firstMatch = matchingCustomers[0];
         const balance = getCustomerBalance(firstMatch.customer_id);
         
-        // ব্যালেন্স চেক করে কোন ট্যাবে দেখাতে হবে তা নির্ধারণ
         if (balance > 0) {
-          // বাকি কাস্টমার - Due ট্যাব দেখাবে
-          if (currentTab !== 'customers') {
-            showTab('customers');
-          }
+          if (currentTab !== 'customers') showTab('customers');
         } else if (balance < 0) {
-          // অগ্রিম কাস্টমার - Advance ট্যাব দেখাবে
-          if (currentTab !== 'advance') {
-            showTab('advance');
-          }
+          if (currentTab !== 'advance') showTab('advance');
         } else {
-          // শূন্য ব্যালেন্স - Non-Due ট্যাব দেখাবে
-          if (currentTab !== 'non-due') {
-            showTab('non-due');
-          }
+          if (currentTab !== 'non-due') showTab('non-due');
         }
         
-        // রেন্ডার করে দেখাই
         renderCurrentView();
-        
       } else {
-        // কোনো ম্যাচিং কাস্টমার নেই - ফাঁকা দেখাও
         renderCurrentView();
       }
     }
@@ -2380,7 +2626,7 @@
       }
     }
 
-    // আপডেটেড রেন্ডার ফাংশন - শেয়ার বাটন যোগ করা হয়েছে
+    // রেন্ডার ফাংশন - কাস্টমার প্রোফাইলে শেয়ার বাটন যোগ করা হয়েছে (ছোট আকারে)
     function renderDueCustomers() {
       const customers = getCustomers();
       const container = document.getElementById('due-customers-list');
@@ -2435,7 +2681,11 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
+                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                      </svg>
+                    </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -2501,7 +2751,11 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
+                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                      </svg>
+                    </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -2566,7 +2820,11 @@
                   </div>
                 ` : `
                   <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerHistory('${c.customer_id}')" class="px-2 py-1 share-btn text-white text-xs rounded hover:opacity-90" title="${t('share_transaction')}">📤</button>
+                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                      </svg>
+                    </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
                   </div>
@@ -2785,9 +3043,6 @@
       }).join('');
     }
 
-    // ============================================
-    // আপডেটেড রেন্ডার রিপোর্টস ফাংশন (সব সমস্যা ঠিক করা হয়েছে)
-    // ============================================
     function renderReports() {
       const customers = getCustomers();
       const providers = getFundProviders();
@@ -2805,7 +3060,6 @@
         if (t.type === 'fund-payment') totalFundPaid += t.amount;
       });
 
-      // নিট বাকি = মোট বাকি দেওয়া - মোট পরিশোধ নেওয়া (অগ্রিম বাদ)
       const netDue = totalGiven - totalReceived;
       const netFund = totalFundReceived - totalFundPaid;
 
@@ -2818,7 +3072,6 @@
       document.getElementById('report-net-due').textContent = formatCurrency(netDue);
       document.getElementById('report-net-fund').textContent = formatCurrency(netFund);
 
-      // Top debtors (যাদের কাছ থেকে পাওনা - positive balance)
       const debtors = customers
         .map(c => ({
           name: c.customer_name,
@@ -2843,9 +3096,8 @@
         `).join('');
       }
 
-      // Top advance givers (যাদের অগ্রিম দিয়েছে - negative balance)
       const advanceGivers = customers
-        .filter(c => getCustomerBalance(c.customer_id) < 0)  // শুধু নেগেটিভ ব্যালেন্স যাদের
+        .filter(c => getCustomerBalance(c.customer_id) < 0)
         .map(c => ({
           name: c.customer_name,
           balance: Math.abs(getCustomerBalance(c.customer_id))
@@ -2868,13 +3120,12 @@
         `).join('');
       }
 
-      // Top fund providers (যাদের কাছ থেকে ফান্ড নেওয়া হয়েছে)
       const lenders = providers
         .map(p => ({
           name: p.provider_name,
           balance: getFundProviderBalance(p.provider_id)
         }))
-        .filter(l => l.balance > 0)  // শুধু পজিটিভ ব্যালেন্স যাদের (আমরা যাদের কাছে ঋণী)
+        .filter(l => l.balance > 0)
         .sort((a, b) => b.balance - a.balance)
         .slice(0, 5);
 
@@ -3184,11 +3435,26 @@
               </div>
             </div>
           </div>
-          <div class="flex gap-2 mb-4">
-            <button onclick="closeModal(); openModal('due', '${personId}')" class="flex-1 py-2 rounded-lg btn-danger text-white text-sm font-medium">📝 ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}</button>
-            <button onclick="closeModal(); openModal('payment', '${personId}')" class="flex-1 py-2 rounded-lg btn-blue text-white text-sm font-medium">💰 ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}</button>
-            <button onclick="shareCustomerHistory('${personId}')" class="flex-1 py-2 rounded-lg share-btn text-white text-sm font-medium">📤 ${currentLanguage === 'bn' ? 'শেয়ার' : 'Share'}</button>
+          
+          <!-- অ্যাকশন বাটন গ্রুপ - শেয়ার বাটন আলাদাভাবে উপরের ডান কোণায় ছোট করে -->
+          <div class="relative mb-4">
+            <div class="action-btns-group">
+              <button onclick="closeModal(); openModal('due', '${personId}')" class="action-btn action-btn-due">
+                <span>📝</span> ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}
+              </button>
+              <button onclick="closeModal(); openModal('payment', '${personId}')" class="action-btn action-btn-payment">
+                <span>💰</span> ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}
+              </button>
+            </div>
+            <div class="absolute top-0 right-0">
+              <button onclick="shareCustomerCard('${customer.customer_id}')" class="share-icon-btn w-10 h-10" title="${t('share_customer')}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                </svg>
+              </button>
+            </div>
           </div>
+          
           <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
           <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
             ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>` : 
