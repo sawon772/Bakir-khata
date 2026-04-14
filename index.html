@@ -15,6 +15,8 @@
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -915,6 +917,9 @@
             <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 সর্বোচ্চ ফান্ড দাতা" data-en="💰 Top Fund Providers">💰 সর্বোচ্চ ফান্ড দাতা</h3>
             <div id="top-lenders" class="space-y-2"></div>
           </div>
+          <button onclick="downloadPDFReport()" class="w-full btn-purple text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 mt-3">
+  📄 PDF রিপোর্ট ডাউনলোড করুন
+</button>
           <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
         </div>
       </div>
@@ -4001,6 +4006,151 @@
       showToast(currentLanguage === 'bn' ? 'ব্যাকআপ ডাউনলোড হয়েছে!' : 'Backup downloaded!', 'success');
       playSound('success');
     }
+  
+  // ============================================
+// PDF রিপোর্ট ডাউনলোড ফাংশন
+// ============================================
+async function downloadPDFReport() {
+  showGlobalLoader("PDF রিপোর্ট তৈরি হচ্ছে...");
+  
+  const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+  const currentDate = new Date().toLocaleString('bn-BD', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  const customers = getCustomers();
+  const providers = getFundProviders();
+  const totalDue = getTotalDue();
+  const totalAdvance = getTotalAdvance();
+  const totalFund = getTotalFundBalance();
+  
+  const customersWithBalance = customers.map(c => ({
+    name: c.customer_name,
+    mobile: c.mobile || '-',
+    address: c.address || '-',
+    balance: getCustomerBalance(c.customer_id)
+  })).sort((a, b) => b.balance - a.balance);
+  
+  const dueCustomers = customersWithBalance.filter(c => c.balance > 0);
+  const advanceCustomers = customersWithBalance.filter(c => c.balance < 0);
+  
+  const providersWithBalance = providers.map(p => ({
+    name: p.provider_name,
+    mobile: p.mobile || '-',
+    address: p.address || '-',
+    balance: getFundProviderBalance(p.provider_id)
+  })).sort((a, b) => b.balance - a.balance);
+  
+  const pdfContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${shopName} - সম্পূর্ণ রিপোর্ট</title>
+      <style>
+        * { font-family: 'Hind Siliguri', 'Segoe UI', sans-serif; }
+        body { padding: 40px 20px; max-width: 1200px; margin: 0 auto; background: white; }
+        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 3px solid #059669; }
+        .shop-name { font-size: 28px; font-weight: bold; color: #059669; margin: 0; }
+        .report-date { color: #6b7280; margin-top: 8px; font-size: 14px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
+        .summary-card { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 15px; border-radius: 12px; text-align: center; }
+        .summary-card h4 { margin: 0 0 8px 0; font-size: 14px; color: #4b5563; }
+        .summary-card .amount { font-size: 24px; font-weight: bold; color: #065f46; }
+        .summary-card.due .amount { color: #dc2626; }
+        .summary-card.advance .amount { color: #d97706; }
+        .summary-card.fund .amount { color: #7e22ce; }
+        .section { margin-bottom: 30px; page-break-inside: avoid; }
+        .section-title { font-size: 20px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #e5e7eb; padding: 10px 12px; text-align: left; }
+        th { background: #f3f4f6; font-weight: 600; color: #374151; }
+        tr:nth-child(even) { background: #f9fafb; }
+        .balance-positive { color: #dc2626; font-weight: 500; }
+        .balance-negative { color: #d97706; font-weight: 500; }
+        .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1 class="shop-name">📒 ${shopName}</h1>
+        <p class="report-date">প্রতিবেদন তৈরি: ${currentDate}</p>
+      </div>
+      
+      <div class="summary-grid">
+        <div class="summary-card"><h4>👥 মোট কাস্টমার</h4><div class="amount">${customers.length} জন</div></div>
+        <div class="summary-card due"><h4>📝 মোট বাকি (পাওনা)</h4><div class="amount">৳${totalDue.toLocaleString('en-IN')}</div></div>
+        <div class="summary-card advance"><h4>💰 মোট অগ্রিম</h4><div class="amount">৳${totalAdvance.toLocaleString('en-IN')}</div></div>
+        <div class="summary-card fund"><h4>💳 মোট ফান্ড দায়</h4><div class="amount">৳${totalFund.toLocaleString('en-IN')}</div></div>
+      </div>
+      
+      <div class="section">
+        <h3 class="section-title">📋 বাকি কাস্টমার তালিকা (${dueCustomers.length} জন)</h3>
+        ${dueCustomers.length > 0 ? `
+          <table>
+            <thead><tr><th>ক্রম</th><th>নাম</th><th>মোবাইল</th><th>ঠিকানা</th><th>বাকি পরিমাণ</th></tr></thead>
+            <tbody>${dueCustomers.map((c, i) => `<tr><td>${i+1}</td><td>${c.name}</td><td>${c.mobile}</td><td>${c.address.substring(0,30)}</td><td class="balance-positive">৳${Math.abs(c.balance).toLocaleString('en-IN')}</td></tr>`).join('')}</tbody>
+          </table>
+        ` : '<p>কোনো বাকি কাস্টমার নেই</p>'}
+      </div>
+      
+      <div class="section">
+        <h3 class="section-title">💰 অগ্রিম কাস্টমার তালিকা (${advanceCustomers.length} জন)</h3>
+        ${advanceCustomers.length > 0 ? `
+          <table>
+            <thead><tr><th>ক্রম</th><th>নাম</th><th>মোবাইল</th><th>ঠিকানা</th><th>অগ্রিম পরিমাণ</th></tr></thead>
+            <tbody>${advanceCustomers.map((c, i) => `<tr><td>${i+1}</td><td>${c.name}</td><td>${c.mobile}</td><td>${c.address.substring(0,30)}</td><td class="balance-negative">৳${Math.abs(c.balance).toLocaleString('en-IN')}</td></tr>`).join('')}</tbody>
+          </table>
+        ` : '<p>কোনো অগ্রিম কাস্টমার নেই</p>'}
+      </div>
+      
+      <div class="section">
+        <h3 class="section-title">💰 ফান্ড দাতা তালিকা (${providersWithBalance.length} জন)</h3>
+        ${providersWithBalance.length > 0 ? `
+          <table>
+            <thead><tr><th>ক্রম</th><th>নাম</th><th>মোবাইল</th><th>ঠিকানা</th><th>পাওনা পরিমাণ</th></tr></thead>
+            <tbody>${providersWithBalance.map((p, i) => `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.mobile}</td><td>${p.address.substring(0,30)}</td><td class="balance-positive">৳${p.balance.toLocaleString('en-IN')}</td></tr>`).join('')}</tbody>
+          </table>
+        ` : '<p>কোনো ফান্ড দাতা নেই</p>'}
+      </div>
+      
+      <div class="footer">
+        <p>বাকির খাতা অ্যাপ থেকে তৈরি | সমস্ত তথ্য সংরক্ষিত</p>
+        <p>© ${new Date().getFullYear()} বাকির খাতা</p>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  try {
+    const element = document.createElement('div');
+    element.innerHTML = pdfContent;
+    document.body.appendChild(element);
+    
+    const opt = {
+      margin: [0.5, 0.5, 0.5, 0.5],
+      filename: `${shopName}_সম্পূর্ণ_রিপোর্ট_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, letterRendering: true },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    
+    await html2pdf().set(opt).from(element).save();
+    document.body.removeChild(element);
+    showToast('PDF রিপোর্ট ডাউনলোড হয়েছে!', 'success');
+    playSound('success');
+  } catch (error) {
+    console.error('PDF তৈরি ব্যর্থ:', error);
+    showToast('PDF তৈরি ব্যর্থ হয়েছে', 'error');
+    playSound('error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
 
     // Initialize
     function init() {
