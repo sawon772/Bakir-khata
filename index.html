@@ -2784,7 +2784,7 @@
                 </div>
                 <div>
                   <h3 class="font-semibold text-gray-800">${name}</h3>
-                  <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
+                  <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
                 </div>
               </div>
               <div class="text-right flex items-center gap-2">
@@ -3549,7 +3549,7 @@
                     <p class="text-sm font-medium ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
                       ${t.type === 'due' ? '📝 ' + (currentLanguage === 'bn' ? 'বাকি' : 'Due') : '💰 ' + (currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment')}
                     </p>
-                    <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
+                    <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
                     ${t.note ? `<p class="text-xs text-gray-400">${t.note}</p>` : ''}
                   </div>
                   <p class="font-bold ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
@@ -3597,7 +3597,8 @@
         provider_name: document.getElementById('provider-name').value.trim(),
         mobile: document.getElementById('provider-mobile').value.trim(),
         address: document.getElementById('provider-address').value.trim(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
       const result = await saveData(providerData);
@@ -3676,7 +3677,8 @@
         mobile: document.getElementById('customer-mobile').value.trim(),
         address: document.getElementById('customer-address').value.trim(),
         image: null,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
       const result = await saveData(customerData);
@@ -3690,7 +3692,8 @@
             amount: initialDue,
             date: new Date().toISOString().split('T')[0],
             note: currentLanguage === 'bn' ? 'প্রাথমিক বাকি' : 'Initial due',
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
           };
           await saveData(dueData);
         }
@@ -3767,7 +3770,8 @@
         amount: parseFloat(document.getElementById('transaction-amount').value),
         date: document.getElementById('transaction-date').value,
         note: document.getElementById('transaction-note').value.trim(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
       const result = await saveData(transactionData);
@@ -3810,7 +3814,8 @@
         amount: parseFloat(document.getElementById('fund-amount').value),
         date: document.getElementById('fund-date').value,
         note: document.getElementById('fund-note').value.trim(),
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
 
       const result = await saveData(fundData);
