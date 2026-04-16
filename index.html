@@ -641,6 +641,28 @@
         <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
       </div>
       
+      <!-- লোকাল ব্যাকআপ সেটিংস -->
+<div class="mb-3 p-2 bg-green-50 rounded-lg">
+  <p class="text-sm font-medium text-green-800 mb-2">💾 ব্যাকআপ সেটিংস</p>
+  <div class="flex items-center justify-between">
+    <span class="text-sm text-gray-700">অফলাইন ব্যাকআপ সক্রিয় করুন</span>
+    <button onclick="toggleLocalBackup()" id="local-backup-btn" class="px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1">
+      <span id="backup-icon">💾</span>
+      <span id="backup-text">অন</span>
+    </button>
+  </div>
+  <p class="text-xs text-gray-500 mt-1">চালু থাকলে ডাটা লোকাল স্টোরেজেও সেভ হবে</p>
+</div>
+      
+      <!-- স্টোরেজ চেক বাটন -->
+<div class="mb-3 p-2 bg-blue-50 rounded-lg">
+  <p class="text-sm font-medium text-blue-800 mb-2">📊 স্টোরেজ মনিটর</p>
+  <button onclick="checkFirebaseStorageUsage()" class="w-full text-left text-sm text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition-colors flex items-center gap-2">
+    <span>💾</span> Firebase স্টোরেজ ব্যবহার দেখুন
+  </button>
+  <p class="text-xs text-gray-500 mt-1">ফ্রি টিয়ারে 1 GB পর্যন্ত ডাটা রাখা যায়</p>
+</div>
+      
       <!-- দোকানের নাম পরিবর্তন -->
       <div class="mb-3 p-2 bg-purple-50 rounded-lg">
         <p class="text-sm font-medium text-purple-800 mb-2">🏪 দোকানের নাম পরিবর্তন</p>
@@ -1699,6 +1721,195 @@
       }
     }
 
+  // ============================================
+// লোকাল ব্যাকআপ ফিচার - শুরু
+// ============================================
+
+let localBackupEnabled = true; // ডিফল্ট অন
+
+// লোকাল ব্যাকআপ টগল করা
+function toggleLocalBackup() {
+  localBackupEnabled = !localBackupEnabled;
+  localStorage.setItem('local_backup_enabled', localBackupEnabled);
+  
+  const btn = document.getElementById('local-backup-btn');
+  const icon = document.getElementById('backup-icon');
+  const text = document.getElementById('backup-text');
+  
+  if (localBackupEnabled) {
+    btn.className = 'px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1';
+    icon.textContent = '💾';
+    text.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    showToast(currentLanguage === 'bn' ? 'অফলাইন ব্যাকআপ সক্রিয়' : 'Offline backup enabled', 'success');
+    
+    // ব্যাকআপ অন করলে বর্তমান ডাটা সেভ করে দেওয়া
+    saveToLocalBackup();
+  } else {
+    btn.className = 'px-3 py-1 rounded-full text-sm bg-gray-400 text-white flex items-center gap-1';
+    icon.textContent = '💾❌';
+    text.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    showToast(currentLanguage === 'bn' ? 'অফলাইন ব্যাকআপ বন্ধ' : 'Offline backup disabled', 'info');
+  }
+}
+
+// লোকাল স্টোরেজে ব্যাকআপ সেভ করা
+async function saveToLocalBackup() {
+  if (!localBackupEnabled) return;
+  
+  try {
+    const backupData = {
+      version: '1.0',
+      last_backup: new Date().toISOString(),
+      user_id: currentUser ? currentUser.uid : (isGuest ? guestId : 'anonymous'),
+      data: allData,
+      config: {
+        shop_name: defaultConfig.shop_name,
+        app_title: defaultConfig.app_title
+      }
+    };
+    
+    localStorage.setItem('bakir_khata_backup', JSON.stringify(backupData));
+    localStorage.setItem('bakir_khata_last_backup', new Date().toISOString());
+    
+    console.log('✅ লোকাল ব্যাকআপ সেভ হয়েছে');
+  } catch (error) {
+    console.error('ব্যাকআপ সেভ ব্যর্থ:', error);
+  }
+}
+
+// লোকাল ব্যাকআপ থেকে রিস্টোর করা (যখন ইন্টারনেট নেই)
+function loadFromLocalBackup() {
+  const backup = localStorage.getItem('bakir_khata_backup');
+  if (!backup) return false;
+  
+  try {
+    const backupData = JSON.parse(backup);
+    if (backupData.data && backupData.data.length > 0) {
+      allData = backupData.data;
+      if (backupData.config && backupData.config.shop_name) {
+        defaultConfig.shop_name = backupData.config.shop_name;
+        document.getElementById('shop-name').textContent = defaultConfig.shop_name;
+      }
+      renderCurrentView();
+      showToast(currentLanguage === 'bn' ? 'অফলাইন ব্যাকআপ থেকে ডাটা লোড হয়েছে' : 'Data loaded from offline backup', 'info');
+      return true;
+    }
+  } catch (error) {
+    console.error('ব্যাকআপ লোড ব্যর্থ:', error);
+  }
+  return false;
+}
+
+// ইন্টারনেট চেক করা
+function isOnline() {
+  return navigator.onLine;
+}
+
+// ইন্টারনেট কানেক্ট হলে অটো সিঙ্ক
+function setupOnlineSync() {
+  window.addEventListener('online', () => {
+    showToast(currentLanguage === 'bn' ? 'ইন্টারনেট সংযুক্ত! ক্লাউডে সিঙ্ক হচ্ছে...' : 'Internet connected! Syncing to cloud...', 'success');
+    if (currentUser && !isGuest) {
+      loadUserData(currentUser.uid);
+    }
+  });
+  
+  window.addEventListener('offline', () => {
+    showToast(currentLanguage === 'bn' ? 'ইন্টারনেট সংযোগ বিচ্ছিন্ন! লোকাল ডাটা দেখানো হচ্ছে।' : 'Internet disconnected! Showing local data.', 'warning');
+    if (!isOnline() && localBackupEnabled) {
+      loadFromLocalBackup();
+    }
+  });
+}
+
+// ============================================
+// লোকাল ব্যাকআপ ফিচার - শেষ
+// ============================================
+  
+      // ============================================
+    // Firebase স্টোরেজ ব্যবহার চেক ফাংশন
+    // ============================================
+    
+        // ============================================
+    // Firebase স্টোরেজ ব্যবহার চেক ফাংশন (Rules অনুযায়ী)
+    // ============================================
+    
+    async function checkFirebaseStorageUsage() {
+      // গেস্ট মোডে কাজ করবে না
+      if (isGuest || !currentUser) {
+        showToast(currentLanguage === 'bn' ? 'গেস্ট মোডে স্টোরেজ চেক করা যায় না। সাইন ইন করুন।' : 'Cannot check storage in guest mode. Please sign in.', 'warning');
+        return null;
+      }
+      
+      showGlobalLoader("স্টোরেজ চেক করা হচ্ছে...");
+      
+      try {
+        // শুধুমাত্র ইউজারের ডাটা পাথে পড়া
+        const userDataRef = database.ref(`users/${currentUser.uid}/data`);
+        const snapshot = await userDataRef.once('value');
+        const data = snapshot.val();
+        
+        // ডাটার সাইজ বের করা
+        const jsonString = JSON.stringify(data || {});
+        const sizeInBytes = new Blob([jsonString]).size;
+        const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+        
+        // ফ্রি টিয়ার লিমিট 1 GB = 1024 MB
+        const freeLimitMB = 1024;
+        const percentageUsed = ((sizeInMB / freeLimitMB) * 100).toFixed(1);
+        
+        // কতটি আইটেম আছে
+        let itemCount = 0;
+        if (data) {
+          itemCount = Object.keys(data).length;
+        }
+        
+        let statusText = '';
+        let emoji = '✅';
+        
+        if (percentageUsed > 90) {
+          statusText = 'বিপদজনক! ব্যাকআপ নিন';
+          emoji = '⚠️';
+        } else if (percentageUsed > 70) {
+          statusText = 'সতর্কতা: লিমিটের কাছাকাছি';
+          emoji = '⚠️';
+        } else {
+          statusText = 'নিরাপদ';
+          emoji = '✅';
+        }
+        
+        const remainingMB = (freeLimitMB - sizeInMB).toFixed(2);
+        
+        const message = `${emoji} আপনার স্টোরেজ ব্যবহার: ${sizeInMB} MB / ${freeLimitMB} MB (${percentageUsed}%)
+        
+📦 মোট ডাটা: ${itemCount} টি
+📊 বাকি আছে: ${remainingMB} MB
+📌 স্ট্যাটাস: ${statusText}`;
+        
+        // পপআপ আকারে দেখানো (স্পষ্টভাবে বোঝার জন্য)
+        alert(message);
+        
+        // টোস্টেও দেখানো
+        showToast(`স্টোরেজ ব্যবহার: ${sizeInMB} MB (${percentageUsed}%)`, percentageUsed > 70 ? 'warning' : 'success', 5000);
+        
+        return { sizeInMB, percentageUsed, remainingMB, itemCount };
+        
+      } catch (error) {
+        console.error("স্টোরেজ চেক করতে সমস্যা:", error);
+        
+        let errorMsg = "স্টোরেজ চেক করা যায়নি।";
+        if (error.code === 'PERMISSION_DENIED') {
+          errorMsg = "পারমিশন সমস্যা। নিশ্চিত করুন আপনি লগইন করেছেন।";
+        } else {
+          errorMsg = `Error: ${error.message || error}`;
+        }
+        
+        showToast(errorMsg, 'error', 8000);
+        return null;
+      } finally {
+        hideGlobalLoader();
+      }
+    }
     function playSound(type) {
       if (!soundEnabled) return;
       
@@ -2349,67 +2560,111 @@
       renderCurrentView();
     }
 
-    // Save data
-    async function saveData(item) {
-      showGlobalLoader("সংরক্ষণ হচ্ছে...");
-      try {
-        if (!isGuest && currentUser) {
-          const userRef = database.ref(`users/${currentUser.uid}/data`);
-          const newRef = userRef.push();
-          await newRef.set(item);
-          return { isOk: true, id: newRef.key };
+   async function saveData(item) {
+  showGlobalLoader("সংরক্ষণ হচ্ছে...");
+  try {
+    if (!isGuest && currentUser) {
+      const userRef = database.ref(`users/${currentUser.uid}/data`);
+      const newRef = userRef.push();
+      await newRef.set(item);
+      
+      // 👇 লোকাল ব্যাকআপ সেভ (যদি অন থাকে)
+      if (localBackupEnabled) {
+        const newItem = { ...item, __backendId: newRef.key };
+        allData.push(newItem);
+        await saveToLocalBackup();
+      }
+      
+      return { isOk: true, id: newRef.key };
+    } else {
+      item.__backendId = generateId();
+      allData.push(item);
+      localStorage.setItem('guest_data', JSON.stringify(allData));
+      
+      // 👇 লোকাল ব্যাকআপ আপডেট
+      if (localBackupEnabled) {
+        await saveToLocalBackup();
+      }
+      
+      return { isOk: true };
+    }
+  } finally {
+    hideGlobalLoader();
+  }
+}
+   async function updateData(item) {
+  showGlobalLoader("আপডেট হচ্ছে...");
+  try {
+    if (!isGuest && currentUser) {
+      const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
+      await userRef.set(item);
+      
+      // 👇 লোকাল ব্যাকআপ আপডেট
+      if (localBackupEnabled) {
+        const index = allData.findIndex(d => d.__backendId === item.__backendId);
+        if (index > -1) {
+          allData[index] = item;
         } else {
-          item.__backendId = generateId();
           allData.push(item);
-          localStorage.setItem('guest_data', JSON.stringify(allData));
-          return { isOk: true };
         }
-      } finally {
-        hideGlobalLoader();
+        await saveToLocalBackup();
       }
+      
+      return { isOk: true };
+    } else {
+      const index = allData.findIndex(d => d.__backendId === item.__backendId);
+      if (index > -1) {
+        allData[index] = item;
+        localStorage.setItem('guest_data', JSON.stringify(allData));
+      }
+      
+      // 👇 লোকাল ব্যাকআপ আপডেট
+      if (localBackupEnabled) {
+        await saveToLocalBackup();
+      }
+      
+      return { isOk: true };
     }
+  } finally {
+    hideGlobalLoader();
+  }
+}
 
-    // Update data
-    async function updateData(item) {
-      showGlobalLoader("আপডেট হচ্ছে...");
-      try {
-        if (!isGuest && currentUser) {
-          const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
-          await userRef.set(item);
-          return { isOk: true };
-        } else {
-          const index = allData.findIndex(d => d.__backendId === item.__backendId);
-          if (index > -1) {
-            allData[index] = item;
-            localStorage.setItem('guest_data', JSON.stringify(allData));
-          }
-          return { isOk: true };
+   async function deleteData(item) {
+  showGlobalLoader("মুছে ফেলা হচ্ছে...");
+  try {
+    if (!isGuest && currentUser) {
+      const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
+      await userRef.remove();
+      
+      // 👇 লোকাল ব্যাকআপ আপডেট
+      if (localBackupEnabled) {
+        const index = allData.findIndex(d => d.__backendId === item.__backendId);
+        if (index > -1) {
+          allData.splice(index, 1);
+          await saveToLocalBackup();
         }
-      } finally {
-        hideGlobalLoader();
       }
-    }
-
-    // Delete data
-    async function deleteData(item) {
-      showGlobalLoader("মুছে ফেলা হচ্ছে...");
-      try {
-        if (!isGuest && currentUser) {
-          const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
-          await userRef.remove();
-          return { isOk: true };
-        } else {
-          const index = allData.findIndex(d => d.__backendId === item.__backendId);
-          if (index > -1) {
-            allData.splice(index, 1);
-            localStorage.setItem('guest_data', JSON.stringify(allData));
-          }
-          return { isOk: true };
-        }
-      } finally {
-        hideGlobalLoader();
+      
+      return { isOk: true };
+    } else {
+      const index = allData.findIndex(d => d.__backendId === item.__backendId);
+      if (index > -1) {
+        allData.splice(index, 1);
+        localStorage.setItem('guest_data', JSON.stringify(allData));
       }
+      
+      // 👇 লোকাল ব্যাকআপ আপডেট
+      if (localBackupEnabled) {
+        await saveToLocalBackup();
+      }
+      
+      return { isOk: true };
     }
+  } finally {
+    hideGlobalLoader();
+  }
+}
 
     // Utility functions
     function toBengaliNumber(num) {
@@ -3846,6 +4101,12 @@ if (type === 'due' && newDueDate) {
           (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
           (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
         playSound('cash');
+        // ডাটা রিফ্রেশ করা
+if (!isGuest && currentUser) {
+  loadUserData(currentUser.uid);
+} else {
+  loadGuestData();
+}
         closeModal();
       } else {
         showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
@@ -3890,6 +4151,12 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
           (currentLanguage === 'bn' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'Fund received!') : 
           (currentLanguage === 'bn' ? 'ফান্ড পরিশোধ করা হয়েছে!' : 'Fund paid!'), 'success');
         playSound('cash');
+        // ডাটা রিফ্রেশ করা
+if (!isGuest && currentUser) {
+  loadUserData(currentUser.uid);
+} else {
+  loadGuestData();
+}
         closeModal();
       } else {
         showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
@@ -4259,6 +4526,42 @@ async function downloadPDFReport() {
       }
 
       setLanguage('bn');
+      
+      // ========== লোকাল ব্যাকআপ সেটিংস লোড ==========
+const savedBackupSetting = localStorage.getItem('local_backup_enabled');
+if (savedBackupSetting !== null) {
+  localBackupEnabled = savedBackupSetting === 'true';
+} else {
+  localBackupEnabled = true; // ডিফল্ট অন
+}
+
+// বাটন আপডেট করা
+const backupBtn = document.getElementById('local-backup-btn');
+const backupIcon = document.getElementById('backup-icon');
+const backupText = document.getElementById('backup-text');
+if (backupBtn) {
+  if (localBackupEnabled) {
+    backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1';
+    if (backupIcon) backupIcon.textContent = '💾';
+    if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+  } else {
+    backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-gray-400 text-white flex items-center gap-1';
+    if (backupIcon) backupIcon.textContent = '💾❌';
+    if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+  }
+}
+
+// ইন্টারনেট স্ট্যাটাস চেক
+setupOnlineSync();
+
+// অফলাইনে থাকলে লোকাল ব্যাকআপ লোড
+if (!isOnline() && localBackupEnabled) {
+  setTimeout(() => {
+    loadFromLocalBackup();
+  }, 1000);
+}
+      
+      
       
       if (soundEnabled) {
         document.getElementById('menu-sound-icon').textContent = '🔊';
