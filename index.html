@@ -325,6 +325,18 @@
       background: #059669 !important;
       color: white !important;
     }
+    
+/* ওভারডিউ ব্যাজ স্টাইল */
+.overdue-badge {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 12px;
+  margin-left: 8px;
+  display: inline-block;
+  font-weight: normal;
+}
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
@@ -2415,6 +2427,12 @@
       return date.toLocaleDateString('bn-BD', options);
     }
 
+function isOverdue(dateStr) {
+  if (!dateStr) return false;
+  const today = new Date().toISOString().split('T')[0];
+  return dateStr < today;
+}
+  
     function generateId() {
       return Date.now().toString(36) + Math.random().toString(36).substr(2);
     }
@@ -2845,7 +2863,12 @@
                   </button>
                 </div>
                 <div class="flex-1">
-                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                  ${(() => {
+  const overdue = isOverdue(c.next_payment_date);
+  const overdueClass = overdue ? 'text-red-600 font-bold' : 'text-gray-800';
+  const overdueBadge = overdue ? '<span class="overdue-badge ml-2">⏰ overdue</span>' : '';
+  return `<h3 class="font-semibold ${overdueClass}">${c.customer_name}${overdueBadge}</h3>`;
+})()}
                   <p class="text-sm text-gray-500">${c.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
                   ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
                 </div>
@@ -3258,7 +3281,20 @@
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
+        <div class="bg-yellow-50 p-3 rounded-lg mt-2">
+  <label class="block text-sm font-medium text-yellow-800 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের শেষ তারিখ (ঐচ্ছিক)' : 'Next Payment Due Date (Optional)'}</label>
+  <input type="date" id="transaction-due-date" 
+    class="w-full px-4 py-3 rounded-xl border-2 border-yellow-300 focus:border-yellow-500 focus:outline-none">
+  <p class="text-xs text-yellow-600 mt-1">${currentLanguage === 'bn' ? 'এই তারিখের পরে বাকি থাকলে কাস্টমারের নাম লাল দেখাবে' : 'Customer name will turn red if due after this date'}</p>
+</div>
               
+        <div>
+  <label class="block text-sm font-medium text-gray-700 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের তারিখ (ঐচ্ছিক)' : 'Next Payment Date (Optional)'}</label>
+  <input type="date" id="customer-due-date" 
+    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+  <p class="text-xs text-gray-400 mt-1">${currentLanguage === 'bn' ? 'এই তারিখ পার হলে কাস্টমারের নাম লাল হবে' : 'Name will turn red after this date'}</p>
+</div>
+        
               <div class="optional-section">
                 <div class="initial-due-label">
                   <span>💰 ${t('initial_due')}</span>
@@ -3301,6 +3337,12 @@
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}" value="${customer.address || ''}">
               </div>
+              <div>
+  <label class="block text-sm font-medium text-gray-700 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের তারিখ' : 'Next Payment Date'}</label>
+  <input type="date" id="edit-customer-due-date" 
+    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+    value="${customer.next_payment_date || ''}">
+       </div>
             </div>
             <div class="flex gap-3 mt-6">
               <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
@@ -3406,6 +3448,12 @@
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   value="${new Date().toISOString().split('T')[0]}">
               </div>
+        <div class="bg-yellow-50 p-3 rounded-lg">
+  <label class="block text-sm font-medium text-yellow-800 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের শেষ তারিখ (ঐচ্ছিক)' : 'Next Payment Due Date (Optional)'}</label>
+  <input type="date" id="transaction-due-date" 
+    class="w-full px-4 py-3 rounded-xl border-2 border-yellow-300 focus:border-yellow-500 focus:outline-none">
+  <p class="text-xs text-yellow-600 mt-1">${currentLanguage === 'bn' ? 'এই তারিখের পরে বাকি থাকলে কাস্টমারের নাম লাল দেখাবে' : 'Customer name will turn red if due after this date'}</p>
+</div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'}</label>
                 <textarea id="transaction-note" rows="2"
@@ -3676,6 +3724,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
         customer_name: document.getElementById('customer-name').value.trim(),
         mobile: document.getElementById('customer-mobile').value.trim(),
         address: document.getElementById('customer-address').value.trim(),
+        next_payment_date: document.getElementById('customer-due-date')?.value || null,
         image: null,
         created_at: new Date().toISOString(),
 timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -3727,6 +3776,8 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
       customer.customer_name = document.getElementById('edit-customer-name').value.trim();
       customer.mobile = document.getElementById('edit-customer-mobile').value.trim();
       customer.address = document.getElementById('edit-customer-address').value.trim();
+      customer.next_payment_date = document.getElementById('edit-customer-due-date').value;
+
 
       const result = await updateData(customer);
       
@@ -3773,7 +3824,16 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
         created_at: new Date().toISOString(),
 timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
-
+      // বাকি এন্ট্রির সময় যদি নতুন ডিউ ডেট সেট করা হয়, তাহলে কাস্টমারের প্রোফাইল আপডেট করো
+const newDueDate = document.getElementById('transaction-due-date')?.value;
+if (type === 'due' && newDueDate) {
+  const customerIndex = allData.findIndex(d => d.customer_id === select.value && d.type === 'customer');
+  if (customerIndex !== -1) {
+    allData[customerIndex].next_payment_date = newDueDate;
+    await updateData(allData[customerIndex]);
+  }
+}
+   
       const result = await saveData(transactionData);
       
       if (result.isOk) {
