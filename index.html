@@ -671,6 +671,15 @@
         </button>
       </div>
       
+      <!-- খরচের হিসাব বাটন -->
+<div class="mb-3 p-2 bg-rose-50 rounded-lg">
+  <p class="text-sm font-medium text-rose-800 mb-2">💰 খরচের হিসাব</p>
+  <button onclick="openExpenseModal()" class="w-full text-left text-sm text-rose-600 hover:bg-rose-100 p-2 rounded-lg transition-colors flex items-center gap-2">
+    <span>📊</span> খরচের হিসাব দেখুন
+  </button>
+  <p class="text-xs text-gray-500 mt-1">আপনার দৈনিক, সাপ্তাহিক, মাসিক খরচ ট্র্যাক করুন</p>
+</div>
+      
       <!-- সহায়তা তথ্য -->
       <div class="mb-3 p-2 bg-indigo-50 rounded-lg">
         <p class="text-sm font-medium text-indigo-800 mb-2">🆘 সহায়তা</p>
@@ -968,6 +977,71 @@
       <button onclick="openModal('customer')" class="w-12 h-12 btn-primary text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">➕</button>
     </div>
     
+    <!-- খরচের হিসাব Modal -->
+<div id="expense-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">💰 খরচের হিসাব</h2>
+      <button onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+    </div>
+    
+    <!-- খরচের সারাংশ -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="bg-rose-50 rounded-xl p-3 text-center">
+        <p class="text-xs text-rose-600">মোট খরচ</p>
+        <p id="total-expense-amount" class="text-2xl font-bold text-rose-700">৳০</p>
+      </div>
+      <div class="bg-emerald-50 rounded-xl p-3 text-center">
+        <p class="text-xs text-emerald-600">আজকের খরচ</p>
+        <p id="today-expense-amount" class="text-2xl font-bold text-emerald-700">৳০</p>
+      </div>
+    </div>
+    
+    <!-- ফিল্টার বাটন -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button onclick="filterExpenses('today')" id="exp-filter-today" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-600 text-white">আজ</button>
+      <button onclick="filterExpenses('week')" id="exp-filter-week" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
+      <button onclick="filterExpenses('month')" id="exp-filter-month" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
+      <button onclick="filterExpenses('year')" id="exp-filter-year" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
+      <button onclick="filterExpenses('all')" id="exp-filter-all" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">সব সময়</button>
+    </div>
+   <!-- ক্যাটাগরি ম্যানেজ -->
+<div class="border rounded-xl p-3 mb-4">
+  <div class="flex justify-between items-center mb-2">
+    <h3 class="font-medium text-gray-800">🏷️ ক্যাটাগরি</h3>
+    <button onclick="showAddCategoryForm()" class="text-xs bg-emerald-500 text-white px-2 py-1 rounded">+ নতুন</button>
+  </div>
+  <div id="expense-categories-list" class="flex flex-wrap gap-2 mb-2"></div>
+  <div id="add-category-form" class="hidden mt-2 flex gap-2">
+    <input type="text" id="new-category-name" placeholder="নতুন ক্যাটাগরি" class="flex-1 px-3 py-1 rounded-lg border text-sm">
+    <button onclick="addNewCategory()" class="bg-emerald-500 text-white px-3 py-1 rounded-lg text-sm">যোগ</button>
+    <button onclick="hideAddCategoryForm()" class="bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-sm">বাতিল</button>
+  </div>
+</div>
+    
+    <!-- নতুন খরচ যোগ ফর্ম -->
+    <div class="border rounded-xl p-3 mb-4">
+      <h3 class="font-medium text-gray-800 mb-2">➕ নতুন খরচ</h3>
+      <div class="space-y-3">
+        <select id="expense-category" class="w-full px-3 py-2 rounded-lg border">
+          <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+        </select>
+        <input type="number" id="expense-amount" placeholder="টাকার পরিমাণ" class="w-full px-3 py-2 rounded-lg border">
+        <input type="text" id="expense-note" placeholder="কি কারনে? (ঐচ্ছিক)" class="w-full px-3 py-2 rounded-lg border">
+        <input type="date" id="expense-date" class="w-full px-3 py-2 rounded-lg border">
+        <button onclick="addExpense()" class="w-full bg-rose-500 text-white py-2 rounded-lg font-medium">খরচ যোগ করুন</button>
+      </div>
+    </div>
+    
+    <!-- খরচের তালিকা -->
+    <h3 class="font-medium text-gray-800 mb-2">📋 খরচের তালিকা</h3>
+    <div id="expenses-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+    <div id="no-expenses" class="text-center py-8 text-gray-500 hidden">
+      <p>কোনো খরচ নেই</p>
+    </div>
+  </div>
+</div>
+    
     <!-- Modal Container -->
     <div id="modal-overlay" class="fixed inset-0 modal-overlay z-50 hidden flex items-end sm:items-center justify-center">
       <div id="modal-content" class="bg-white w-full sm:w-96 sm:rounded-2xl rounded-t-2xl p-6 animate-slide-up max-h-[90%] overflow-y-auto"></div>
@@ -1206,6 +1280,10 @@
     let currentImageUploadCustomerId = null;
     let verificationCode = null;
     let verificationExpiry = null;
+    // খরচের হিসাবের জন্য ভেরিয়েবল
+let expenses = [];
+let expenseCategories = ['খাবার', 'ভাড়া', 'বিল', 'কেনাকাটা', 'পরিবহন', 'চিকিৎসা', 'বিনোদন', 'অন্যান্য'];
+let currentExpenseFilter = 'today';
 
     // ============================================
     // নতুন ডেট ফিল্টার ফাংশন
@@ -1707,6 +1785,306 @@ function downloadFundImage(canvas, providerName) {
   link.click();
   showToast('ছবি ডাউনলোড হচ্ছে...', 'success');
 }
+  
+  // ============================================
+// খরচের হিসাব - ফাংশনসমূহ
+// ============================================
+
+// খরচ Modal খোলা
+function openExpenseModal() {
+  document.getElementById('expense-modal').classList.remove('hidden');
+  document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+  loadExpensesData();
+}
+
+function closeExpenseModal() {
+  document.getElementById('expense-modal').classList.add('hidden');
+}
+
+// খরচের ডাটা লোড
+async function loadExpensesData() {
+  if (!isGuest && currentUser) {
+    const expensesRef = database.ref(`users/${currentUser.uid}/expenses`);
+    expensesRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        expenses = Object.keys(data).map(key => ({
+          ...data[key],
+          id: key
+        }));
+      } else {
+        expenses = [];
+      }
+      renderExpensesList();
+      updateExpenseStats();
+    });
+    
+    const categoriesRef = database.ref(`users/${currentUser.uid}/expense_categories`);
+    categoriesRef.on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && Array.isArray(data)) {
+        expenseCategories = data;
+      } else if (data && typeof data === 'object') {
+        expenseCategories = Object.values(data);
+      } else {
+        expenseCategories = ['খাবার', 'ভাড়া', 'বিল', 'কেনাকাটা', 'পরিবহন', 'চিকিৎসা', 'বিনোদন', 'অন্যান্য'];
+      }
+      updateCategorySelect();
+      renderCategoriesList();
+    });
+  } else {
+    const savedExpenses = localStorage.getItem('guest_expenses');
+    expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
+    
+    const savedCategories = localStorage.getItem('guest_expense_categories');
+    expenseCategories = savedCategories ? JSON.parse(savedCategories) : ['খাবার', 'ভাড়া', 'বিল', 'কেনাকাটা', 'পরিবহন', 'চিকিৎসা', 'বিনোদন', 'অন্যান্য'];
+    
+    renderExpensesList();
+    updateExpenseStats();
+    updateCategorySelect();
+    renderCategoriesList();
+  }
+}
+
+// খরচ যোগ করা
+async function addExpense() {
+  const category = document.getElementById('expense-category').value;
+  const amount = parseFloat(document.getElementById('expense-amount').value);
+  const note = document.getElementById('expense-note').value;
+  const date = document.getElementById('expense-date').value;
+  
+  if (!category) {
+    showToast('ক্যাটাগরি নির্বাচন করুন', 'warning');
+    return;
+  }
+  if (!amount || amount <= 0) {
+    showToast('সঠিক টাকার পরিমাণ দিন', 'warning');
+    return;
+  }
+  if (!date) {
+    showToast('তারিখ নির্বাচন করুন', 'warning');
+    return;
+  }
+  
+  const expenseData = {
+    category: category,
+    amount: amount,
+    note: note || '',
+    date: date,
+    created_at: new Date().toISOString()
+  };
+  
+  if (!isGuest && currentUser) {
+    const expensesRef = database.ref(`users/${currentUser.uid}/expenses`);
+    await expensesRef.push().set(expenseData);
+  } else {
+    const newExpense = { ...expenseData, id: Date.now().toString() };
+    expenses.push(newExpense);
+    localStorage.setItem('guest_expenses', JSON.stringify(expenses));
+  }
+  
+  document.getElementById('expense-amount').value = '';
+  document.getElementById('expense-note').value = '';
+  
+  showToast('খরচ যোগ হয়েছে!', 'success');
+  playSound('cash');
+  loadExpensesData();
+}
+
+// খরচ ডিলিট
+async function deleteExpense(expenseId) {
+  if (confirm('এই খরচটি ডিলিট করতে চান?')) {
+    if (!isGuest && currentUser) {
+      await database.ref(`users/${currentUser.uid}/expenses/${expenseId}`).remove();
+    } else {
+      const index = expenses.findIndex(e => e.id === expenseId);
+      if (index > -1) {
+        expenses.splice(index, 1);
+        localStorage.setItem('guest_expenses', JSON.stringify(expenses));
+      }
+    }
+    showToast('খরচ ডিলিট হয়েছে', 'success');
+    playSound('success');
+    loadExpensesData();
+  }
+}
+
+// খরচ ফিল্টার
+function filterExpenses(filter) {
+  currentExpenseFilter = filter;
+  
+  document.querySelectorAll('.exp-filter-btn').forEach(btn => {
+    btn.classList.remove('bg-rose-600', 'text-white');
+    btn.classList.add('bg-gray-200', 'text-gray-700');
+  });
+  
+  const activeBtn = document.getElementById(`exp-filter-${filter}`);
+  if (activeBtn) {
+    activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+    activeBtn.classList.add('bg-rose-600', 'text-white');
+  }
+  
+  renderExpensesList();
+  updateExpenseStats();
+}
+
+// খরচের তালিকা রেন্ডার
+function renderExpensesList() {
+  const container = document.getElementById('expenses-list');
+  const noExpenses = document.getElementById('no-expenses');
+  
+  let filtered = [...expenses];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (currentExpenseFilter === 'today') {
+    filtered = expenses.filter(e => {
+      const expenseDate = new Date(e.date);
+      expenseDate.setHours(0, 0, 0, 0);
+      return expenseDate.getTime() === today.getTime();
+    });
+  } else if (currentExpenseFilter === 'week') {
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay());
+    filtered = expenses.filter(e => new Date(e.date) >= weekStart);
+  } else if (currentExpenseFilter === 'month') {
+    filtered = expenses.filter(e => {
+      const d = new Date(e.date);
+      return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+    });
+  } else if (currentExpenseFilter === 'year') {
+    filtered = expenses.filter(e => new Date(e.date).getFullYear() === today.getFullYear());
+  }
+  
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  if (filtered.length === 0) {
+    container.innerHTML = '';
+    noExpenses.classList.remove('hidden');
+    return;
+  }
+  
+  noExpenses.classList.add('hidden');
+  container.innerHTML = filtered.map(e => `
+    <div class="bg-white rounded-xl p-3 card-shadow border-l-4 border-rose-500">
+      <div class="flex justify-between items-start">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded">${e.category}</span>
+            <span class="text-xs text-gray-400">${formatDate(e.date)}</span>
+          </div>
+          <p class="font-bold text-rose-600">${formatCurrency(e.amount)}</p>
+          ${e.note ? `<p class="text-xs text-gray-500 mt-1">📌 ${e.note}</p>` : ''}
+        </div>
+        <button onclick="deleteExpense('${e.id}')" class="text-gray-400 hover:text-red-500 p-1">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// পরিসংখ্যান আপডেট
+function updateExpenseStats() {
+  let total = 0;
+  let todayTotal = 0;
+  const todayDate = new Date().toISOString().split('T')[0];
+  
+  expenses.forEach(e => {
+    total += e.amount;
+    if (e.date === todayDate) {
+      todayTotal += e.amount;
+    }
+  });
+  
+  document.getElementById('total-expense-amount').textContent = formatCurrency(total);
+  document.getElementById('today-expense-amount').textContent = formatCurrency(todayTotal);
+}
+// ক্যাটাগরি সিলেক্ট আপডেট
+function updateCategorySelect() {
+  const select = document.getElementById('expense-category');
+  if (!select) return;
+  
+  select.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
+  expenseCategories.forEach(cat => {
+    select.innerHTML += `<option value="${cat}">${cat}</option>`;
+  });
+}
+
+// ক্যাটাগরি লিস্ট রেন্ডার
+function renderCategoriesList() {
+  const container = document.getElementById('expense-categories-list');
+  if (!container) return;
+  
+  container.innerHTML = expenseCategories.map(cat => `
+    <span class="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full text-sm">
+      ${cat}
+      <button onclick="deleteCategory('${cat}')" class="text-red-500 hover:text-red-700 text-xs ml-1">✕</button>
+    </span>
+  `).join('');
+}
+
+function showAddCategoryForm() {
+  document.getElementById('add-category-form').classList.remove('hidden');
+}
+
+function hideAddCategoryForm() {
+  document.getElementById('add-category-form').classList.add('hidden');
+  document.getElementById('new-category-name').value = '';
+}
+
+async function addNewCategory() {
+  const newCat = document.getElementById('new-category-name').value.trim();
+  if (!newCat) {
+    showToast('ক্যাটাগরির নাম দিন', 'warning');
+    return;
+  }
+  if (expenseCategories.includes(newCat)) {
+    showToast('এই ক্যাটাগরি ইতিমধ্যে আছে', 'warning');
+    return;
+  }
+  
+  expenseCategories.push(newCat);
+  
+  if (!isGuest && currentUser) {
+    await database.ref(`users/${currentUser.uid}/expense_categories`).set(expenseCategories);
+  } else {
+    localStorage.setItem('guest_expense_categories', JSON.stringify(expenseCategories));
+  }
+  
+  updateCategorySelect();
+  renderCategoriesList();
+  hideAddCategoryForm();
+  showToast('ক্যাটাগরি যোগ হয়েছে', 'success');
+}
+
+async function deleteCategory(category) {
+  if (expenseCategories.length <= 1) {
+    showToast('শেষ ক্যাটাগরি ডিলিট করা যাবে না', 'warning');
+    return;
+  }
+  
+  const hasExpenses = expenses.some(e => e.category === category);
+  if (hasExpenses) {
+    showToast(`এই ক্যাটাগরিতে খরচ আছে। প্রথমে খরচ ডিলিট করুন।`, 'warning');
+    return;
+  }
+  
+  if (confirm(`"${category}" ক্যাটাগরি ডিলিট করতে চান?`)) {
+    const index = expenseCategories.indexOf(category);
+    if (index > -1) {
+      expenseCategories.splice(index, 1);
+      
+      if (!isGuest && currentUser) {
+        await database.ref(`users/${currentUser.uid}/expense_categories`).set(expenseCategories);
+      } else {
+        localStorage.setItem('guest_expense_categories', JSON.stringify(expenseCategories));
+      }
+      
+      updateCategorySelect();
+      renderCategoriesList();
+      showToast('ক্যাটাগরি ডিলিট হয়েছে', 'success');
+    }
+  }
+} 
   
     // ============================================
     // ভয়েস সার্চ ফাংশন
@@ -2483,6 +2861,7 @@ function setupOnlineSync() {
           document.getElementById('app-header').classList.remove('hidden');
           
           loadUserData(user.uid);
+          loadExpensesData(); // 👈 এই লাইন যোগ করুন
         }
       } else {
         if (!isGuest) {
@@ -2634,6 +3013,7 @@ function setupOnlineSync() {
         document.getElementById('app-header').classList.remove('hidden');
         
         loadGuestData();
+        loadExpensesData(); // 👈 এই লাইন যোগ করুন
       }
       
       updateUserMenu(null);
@@ -4497,10 +4877,10 @@ if (!isGuest && currentUser) {
   // ============================================
 // PDF রিপোর্ট ডাউনলোড ফাংশন
 // ============================================
-async function downloadPDFReport() {
-  showGlobalLoader("PDF রিপোর্ট তৈরি হচ্ছে...");
-  
-  const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+   async function downloadPDFReport() {
+      showGlobalLoader("PDF রিপোর্ট তৈরি হচ্ছে...");
+      
+   const shopName = defaultConfig.shop_name || 'বাকির খাতা';
   const currentDate = new Date().toLocaleString('bn-BD', { 
     year: 'numeric', 
     month: 'long', 
@@ -4514,6 +4894,38 @@ async function downloadPDFReport() {
   const totalDue = getTotalDue();
   const totalAdvance = getTotalAdvance();
   const totalFund = getTotalFundBalance();
+  
+  // ========== খরচের হিসাব যোগ করা হলো ==========
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+  
+  let todayExpenseTotal = 0;
+  let monthExpenseTotal = 0;
+  let categoryExpenseMap = new Map();
+  
+  expenses.forEach(exp => {
+    // আজকের খরচ
+    if (exp.date === todayStr) {
+      todayExpenseTotal += exp.amount;
+    }
+    
+    // এই মাসের খরচ
+    const expDate = new Date(exp.date);
+    if (expDate.getMonth() === today.getMonth() && expDate.getFullYear() === today.getFullYear()) {
+      monthExpenseTotal += exp.amount;
+      
+      // ক্যাটাগরি ভিত্তিক খরচ
+      const cat = exp.category;
+      categoryExpenseMap.set(cat, (categoryExpenseMap.get(cat) || 0) + exp.amount);
+    }
+  });
+  
+  // ক্যাটাগরি ভিত্তিক খরচ সাজানো
+  const categoryExpenses = Array.from(categoryExpenseMap.entries())
+    .map(([cat, amount]) => ({ category: cat, amount: amount }))
+    .sort((a, b) => b.amount - a.amount);
+  // ========== খরচের হিসাব শেষ ==========
   
   const customersWithBalance = customers.map(c => ({
     name: c.customer_name,
@@ -4551,6 +4963,8 @@ async function downloadPDFReport() {
         .summary-card.due .amount { color: #dc2626; }
         .summary-card.advance .amount { color: #d97706; }
         .summary-card.fund .amount { color: #7e22ce; }
+        .expense-card { background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); }
+        .expense-card .amount { color: #e11d48; }
         .section { margin-bottom: 30px; page-break-inside: avoid; }
         .section-title { font-size: 20px; font-weight: bold; color: #374151; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
         table { width: 100%; border-collapse: collapse; }
@@ -4560,6 +4974,7 @@ async function downloadPDFReport() {
         .balance-positive { color: #dc2626; font-weight: 500; }
         .balance-negative { color: #d97706; font-weight: 500; }
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; }
+        .expense-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
       </style>
     </head>
     <body>
@@ -4574,6 +4989,44 @@ async function downloadPDFReport() {
         <div class="summary-card advance"><h4>💰 মোট অগ্রিম</h4><div class="amount">৳${totalAdvance.toLocaleString('en-IN')}</div></div>
         <div class="summary-card fund"><h4>💳 মোট ফান্ড দায়</h4><div class="amount">৳${totalFund.toLocaleString('en-IN')}</div></div>
       </div>
+      
+      <!-- খরচের সারাংশ কার্ড -->
+      <div class="summary-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="summary-card expense-card">
+          <h4>📅 আজকের খরচ</h4>
+          <div class="amount" style="color: #e11d48;">৳${todayExpenseTotal.toLocaleString('en-IN')}</div>
+        </div>
+        <div class="summary-card expense-card">
+          <h4>📆 এই মাসের খরচ</h4>
+          <div class="amount" style="color: #e11d48;">৳${monthExpenseTotal.toLocaleString('en-IN')}</div>
+        </div>
+      </div>
+      
+      <!-- ক্যাটাগরি ভিত্তিক খরচ -->
+      ${categoryExpenses.length > 0 ? `
+      <div class="section">
+        <h3 class="section-title">📊 ক্যাটাগরি ভিত্তিক খরচ (এই মাস)</h3>
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 12px;">
+          ${categoryExpenses.map(c => `
+            <div class="expense-row">
+              <span>🏷️ ${c.category}</span>
+              <span class="font-bold" style="color: #e11d48;">৳${c.amount.toLocaleString('en-IN')}</span>
+            </div>
+          `).join('')}
+          <div class="expense-row" style="border-bottom: none; margin-top: 8px; padding-top: 8px; border-top: 2px solid #e5e7eb;">
+            <span class="font-bold">মোট</span>
+            <span class="font-bold" style="color: #e11d48;">৳${monthExpenseTotal.toLocaleString('en-IN')}</span>
+          </div>
+        </div>
+      </div>
+      ` : `
+      <div class="section">
+        <h3 class="section-title">📊 ক্যাটাগরি ভিত্তিক খরচ (এই মাস)</h3>
+        <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; text-align: center; color: #6b7280;">
+          এই মাসে কোনো খরচ নেই
+        </div>
+      </div>
+      `}
       
       <div class="section">
         <h3 class="section-title">📋 বাকি কাস্টমার তালিকা (${dueCustomers.length} জন)</h3>
