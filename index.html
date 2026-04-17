@@ -337,6 +337,20 @@
   display: inline-block;
   font-weight: normal;
 }
+    /* বার নামের অ্যানিমেশন - ডান থেকে বামে স্লাইড */
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.day-name-animate {
+  animation: slideInFromRight 0.5s ease-out;
+}
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
@@ -572,6 +586,7 @@
           <div>
             <h1 id="main-title" class="text-2xl font-bold">📒 বাকির খাতা</h1>
             <p id="shop-name" class="text-emerald-100 text-sm mt-1">আপনার দোকানের হিসাব</p>
+            <p id="today-dayname" class="text-emerald-100 text-base font-bold mt-1 day-name-animate"></p>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -1255,7 +1270,42 @@
       document.getElementById('menu-sound-text').textContent = soundEnabled ? translations[lang]['on'] : translations[lang]['off'];
       
       renderCurrentView();
+      updateDayName();
     }
+  
+  // ============================================
+// আজকের বার দেখানোর ফাংশন
+// ============================================
+function updateDayName() {
+  const days = {
+    bn: ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'],
+    en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+  };
+  
+  const today = new Date();
+  const dayIndex = today.getDay(); // 0 = রবিবার, 1 = সোমবার, ...
+  
+  const dayName = currentLanguage === 'bn' ? days.bn[dayIndex] : days.en[dayIndex];
+  const dateStr = today.toLocaleDateString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  
+  const dayElement = document.getElementById('today-dayname');
+  if (dayElement) {
+    if (currentLanguage === 'bn') {
+      dayElement.innerHTML = `📅 ${dayName}, ${dateStr}`;
+    } else {
+      dayElement.innerHTML = `📅 ${dayName}, ${dateStr}`;
+    }
+    
+    // অ্যানিমেশন রিস্টার্ট করা
+    dayElement.classList.remove('day-name-animate');
+    void dayElement.offsetHeight; // ফোর্স রিফ্লো
+    dayElement.classList.add('day-name-animate');
+  }
+}
 
     function t(key) {
       return translations[currentLanguage][key] || key;
@@ -5134,6 +5184,7 @@ if (!isGuest && currentUser) {
       }
 
       setLanguage('bn');
+      updateDayName();
       
       // ========== লোকাল ব্যাকআপ সেটিংস লোড ==========
 const savedBackupSetting = localStorage.getItem('local_backup_enabled');
