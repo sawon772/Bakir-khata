@@ -538,6 +538,14 @@
           <span id="platform-badge" class="inline-block px-2 py-1 bg-gray-100 rounded-full text-xs text-gray-600"></span>
         </div>
         
+        
+<!-- লোকাল ব্যাকআপ ডাটা দেখার বাটন -->
+<button onclick="showLocalBackupData()" 
+    class="w-full mt-2 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded-xl font-medium transition-all flex items-center justify-center gap-2 text-sm">
+    📦 লোকাল ব্যাকআপ ডাটা দেখুন
+</button>
+
+        
         <p class="text-xs text-gray-400 text-center mt-4">
           সাইন ইন করলে আপনার ডাটা ক্লাউডে সংরক্ষিত হবে
         </p>
@@ -1055,6 +1063,20 @@
       <p>কোনো খরচ নেই</p>
     </div>
   </div>
+</div>
+    
+    <!-- লোকাল ব্যাকআপ ডাটা দেখানোর মডাল -->
+<div id="local-backup-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-gray-800">📦 লোকাল ব্যাকআপ ডাটা</h2>
+            <button onclick="closeLocalBackupModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+        </div>
+        <div id="local-backup-content" class="text-sm text-gray-700 space-y-2 bg-gray-50 p-4 rounded-lg overflow-x-auto">
+            <!-- এখানে ডাটা দেখাবে -->
+        </div>
+        <button onclick="closeLocalBackupModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
+    </div>
 </div>
     
     <!-- Modal Container -->
@@ -2304,6 +2326,15 @@ async function deleteCategory(category) {
 // ============================================
 
 let localBackupEnabled = true; // ডিফল্ট অন
+  
+  // লোকাল স্টোরেজ থেকে সেভ করা সেটিংস লোড করা
+const savedBackupSetting = localStorage.getItem('local_backup_enabled');
+if (savedBackupSetting !== null) {
+    localBackupEnabled = savedBackupSetting === 'true';
+} else {
+    localBackupEnabled = true;
+    localStorage.setItem('local_backup_enabled', 'true');
+}
 
 // লোকাল ব্যাকআপ টগল করা
 function toggleLocalBackup() {
@@ -2403,6 +2434,166 @@ function setupOnlineSync() {
 // ============================================
 // লোকাল ব্যাকআপ ফিচার - শেষ
 // ============================================
+  
+  
+// ============================================
+// লোকাল ব্যাকআপ ডাটা দেখানোর ফাংশন
+// ============================================
+function showLocalBackupData() {
+    const modal = document.getElementById('local-backup-modal');
+    const contentDiv = document.getElementById('local-backup-content');
+    
+    // ব্যাকআপ ডাটা নেওয়া
+    const backup = localStorage.getItem('bakir_khata_backup');
+    
+    if (!backup) {
+        contentDiv.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+                <p class="text-4xl mb-2">📭</p>
+                <p>কোনো ব্যাকআপ ডাটা পাওয়া যায়নি!</p>
+                <p class="text-xs mt-2">সেটিংস মেনুতে "অফলাইন ব্যাকআপ সক্রিয় করুন" অন করে লেনদেন করুন</p>
+            </div>
+        `;
+        modal.classList.remove('hidden');
+        return;
+    }
+    
+    try {
+        const backupData = JSON.parse(backup);
+        const allDataItems = backupData.data || [];
+        const shopName = backupData.config?.shop_name || 'দোকানের নাম নেই';
+        const lastBackup = backupData.last_backup ? new Date(backupData.last_backup).toLocaleString('bn-BD') : 'অজানা';
+        
+        if (!allDataItems || allDataItems.length === 0) {
+            contentDiv.innerHTML = `<p class="text-gray-500 text-center py-4">কোনো ডাটা নেই</p>`;
+            modal.classList.remove('hidden');
+            return;
+        }
+        
+        // কাস্টমার বের করা
+        const customers = [];
+        const fundProviders = [];
+        let totalDue = 0;
+        let totalAdvance = 0;
+        let totalFund = 0;
+        
+        allDataItems.forEach(item => {
+            if (item.type === 'customer') {
+                customers.push(item);
+            } else if (item.type === 'fund-provider') {
+                fundProviders.push(item);
+            }
+        });
+        
+        // প্রত্যেক কাস্টমারের ব্যালেন্স ক্যালকুলেট করা
+        const customerBalances = customers.map(customer => {
+            let balance = 0;
+            allDataItems.forEach(item => {
+                if (item.customer_id === customer.customer_id) {
+                    if (item.type === 'due') balance += item.amount;
+                    if (item.type === 'payment') balance -= item.amount;
+                }
+            });
+            if (balance > 0) totalDue += balance;
+            if (balance < 0) totalAdvance += Math.abs(balance);
+            return { name: customer.customer_name, mobile: customer.mobile || '-', balance: balance };
+        });
+        
+        // ফান্ড প্রোভাইডার ব্যালেন্স
+        const providerBalances = fundProviders.map(provider => {
+            let balance = 0;
+            allDataItems.forEach(item => {
+                if (item.provider_id === provider.provider_id) {
+                    if (item.type === 'fund-receive') balance += item.amount;
+                    if (item.type === 'fund-payment') balance -= item.amount;
+                }
+            });
+            if (balance > 0) totalFund += balance;
+            return { name: provider.provider_name, balance: balance };
+        });
+        
+        // HTML তৈরি করা
+        let html = `
+            <div class="bg-emerald-50 p-3 rounded-lg mb-3">
+                <p class="font-bold text-emerald-800">🏪 দোকান: ${escapeHtml(shopName)}</p>
+                <p class="text-xs text-gray-500">📅 শেষ ব্যাকআপ: ${lastBackup}</p>
+                <p class="text-xs text-gray-500">📦 মোট ডাটা: ${allDataItems.length} টি</p>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-2 mb-3">
+                <div class="bg-red-50 p-2 rounded text-center">
+                    <p class="text-xs text-red-600">মোট বাকি</p>
+                    <p class="font-bold text-red-700">৳${totalDue.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-yellow-50 p-2 rounded text-center">
+                    <p class="text-xs text-yellow-600">মোট অগ্রিম</p>
+                    <p class="font-bold text-yellow-700">৳${totalAdvance.toLocaleString('en-IN')}</p>
+                </div>
+                <div class="bg-purple-50 p-2 rounded text-center">
+                    <p class="text-xs text-purple-600">মোট ফান্ড</p>
+                    <p class="font-bold text-purple-700">৳${totalFund.toLocaleString('en-IN')}</p>
+                </div>
+            </div>
+        `;
+        
+        // বাকি কাস্টমার
+        const dueCustomers = customerBalances.filter(c => c.balance > 0);
+        if (dueCustomers.length > 0) {
+            html += `<div class="mt-3"><p class="font-bold text-red-600 border-b pb-1">📝 বাকি কাস্টমার (${dueCustomers.length})</p>`;
+            dueCustomers.forEach(c => {
+                html += `<div class="flex justify-between py-1 text-sm border-b border-gray-100"><span>${escapeHtml(c.name)}</span><span class="text-red-600 font-bold">৳${c.balance.toLocaleString('en-IN')}</span></div>`;
+            });
+            html += `</div>`;
+        }
+        
+        // অগ্রিম কাস্টমার
+        const advanceCustomers = customerBalances.filter(c => c.balance < 0);
+        if (advanceCustomers.length > 0) {
+            html += `<div class="mt-3"><p class="font-bold text-yellow-600 border-b pb-1">💰 অগ্রিম কাস্টমার (${advanceCustomers.length})</p>`;
+            advanceCustomers.forEach(c => {
+                html += `<div class="flex justify-between py-1 text-sm border-b border-gray-100"><span>${escapeHtml(c.name)}</span><span class="text-yellow-600 font-bold">৳${Math.abs(c.balance).toLocaleString('en-IN')}</span></div>`;
+            });
+            html += `</div>`;
+        }
+        
+        // ফান্ড দাতা
+        const fundDue = providerBalances.filter(p => p.balance > 0);
+        if (fundDue.length > 0) {
+            html += `<div class="mt-3"><p class="font-bold text-purple-600 border-b pb-1">💰 ফান্ড দাতা (${fundDue.length})</p>`;
+            fundDue.forEach(p => {
+                html += `<div class="flex justify-between py-1 text-sm border-b border-gray-100"><span>${escapeHtml(p.name)}</span><span class="text-purple-600 font-bold">৳${p.balance.toLocaleString('en-IN')}</span></div>`;
+            });
+            html += `</div>`;
+        }
+        
+        if (dueCustomers.length === 0 && advanceCustomers.length === 0 && fundDue.length === 0) {
+            html += `<p class="text-gray-500 text-center py-4">✅ কোনো লেনদেনের ডাটা নেই</p>`;
+        }
+        
+        contentDiv.innerHTML = html;
+        modal.classList.remove('hidden');
+        
+    } catch (e) {
+        console.error('ব্যাকআপ ডাটা পড়তে সমস্যা:', e);
+        contentDiv.innerHTML = `<p class="text-red-500 text-center py-4">ডাটা পড়তে সমস্যা হয়েছে: ${e.message}</p>`;
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeLocalBackupModal() {
+    document.getElementById('local-backup-modal').classList.add('hidden');
+}
+
+// escapeHtml ফাংশন (যদি না থাকে)
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
   
       // ============================================
     // Firebase স্টোরেজ ব্যবহার চেক ফাংশন
@@ -3111,34 +3302,50 @@ function setupOnlineSync() {
 
     // Load user data from Firebase
     function loadUserData(userId) {
-      console.log('Loading data for user:', userId);
-      const userRef = database.ref(`users/${userId}/data`);
-      
-      userRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        console.log('Data loaded:', data);
-        if (data) {
-          allData = Object.keys(data).map(key => ({
-            ...data[key],
-            __backendId: key
-          }));
-        } else {
-          allData = [];
-        }
-        renderCurrentView();
-      });
+  console.log('Loading data for user:', userId);
+  const userRef = database.ref(`users/${userId}/data`);
+  
+  userRef.on('value', (snapshot) => {
+    const data = snapshot.val();
+    console.log('Data loaded:', data);
+    if (data) {
+      allData = Object.keys(data).map(key => ({
+        ...data[key],
+        __backendId: key
+      }));
+    } else {
+      allData = [];
     }
+    renderCurrentView();
+    
+    // 👇 এই লাইনটি যোগ করুন - ডাটা লোড হওয়ার সাথে সাথে ব্যাকআপ নাও
+    if (localBackupEnabled) {
+      setTimeout(() => {
+        saveToLocalBackup();
+        console.log('✅ ডাটা লোড হওয়ার পর ব্যাকআপ নেওয়া হয়েছে');
+      }, 500);
+    }
+  });
+}
 
     // Load guest data from localStorage
     function loadGuestData() {
-      const savedData = localStorage.getItem('guest_data');
-      if (savedData) {
-        allData = JSON.parse(savedData);
-      } else {
-        allData = [];
-      }
-      renderCurrentView();
-    }
+  const savedData = localStorage.getItem('guest_data');
+  if (savedData) {
+    allData = JSON.parse(savedData);
+  } else {
+    allData = [];
+  }
+  renderCurrentView();
+  
+  // 👇 এই লাইনটি যোগ করুন - গেস্ট ডাটা লোড হওয়ার সাথে সাথে ব্যাকআপ নাও
+  if (localBackupEnabled) {
+    setTimeout(() => {
+      saveToLocalBackup();
+      console.log('✅ গেস্ট ডাটা লোড হওয়ার পর ব্যাকআপ নেওয়া হয়েছে');
+    }, 500);
+  }
+}
 
    async function saveData(item) {
   showGlobalLoader("সংরক্ষণ হচ্ছে...");
@@ -5142,96 +5349,103 @@ if (!isGuest && currentUser) {
   }
 }
 
-    // Initialize
-    function init() {
-      detectPlatform();
-      
-      document.getElementById('modal-overlay').addEventListener('click', (e) => {
-        if (e.target.id === 'modal-overlay') closeModal();
-      });
+  // Initialize
+function init() {
+  detectPlatform();
+  
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-overlay') closeModal();
+  });
 
-      document.getElementById('image-upload-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'image-upload-modal') closeImageUploadModal();
-      });
+  document.getElementById('image-upload-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'image-upload-modal') closeImageUploadModal();
+  });
 
-      document.getElementById('shop-name-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'shop-name-modal') closeShopNameModal();
-      });
+  document.getElementById('shop-name-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'shop-name-modal') closeShopNameModal();
+  });
 
-      document.addEventListener('click', (e) => {
-        const mainMenu = document.getElementById('main-menu');
-        const menuBtn = document.querySelector('[onclick="toggleMainMenu()"]');
-        const userMenu = document.getElementById('user-menu');
-        const userBtn = document.querySelector('.google-profile-img');
-        
-        if (mainMenu && !mainMenu.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
-          mainMenu.classList.add('hidden');
-        }
-        
-        if (userMenu && !userMenu.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
-          userMenu.classList.add('hidden');
-        }
-      });
+  document.addEventListener('click', (e) => {
+    const mainMenu = document.getElementById('main-menu');
+    const menuBtn = document.querySelector('[onclick="toggleMainMenu()"]');
+    const userMenu = document.getElementById('user-menu');
+    const userBtn = document.querySelector('.google-profile-img');
+    
+    if (mainMenu && !mainMenu.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
+      mainMenu.classList.add('hidden');
+    }
+    
+    if (userMenu && !userMenu.contains(e.target) && userBtn && !userBtn.contains(e.target)) {
+      userMenu.classList.add('hidden');
+    }
+  });
 
-      document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'forgot-password-modal') closeForgotPassword();
-      });
+  document.getElementById('forgot-password-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'forgot-password-modal') closeForgotPassword();
+  });
 
-      const searchInput = document.getElementById('search-input');
-      if (searchInput) {
-        searchInput.addEventListener('input', checkSearchInput);
-        searchInput.addEventListener('keyup', checkSearchInput);
-      }
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', checkSearchInput);
+    searchInput.addEventListener('keyup', checkSearchInput);
+  }
 
-      setLanguage('bn');
-      updateDayName();
-      
-      // ========== লোকাল ব্যাকআপ সেটিংস লোড ==========
-const savedBackupSetting = localStorage.getItem('local_backup_enabled');
-if (savedBackupSetting !== null) {
-  localBackupEnabled = savedBackupSetting === 'true';
-} else {
-  localBackupEnabled = true; // ডিফল্ট অন
-}
-
-// বাটন আপডেট করা
-const backupBtn = document.getElementById('local-backup-btn');
-const backupIcon = document.getElementById('backup-icon');
-const backupText = document.getElementById('backup-text');
-if (backupBtn) {
-  if (localBackupEnabled) {
-    backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1';
-    if (backupIcon) backupIcon.textContent = '💾';
-    if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+  setLanguage('bn');
+  updateDayName();
+  
+  // ========== লোকাল ব্যাকআপ সেটিংস লোড ==========
+  const savedBackupSetting = localStorage.getItem('local_backup_enabled');
+  if (savedBackupSetting !== null) {
+    localBackupEnabled = savedBackupSetting === 'true';
   } else {
-    backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-gray-400 text-white flex items-center gap-1';
-    if (backupIcon) backupIcon.textContent = '💾❌';
-    if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    localBackupEnabled = true;
+    localStorage.setItem('local_backup_enabled', 'true');
+  }
+
+  // বাটন আপডেট করা
+  const backupBtn = document.getElementById('local-backup-btn');
+  const backupIcon = document.getElementById('backup-icon');
+  const backupText = document.getElementById('backup-text');
+  if (backupBtn) {
+    if (localBackupEnabled) {
+      backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1';
+      if (backupIcon) backupIcon.textContent = '💾';
+      if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    } else {
+      backupBtn.className = 'px-3 py-1 rounded-full text-sm bg-gray-400 text-white flex items-center gap-1';
+      if (backupIcon) backupIcon.textContent = '💾❌';
+      if (backupText) backupText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    }
+  }
+
+  // ইন্টারনেট স্ট্যাটাস চেক
+  setupOnlineSync();
+
+  // অফলাইনে থাকলে লোকাল ব্যাকআপ লোড
+  if (!isOnline() && localBackupEnabled) {
+    setTimeout(() => {
+      loadFromLocalBackup();
+    }, 1000);
+  }
+  
+  if (soundEnabled) {
+    document.getElementById('menu-sound-icon').textContent = '🔊';
+    document.getElementById('menu-sound-text').textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+  }
+  
+  // ডেট ফিল্টার সেট করুন
+  setDateFilter('all');
+  
+  // 👇 এটাই মূল ফিক্স: অ্যাপ স্টার্টআপে ব্যাকআপ সেভ করুন
+  if (localBackupEnabled) {
+    setTimeout(() => {
+      saveToLocalBackup();
+      console.log('✅ অ্যাপ স্টার্টআপে ব্যাকআপ নেওয়া হয়েছে');
+    }, 1500);
   }
 }
 
-// ইন্টারনেট স্ট্যাটাস চেক
-setupOnlineSync();
-
-// অফলাইনে থাকলে লোকাল ব্যাকআপ লোড
-if (!isOnline() && localBackupEnabled) {
-  setTimeout(() => {
-    loadFromLocalBackup();
-  }, 1000);
-}
-      
-      
-      
-      if (soundEnabled) {
-        document.getElementById('menu-sound-icon').textContent = '🔊';
-        document.getElementById('menu-sound-text').textContent = currentLanguage === 'bn' ? 'অন' : 'On';
-      }
-      
-      // ডেট ফিল্টার সেট করুন
-      setDateFilter('all');
-    }
-
-    init();
+init();
   </script>
 </body>
 </html>
