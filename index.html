@@ -55,6 +55,21 @@
     .advance-stat-card { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); }
     .non-due-stat-card { background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%); }
     .fund-stat-card { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); }
+    /* মোবাইলে সংখ্যা ছোট করে দেখানোর জন্য */
+@media (max-width: 640px) {
+  .stat-card .text-lg, .advance-stat-card .text-lg, .fund-stat-card .text-lg, .non-due-stat-card .text-lg {
+    font-size: 0.85rem !important;
+  }
+  #total-due, #total-advance, #total-fund, #total-customers, #total-non-due {
+    font-size: 0.8rem !important;
+  }
+  .grid-cols-5 {
+    gap: 0.3rem !important;
+  }
+  .stat-card p, .advance-stat-card p, .fund-stat-card p, .non-due-stat-card p {
+    font-size: 0.65rem !important;
+  }
+}
     .scrollbar-thin::-webkit-scrollbar { width: 6px; }
     .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
     .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
@@ -600,7 +615,9 @@
         <div class="flex items-center gap-2">
           <!-- Google Profile Image -->
           <img id="google-profile-img" src="https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40" 
-               class="google-profile-img" onclick="toggleUserMenu()" alt="Profile">
+     class="google-profile-img" onclick="toggleUserMenu()" alt="Profile"
+     style="display: inline-block; min-width: 40px; min-height: 40px; border-radius: 50%; object-fit: cover;"
+     onerror="this.src='https://ui-avatars.com/api/?name=User&background=059669&color=fff&size=40'">
         </div>
       </div>
     </header>
@@ -2973,20 +2990,48 @@ function escapeHtml(str) {
 
     // ============================================
     // Google Profile Image ফাংশন
-    // ============================================
-    function updateGoogleProfileImage(user) {
-      const googleProfileImg = document.getElementById('google-profile-img');
-      const userMenuImg = document.getElementById('user-menu-profile-image');
-      
-      if (user && user.photoURL) {
-        googleProfileImg.src = user.photoURL;
-        userMenuImg.src = user.photoURL;
-      } else {
-        const name = user ? user.displayName || 'User' : 'User';
-        googleProfileImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
-        userMenuImg.src = `https://ui-avatars.com/api/?name=${name}&background=059669&color=fff&size=40`;
-      }
+function updateGoogleProfileImage(user) {
+  const googleProfileImg = document.getElementById('google-profile-img');
+  const userMenuImg = document.getElementById('user-menu-profile-image');
+  
+  if (!googleProfileImg) return;
+  
+  if (user && user.photoURL) {
+    // ক্যাশ এড়ানোর জন্য টাইমস্ট্যাম্প যোগ করুন
+    const imageUrl = user.photoURL + '?t=' + new Date().getTime();
+    
+    // ইমেজ সেট করুন
+    googleProfileImg.src = imageUrl;
+    if (userMenuImg) userMenuImg.src = imageUrl;
+    
+    // ইমেজ ভিজিবল করুন
+    googleProfileImg.style.display = 'inline-block';
+    googleProfileImg.style.visibility = 'visible';
+    googleProfileImg.style.opacity = '1';
+    
+    // ইমেজ লোড না হলে ব্যাকআপ
+    googleProfileImg.onerror = function() {
+      const name = user.displayName || 'User';
+      const defaultImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=059669&color=fff&size=40`;
+      this.src = defaultImg;
+      if (userMenuImg) userMenuImg.src = defaultImg;
+      this.onerror = null;
+    };
+  } else {
+    const name = user ? user.displayName || 'User' : 'User';
+    const defaultImg = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=059669&color=fff&size=40`;
+    googleProfileImg.src = defaultImg;
+    if (userMenuImg) userMenuImg.src = defaultImg;
+  }
+  
+  // ফোর্স রি-রেন্ডার
+  setTimeout(() => {
+    if (googleProfileImg.complete && googleProfileImg.naturalHeight === 0) {
+      googleProfileImg.style.opacity = '0.99';
+      setTimeout(() => { googleProfileImg.style.opacity = '1'; }, 10);
     }
+  }, 100);
+}
 
     // Toast ফাংশন
     function showToast(message, type = 'success', duration = 3000) {
@@ -3473,8 +3518,8 @@ function escapeHtml(str) {
     }
 
     function formatCurrency(amount) {
-      return '৳' + toBengaliNumber(Math.abs(amount).toLocaleString('en-IN'));
-    }
+  return '৳' + Math.abs(amount).toLocaleString('en-IN');
+}
 
     function formatDate(dateStr) {
       const date = new Date(dateStr);
@@ -3789,11 +3834,11 @@ function isOverdue(dateStr) {
       const nonDueCount = customers.filter(c => getCustomerBalance(c.customer_id) === 0).length;
       const totalFund = getTotalFundBalance();
 
-      document.getElementById('total-customers').textContent = toBengaliNumber(customers.length);
+      document.getElementById('total-customers').textContent = customers.length;
       document.getElementById('total-due').textContent = formatCurrency(totalDue);
       document.getElementById('total-advance').textContent = formatCurrency(totalAdvance);
       document.getElementById('total-fund').textContent = formatCurrency(totalFund);
-      document.getElementById('total-non-due').textContent = toBengaliNumber(nonDueCount);
+      document.getElementById('total-non-due').textContent = nonDueCount;
       
       if (document.getElementById('total-advance-amount')) {
         document.getElementById('total-advance-amount').textContent = (currentLanguage === 'bn' ? 'মোট অগ্রিম: ' : 'Total Advance: ') + formatCurrency(totalAdvance);
@@ -4232,7 +4277,7 @@ function isOverdue(dateStr) {
       const netDue = totalGiven - totalReceived;
       const netFund = totalFundReceived - totalFundPaid;
 
-      document.getElementById('report-total-customers').textContent = toBengaliNumber(customers.length);
+      document.getElementById('report-total-customers').textContent = customers.length;
       document.getElementById('report-total-given').textContent = formatCurrency(totalGiven);
       document.getElementById('report-total-received').textContent = formatCurrency(totalReceived);
       document.getElementById('report-total-advance').textContent = formatCurrency(getTotalAdvance());
@@ -4257,7 +4302,7 @@ function isOverdue(dateStr) {
         topDebtorsContainer.innerHTML = debtors.map((d, i) => `
           <div class="flex items-center justify-between py-2 ${i < debtors.length - 1 ? 'border-b' : ''}">
             <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">${toBengaliNumber(i + 1)}</span>
+              <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">${i + 1}</span>
               <span class="text-gray-800">${d.name}</span>
             </div>
             <span class="font-bold text-red-600">${formatCurrency(d.balance)}</span>
@@ -4281,7 +4326,7 @@ function isOverdue(dateStr) {
         topAdvanceContainer.innerHTML = advanceGivers.map((a, i) => `
           <div class="flex items-center justify-between py-2 ${i < advanceGivers.length - 1 ? 'border-b' : ''}">
             <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center text-sm font-bold">${toBengaliNumber(i + 1)}</span>
+              <span class="w-6 h-6 rounded-full bg-yellow-100 text-yellow-700 flex items-center justify-center text-sm font-bold">${i + 1}</span>
               <span class="text-gray-800">${a.name}</span>
             </div>
             <span class="font-bold text-yellow-600">${formatCurrency(a.balance)}</span>
@@ -4305,7 +4350,7 @@ function isOverdue(dateStr) {
         topLendersContainer.innerHTML = lenders.map((l, i) => `
           <div class="flex items-center justify-between py-2 ${i < lenders.length - 1 ? 'border-b' : ''}">
             <div class="flex items-center gap-2">
-              <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">${toBengaliNumber(i + 1)}</span>
+              <span class="w-6 h-6 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">${i + 1}</span>
               <span class="text-gray-800">${l.name}</span>
             </div>
             <span class="font-bold text-purple-600">${formatCurrency(l.balance)}</span>
@@ -5294,6 +5339,31 @@ if (!isGuest && currentUser) {
         .balance-negative { color: #d97706; font-weight: 500; }
         .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; }
         .expense-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+         /* গুগল প্রোফাইল ইমেজ ফোর্স দেখানোর জন্য */
+.google-profile-img {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  min-width: 40px;
+  min-height: 40px;
+  background: #059669;
+  border-radius: 50%;
+}
+
+/* ইমেজ লোড না হলে ব্যাকগ্রাউন্ড দেখাবে */
+.google-profile-img:before {
+  content: "👤";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: #059669;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+}
       </style>
     </head>
     <body>
