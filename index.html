@@ -3079,13 +3079,26 @@ function escapeHtml(str) {
 
     // Auth State Observer
     auth.onAuthStateChanged(async (user) => {
-      console.log('Auth state changed:', user ? user.email : 'No user');
-      
-      if (user) {
-        currentUser = user;
-        isGuest = false;
-        updateUserMenu(user);
-        updateGoogleProfileImage(user);
+  console.log('Auth state changed:', user ? user.email : 'No user');
+  
+  if (user) {
+    currentUser = user;
+    isGuest = false;
+    
+    // 🔥 এই ২ লাইন যোগ করুন - ইউজার রিলোড করে তাজা তথ্য আনুন
+    await user.reload();
+    const freshUser = auth.currentUser;
+    
+    updateUserMenu(freshUser);
+    updateGoogleProfileImage(freshUser);
+    
+    // 🔥 এই ১ লাইন যোগ করুন - ক্যাশ ক্লিয়ার করতে
+    setTimeout(() => {
+      const img = document.getElementById('google-profile-img');
+      if (img && freshUser.photoURL) {
+        img.src = freshUser.photoURL + '?t=' + Date.now();
+      }
+    }, 500);
         
         const shopNameRef = database.ref(`users/${user.uid}/shop_name`);
         const snapshot = await shopNameRef.once('value');
@@ -4098,15 +4111,15 @@ function isOverdue(dateStr) {
         return `
           <div class="bg-white rounded-xl p-3 card-shadow fund-provider-card" data-id="${p.__backendId}">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                  ${p.provider_name.charAt(0)}
-                </div>
-                <div>
-                  <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
-                  <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
-                </div>
-              </div>
+              <div class="flex items-center gap-2 cursor-pointer" onclick="viewFundProviderHistory('${p.provider_id}')">
+  <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+    ${p.provider_name.charAt(0)}
+  </div>
+  <div>
+    <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
+    <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+  </div>
+</div>
               <div class="text-right">
                 <p class="font-bold text-purple-600">${formatCurrency(balance)}</p>
                 <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'পাওনা' : 'Due'}</p>
@@ -4119,6 +4132,7 @@ function isOverdue(dateStr) {
               </div>
             ` : `
               <div class="flex gap-2 mt-2 justify-end">
+            <button onclick="viewFundProviderHistory('${p.provider_id}')" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600" title="ইতিহাস দেখুন">📋</button>
             <button onclick="shareFundProviderCard('${p.provider_id}')" class="share-icon-btn w-8 h-8 text-sm" title="শেয়ার করুন">
   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
@@ -4658,6 +4672,50 @@ function isOverdue(dateStr) {
         `;
       }
       
+      else if (type === 'fund-history') {
+  const provider = getFundProviders().find(p => p.provider_id === personId);
+  if (!provider) return;
+  
+  const balance = getFundProviderBalance(personId);
+  const transactions = getFunds().filter(t => t.provider_id === personId);
+  
+  content.innerHTML = `
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold text-gray-800">💰 ${provider.provider_name}</h2>
+      <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+    </div>
+    
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white mb-4">
+      <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
+      <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
+      <p class="text-xs mt-1">${balance > 0 ? (currentLanguage === 'bn' ? 'পাওনা আছে' : 'Due') : (balance < 0 ? (currentLanguage === 'bn' ? 'অতিরিক্ত পরিশোধ' : 'Excess Payment') : (currentLanguage === 'bn' ? 'শূন্য' : 'Zero'))}</p>
+      ${provider.mobile ? `<p class="text-sm mt-2">📞 <a href="tel:${provider.mobile}" class="hover:underline">${provider.mobile}</a></p>` : ''}
+      ${provider.address ? `<p class="text-sm">📍 ${provider.address}</p>` : ''}
+    </div>
+    
+    <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
+    <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
+      ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>` : 
+        transactions.map(t => `
+          <div class="flex items-center justify-between py-2 border-b">
+            <div>
+              <p class="text-sm font-medium ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
+                ${t.type === 'fund-receive' ? '💰 ' + (currentLanguage === 'bn' ? 'ফান্ড নিয়েছেন' : 'Fund Received') : '💸 ' + (currentLanguage === 'bn' ? 'ফান্ড দিয়েছেন' : 'Fund Paid')}
+              </p>
+              <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
+              ${t.note ? `<p class="text-xs text-gray-400">${t.note}</p>` : ''}
+            </div>
+            <p class="font-bold ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
+              ${t.type === 'fund-receive' ? '+' : '-'}${formatCurrency(t.amount)}
+            </p>
+          </div>
+        `).join('')
+      }
+    </div>
+    <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বন্ধ করুন' : 'Close'}</button>
+  `;
+}
+      
       overlay.classList.remove('hidden');
     }
 
@@ -4675,6 +4733,10 @@ function isOverdue(dateStr) {
 
     function viewCustomerHistory(customerId) {
       openModal('history', customerId);
+    }
+  
+    function viewFundProviderHistory(providerId) {
+     openModal('fund-history', providerId);
     }
 
     // CRUD operations for Fund Providers
