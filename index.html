@@ -36,6 +36,8 @@
   
   <!-- html2canvas for image sharing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+  <script src="https://accounts.google.com/gsi/client"></script>
   
   <style>
     * { font-family: 'Hind Siliguri', sans-serif; }
@@ -703,6 +705,36 @@
   <p class="text-xs text-gray-500 mt-1">ফ্রি টিয়ারে 1 GB পর্যন্ত ডাটা রাখা যায়</p>
 </div>
       
+      <!-- 👇 এই পুরো ব্লকটি এখানে যোগ করুন (ঠিক এই জায়গায়) -->
+<!-- Google Drive ব্যাকআপ সেকশন -->
+<div class="mb-3 p-2 bg-blue-50 rounded-lg">
+  <p class="text-sm font-medium text-blue-800 mb-2">☁️ Google Drive ব্যাকআপ</p>
+  
+  <div id="gdrive-status-area" class="space-y-2">
+    <div class="flex justify-between items-center">
+      <span id="gdrive-status-text" class="text-xs text-gray-600">⚫ সংযুক্ত নেই</span>
+      <button onclick="connectGDrive()" id="gdrive-connect-btn" class="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs">
+        🔌 সংযোগ
+      </button>
+    </div>
+    
+    <div id="gdrive-buttons" class="hidden space-y-2">
+      <button onclick="uploadBackupToDrive()" class="w-full text-left text-sm text-blue-600 hover:bg-blue-100 p-2 rounded-lg">
+        ☁️⬆️ ম্যানুয়াল ব্যাকআপ
+      </button>
+      <button onclick="showBackupList()" class="w-full text-left text-sm text-blue-600 hover:bg-blue-100 p-2 rounded-lg">
+        📋 ব্যাকআপ লিস্ট
+      </button>
+      <button onclick="disconnectGDrive()" class="w-full text-left text-sm text-red-600 hover:bg-red-50 p-2 rounded-lg">
+        🔌 সংযোগ বিচ্ছিন্ন
+      </button>
+    </div>
+  </div>
+  
+  <p class="text-xs text-gray-500 mt-1">Google Drive এ ব্যাকআপ সংরক্ষণ করুন। ফোন হারিয়ে গেলেও ডাটা নিরাপদ থাকবে।</p>
+</div>
+<!-- Google Drive ব্যাকআপ সেকশন শেষ -->
+      
       <!-- দোকানের নাম পরিবর্তন -->
       <div class="mb-3 p-2 bg-purple-50 rounded-lg">
         <p class="text-sm font-medium text-purple-800 mb-2">🏪 দোকানের নাম পরিবর্তন</p>
@@ -1100,6 +1132,20 @@
     <div id="modal-overlay" class="fixed inset-0 modal-overlay z-50 hidden flex items-end sm:items-center justify-center">
       <div id="modal-content" class="bg-white w-full sm:w-96 sm:rounded-2xl rounded-t-2xl p-6 animate-slide-up max-h-[90%] overflow-y-auto"></div>
     </div>
+    
+    <!-- Google Drive ব্যাকআপ লিস্ট মডাল -->
+    <div id="gdrive-list-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-bold">☁️ ব্যাকআপ লিস্ট</h3>
+          <button onclick="closeGDriveModal()" class="text-gray-500 text-2xl">&times;</button>
+        </div>
+        <div id="backup-list-container" class="space-y-2">
+          <div class="text-center py-8 text-gray-500">লোড হচ্ছে...</div>
+        </div>
+      </div>
+    </div>
+    <!-- Google Drive ব্যাকআপ লিস্ট মডাল শেষ -->
     
     <!-- Toast Container -->
     <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2"></div>
@@ -5481,6 +5527,258 @@ if (!isGuest && currentUser) {
   }
 }
 
+  // ============================================
+// Google Drive ব্যাকআপ ফাংশন (সরল সংস্করণ)
+// ============================================
+
+// 👇 আপনার Client ID এখানে বসান (যেটা Google Console থেকে পেয়েছেন)
+const GOOGLE_CLIENT_ID = '387282350909-m869p4f4t68q9ebtv49idjq3g8ki931v.apps.googleusercontent.com';  // ← আপনার আসল Client ID দিন
+
+let gdriveToken = null;
+let gdriveSignedIn = false;
+
+// Google API লোড করা
+function loadGoogleAPI() {
+  return new Promise((resolve) => {
+    gapi.load('client', async () => {
+      await gapi.client.init({
+        apiKey: '',
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+      });
+      resolve();
+    });
+  });
+}
+
+// টোকেন ক্লায়েন্ট তৈরি
+let tokenClient;
+function createTokenClient() {
+  tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/drive.file',
+    callback: (response) => {
+      gdriveToken = response.access_token;
+      gdriveSignedIn = true;
+      updateGDriveUI(true);
+      showToast('Google Drive সংযুক্ত হয়েছে!', 'success');
+    },
+  });
+}
+
+// সংযোগ করা
+async function connectGDrive() {
+  showGlobalLoader('Google Drive সংযোগ হচ্ছে...');
+  try {
+    await loadGoogleAPI();
+    if (!tokenClient) createTokenClient();
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  } catch (err) {
+    showToast('সংযোগ ব্যর্থ: ' + err.message, 'error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
+
+// সংযোগ বিচ্ছিন্ন
+function disconnectGDrive() {
+  gdriveToken = null;
+  gdriveSignedIn = false;
+  updateGDriveUI(false);
+  showToast('সংযোগ বিচ্ছিন্ন হয়েছে', 'info');
+}
+
+// UI আপডেট
+function updateGDriveUI(isConnected) {
+  const statusText = document.getElementById('gdrive-status-text');
+  const connectBtn = document.getElementById('gdrive-connect-btn');
+  const buttonsDiv = document.getElementById('gdrive-buttons');
+  
+  if (isConnected) {
+    statusText.innerHTML = '✅ সংযুক্ত';
+    statusText.className = 'text-xs text-green-600';
+    connectBtn.classList.add('hidden');
+    buttonsDiv.classList.remove('hidden');
+  } else {
+    statusText.innerHTML = '⚫ সংযুক্ত নেই';
+    statusText.className = 'text-xs text-gray-600';
+    connectBtn.classList.remove('hidden');
+    buttonsDiv.classList.add('hidden');
+  }
+}
+
+// ব্যাকআপ ডাটা তৈরি
+function prepareBackupData() {
+  return {
+    version: '1.0',
+    backup_date: new Date().toISOString(),
+    shop_name: defaultConfig.shop_name,
+    allData: allData,
+    expenses: expenses,
+    total_customers: getCustomers().length,
+    total_due: getTotalDue()
+  };
+}
+
+// ব্যাকআপ আপলোড
+async function uploadBackupToDrive() {
+  if (!gdriveSignedIn) {
+    showToast('আগে Google Drive এ সংযোগ করুন', 'warning');
+    return;
+  }
+  
+  showGlobalLoader('ব্যাকআপ আপলোড হচ্ছে...');
+  
+  try {
+    // ১. ব্যাকআপ ফোল্ডার তৈরি বা খুঁজে বের করা
+    let folderId = localStorage.getItem('gdrive_folder_id');
+    
+    if (!folderId) {
+      const folderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${gdriveToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: 'Bakir Khata Backups',
+          mimeType: 'application/vnd.google-apps.folder'
+        })
+      });
+      const folder = await folderRes.json();
+      folderId = folder.id;
+      localStorage.setItem('gdrive_folder_id', folderId);
+    }
+    
+    // ২. ব্যাকআপ ফাইল তৈরি
+    const backupData = prepareBackupData();
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const fileName = `bakir_khata_${new Date().toISOString().split('T')[0]}.json`;
+    
+    // ৩. ফর্মডাটা তৈরি
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify({
+      name: fileName,
+      parents: [folderId],
+      mimeType: 'application/json'
+    })], { type: 'application/json' }));
+    form.append('file', blob);
+    
+    // ৪. আপলোড রিকোয়েস্ট
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${gdriveToken}` },
+      body: form
+    });
+    
+    const result = await response.json();
+    
+    if (result.id) {
+      showToast('ব্যাকআপ সফল!', 'success');
+      playSound('success');
+    } else {
+      throw new Error(result.error?.message || 'আপলোড ব্যর্থ');
+    }
+  } catch (err) {
+    showToast('ব্যাকআপ ব্যর্থ: ' + err.message, 'error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
+
+// ব্যাকআপ লিস্ট দেখানো
+async function showBackupList() {
+  if (!gdriveSignedIn) {
+    showToast('আগে Google Drive এ সংযোগ করুন', 'warning');
+    return;
+  }
+  
+  const modal = document.getElementById('gdrive-list-modal');
+  const container = document.getElementById('backup-list-container');
+  modal.classList.remove('hidden');
+  container.innerHTML = '<div class="text-center py-8 text-gray-500">লোড হচ্ছে...</div>';
+  
+  try {
+    const folderId = localStorage.getItem('gdrive_folder_id');
+    if (!folderId) {
+      container.innerHTML = '<div class="text-center py-8 text-gray-500">কোনো ব্যাকআপ নেই</div>';
+      return;
+    }
+    
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&orderBy=createdTime desc`, {
+      headers: { 'Authorization': `Bearer ${gdriveToken}` }
+    });
+    
+    const result = await response.json();
+    const files = result.files || [];
+    
+    if (files.length === 0) {
+      container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 কোনো ব্যাকআপ নেই</div>';
+      return;
+    }
+    
+    container.innerHTML = files.map(file => `
+      <div class="bg-gray-50 rounded-lg p-3 border-l-4 border-blue-500">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="text-sm font-medium">${file.name}</p>
+            <p class="text-xs text-gray-500">${new Date(file.createdTime).toLocaleString()}</p>
+          </div>
+          <button onclick="restoreFromDrive('${file.id}')" class="px-2 py-1 bg-emerald-500 text-white text-xs rounded">
+            🔄 রিস্টোর
+          </button>
+        </div>
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = '<div class="text-center py-8 text-red-500">লোড করতে ব্যর্থ</div>';
+  }
+}
+
+// ব্যাকআপ রিস্টোর
+async function restoreFromDrive(fileId) {
+  if (!confirm('বর্তমান ডাটা মুছে যাবে। রিস্টোর করতে চান?')) return;
+  
+  showGlobalLoader('রিস্টোর হচ্ছে...');
+  
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+      headers: { 'Authorization': `Bearer ${gdriveToken}` }
+    });
+    
+    const backupData = await response.json();
+    
+    // ডাটা রিস্টোর
+    if (backupData.allData) {
+      if (isGuest) {
+        allData = backupData.allData;
+        localStorage.setItem('guest_data', JSON.stringify(backupData.allData));
+      } else if (currentUser) {
+        await database.ref(`users/${currentUser.uid}/data`).set(null);
+        for (const item of backupData.allData) {
+          await database.ref(`users/${currentUser.uid}/data`).push().set(item);
+        }
+      }
+      
+      if (backupData.shop_name) {
+        defaultConfig.shop_name = backupData.shop_name;
+        document.getElementById('shop-name').textContent = backupData.shop_name;
+      }
+      
+      showToast('রিস্টোর সফল! পেজ রিলোড হচ্ছে...', 'success');
+      setTimeout(() => location.reload(), 1500);
+    }
+  } catch (err) {
+    showToast('রিস্টোর ব্যর্থ: ' + err.message, 'error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
+
+function closeGDriveModal() {
+  document.getElementById('gdrive-list-modal').classList.add('hidden');
+}
+  
   // Initialize
 function init() {
   detectPlatform();
