@@ -5561,6 +5561,7 @@ function createTokenClient() {
       gdriveSignedIn = true;
       updateGDriveUI(true);
       showToast('Google Drive সংযুক্ত হয়েছে!', 'success');
+      setupAutoBackup();
     },
   });
 }
@@ -5571,7 +5572,7 @@ async function connectGDrive() {
   try {
     await loadGoogleAPI();
     if (!tokenClient) createTokenClient();
-    tokenClient.requestAccessToken({ prompt: 'consent' });
+    tokenClient.requestAccessToken({ prompt: '' });
   } catch (err) {
     showToast('সংযোগ ব্যর্থ: ' + err.message, 'error');
   } finally {
@@ -5737,7 +5738,7 @@ async function showBackupList() {
 
 // ব্যাকআপ রিস্টোর
 async function restoreFromDrive(fileId) {
-  if (!confirm('বর্তমান ডাটা মুছে যাবে। রিস্টোর করতে চান?')) return;
+  if (!confirm('⚠️ সতর্কতা: বর্তমান সব ডাটা মুছে যাবে! রিস্টোর করতে চান?')) return;
   
   showGlobalLoader('রিস্টোর হচ্ছে...');
   
@@ -5748,13 +5749,21 @@ async function restoreFromDrive(fileId) {
     
     const backupData = await response.json();
     
-    // ডাটা রিস্টোর
     if (backupData.allData) {
+      // 🔥 পুরানো ডাটা মুছে দিন (ডাবল হওয়া বন্ধ করতে)
+      if (isGuest) {
+        allData = [];  // গেস্ট মোডে পুরানো ডাটা খালি করুন
+        localStorage.setItem('guest_data', JSON.stringify([]));
+      } else if (currentUser) {
+        // Firebase থেকে পুরানো ডাটা মুছুন
+        await database.ref(`users/${currentUser.uid}/data`).set(null);
+      }
+      
+      // নতুন ডাটা যোগ করুন
       if (isGuest) {
         allData = backupData.allData;
         localStorage.setItem('guest_data', JSON.stringify(backupData.allData));
       } else if (currentUser) {
-        await database.ref(`users/${currentUser.uid}/data`).set(null);
         for (const item of backupData.allData) {
           await database.ref(`users/${currentUser.uid}/data`).push().set(item);
         }
@@ -5763,15 +5772,45 @@ async function restoreFromDrive(fileId) {
       if (backupData.shop_name) {
         defaultConfig.shop_name = backupData.shop_name;
         document.getElementById('shop-name').textContent = backupData.shop_name;
+        if (!isGuest) {
+          await database.ref(`users/${currentUser.uid}/shop_name`).set(backupData.shop_name);
+        } else {
+          localStorage.setItem('guest_shop_name', backupData.shop_name);
+        }
       }
       
-      showToast('রিস্টোর সফল! পেজ রিলোড হচ্ছে...', 'success');
+      showToast('✅ রিস্টোর সফল! পেজ রিলোড হচ্ছে...', 'success');
       setTimeout(() => location.reload(), 1500);
+    } else {
+      showToast('❌ ইনভ্যালিড ব্যাকআপ ফাইল', 'error');
     }
   } catch (err) {
-    showToast('রিস্টোর ব্যর্থ: ' + err.message, 'error');
+    showToast('❌ রিস্টোর ব্যর্থ: ' + err.message, 'error');
   } finally {
     hideGlobalLoader();
+  }
+}
+  
+  // অটো ব্যাকআপ সেটআপ (প্রতি ২৪ ঘন্টা পরপর)
+let autoBackupInterval = null;
+
+function setupAutoBackup() {
+  if (autoBackupInterval) clearInterval(autoBackupInterval);
+  
+  // প্রতি ২৪ ঘন্টা পর পর ব্যাকআপ নিবে
+  autoBackupInterval = setInterval(() => {
+    if (gdriveSignedIn) {
+      console.log('🔄 অটো ব্যাকআপ শুরু হচ্ছে...');
+      uploadBackupToDrive();
+    }
+  }, 24 * 60 * 60 * 1000); // 24 ঘন্টা
+}
+
+// অটো ব্যাকআপ বন্ধ করার ফাংশন
+function stopAutoBackup() {
+  if (autoBackupInterval) {
+    clearInterval(autoBackupInterval);
+    autoBackupInterval = null;
   }
 }
 
