@@ -5812,7 +5812,8 @@ async function showBackupList() {
       return;
     }
     
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&orderBy=createdTime desc`, {
+    // 🔥 ফাইলগুলোর মেটাডাটা সহ আনো (createdTime, size, etc.)
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&orderBy=createdTime desc&fields=files(id,name,createdTime,size)`, {
       headers: { 'Authorization': `Bearer ${gdriveToken}` }
     });
     
@@ -5824,24 +5825,95 @@ async function showBackupList() {
       return;
     }
     
+    // 🔥 ফাইল সাইজ ফরম্যাট করার ফাংশন
+    function formatFileSize(bytes) {
+      if (!bytes) return 'অজানা সাইজ';
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    
+    // 🔥 বিডি সময় ফরম্যাট করার ফাংশন
+    function formatBanglaDateTime(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleString('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    }
+    
     container.innerHTML = files.map(file => `
-      <div class="bg-gray-50 rounded-lg p-3 border-l-4 border-blue-500">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="text-sm font-medium">${file.name}</p>
-            <p class="text-xs text-gray-500">${new Date(file.createdTime).toLocaleString()}</p>
+      <div class="bg-gray-50 rounded-lg p-3 border-l-4 border-blue-500 mb-2">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-gray-800">📄 ${file.name}</p>
+            <div class="mt-1 space-y-0.5">
+              <p class="text-xs text-gray-500 flex items-center gap-1">
+                <span>📅</span> ${formatBanglaDateTime(file.createdTime)}
+              </p>
+              <p class="text-xs text-gray-400 flex items-center gap-1">
+                <span>💾</span> ${formatFileSize(file.size)}
+              </p>
+            </div>
           </div>
-          <button onclick="restoreFromDrive('${file.id}')" class="px-2 py-1 bg-emerald-500 text-white text-xs rounded">
-            🔄 রিস্টোর
-          </button>
+          <div class="flex gap-2">
+            <button onclick="restoreFromDrive('${file.id}')" class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 transition-colors" title="রিস্টোর">
+              🔄 রিস্টোর
+            </button>
+            <button onclick="deleteSingleBackup('${file.id}', '${file.name}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors" title="ডিলিট">
+              🗑️ ডিলিট
+            </button>
+          </div>
         </div>
       </div>
     `).join('');
+    
+    // ব্যাকআপ সংখ্যা দেখানো
+    const totalBackups = files.length;
+    const summaryHtml = `<div class="text-center text-xs text-gray-500 mt-2 pt-2 border-t">📦 মোট ব্যাকআপ: ${totalBackups}টি</div>`;
+    container.innerHTML += summaryHtml;
+    
   } catch (err) {
-    container.innerHTML = '<div class="text-center py-8 text-red-500">লোড করতে ব্যর্থ</div>';
+    console.error('ব্যাকআপ লিস্ট লোড ব্যর্থ:', err);
+    container.innerHTML = '<div class="text-center py-8 text-red-500">❌ লোড করতে ব্যর্থ: ' + err.message + '</div>';
   }
 }
 
+  // 🔥 একক ব্যাকআপ ডিলিট করার ফাংশন
+async function deleteSingleBackup(fileId, fileName) {
+  if (!confirm(`"${fileName}" ব্যাকআপটি ডিলিট করতে চান?`)) {
+    return;
+  }
+  
+  showGlobalLoader('ব্যাকআপ ডিলিট হচ্ছে...');
+  
+  try {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${gdriveToken}` }
+    });
+    
+    if (response.ok) {
+      showToast(`✅ "${fileName}" ডিলিট হয়েছে!`, 'success');
+      playSound('success');
+      // লিস্ট রিফ্রেশ করো
+      await showBackupList();
+    } else {
+      throw new Error('ডিলিট ব্যর্থ');
+    }
+  } catch (err) {
+    console.error('ডিলিট ব্যর্থ:', err);
+    showToast('❌ ডিলিট ব্যর্থ: ' + err.message, 'error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
+  
 // ব্যাকআপ রিস্টোর
 async function restoreFromDrive(fileId) {
   if (!confirm('⚠️ সতর্কতা: বর্তমান সব ডাটা মুছে যাবে! রিস্টোর করতে চান?')) return;
