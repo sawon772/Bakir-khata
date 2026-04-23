@@ -5537,6 +5537,26 @@ const GOOGLE_CLIENT_ID = '387282350909-m869p4f4t68q9ebtv49idjq3g8ki931v.apps.goo
 let gdriveToken = null;
 let gdriveSignedIn = false;
 
+  // টোকেন সেভ ও লোড করার ফাংশন
+function saveGDriveToken(token) {
+  localStorage.setItem('gdrive_token', token);
+  localStorage.setItem('gdrive_token_time', Date.now());
+}
+
+function loadSavedGDriveToken() {
+  const savedToken = localStorage.getItem('gdrive_token');
+  const savedTime = localStorage.getItem('gdrive_token_time');
+  
+  if (savedToken && savedTime && (Date.now() - savedTime) < 3600000) { // 1 ঘন্টা
+    gdriveToken = savedToken;
+    gdriveSignedIn = true;
+    updateGDriveUI(true);
+    console.log('✅ সেভ করা টোকেন লোড হয়েছে');
+    return true;
+  }
+  return false;
+}
+  
 // Google API লোড করা
 function loadGoogleAPI() {
   return new Promise((resolve) => {
@@ -5560,6 +5580,7 @@ function createTokenClient() {
       gdriveToken = response.access_token;
       gdriveSignedIn = true;
       updateGDriveUI(true);
+      saveGDriveToken(gdriveToken);
       showToast('Google Drive সংযুক্ত হয়েছে!', 'success');
       setupAutoBackup();
     },
@@ -5896,6 +5917,12 @@ function init() {
       loadFromLocalBackup();
     }, 1000);
   }
+  
+  // 🔥 পেজ রিলোডে Google Drive টোকেন চেক ও রিস্টোর
+if (loadSavedGDriveToken()) {
+  setupAutoBackup();
+  console.log('✅ পেজ রিলোডে Google Drive টোকেন রিস্টোর করা হয়েছে');
+}
   
   if (soundEnabled) {
     document.getElementById('menu-sound-icon').textContent = '🔊';
