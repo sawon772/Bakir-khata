@@ -5693,12 +5693,13 @@ async function uploadBackupToDrive() {
   }
   
   showGlobalLoader('ব্যাকআপ আপলোড হচ্ছে...');
-  // 🔥 টোকেন চেক ও রিফ্রেশ
-if (!await ensureValidToken()) {
-  showToast('টোকেন মেয়াদ শেষ, পুনরায় সংযোগ করুন', 'warning');
-  hideGlobalLoader();
-  return;
-}
+  
+  // টোকেন চেক (যদি ensureValidToken ফাংশন না থাকে)
+  if (!gdriveToken) {
+    showToast('টোকেন নেই, পুনরায় সংযোগ করুন', 'warning');
+    hideGlobalLoader();
+    return;
+  }
   
   try {
     // ১. ব্যাকআপ ফোল্ডার তৈরি বা খুঁজে বের করা
@@ -5721,7 +5722,21 @@ if (!await ensureValidToken()) {
       localStorage.setItem('gdrive_folder_id', folderId);
     }
     
-    // ২. ব্যাকআপ ফাইল তৈরি
+    // 🔥 আগের ব্যাকআপ ফাইলের ID সেভ করে রাখো (ডিলিট করার জন্য পরে)
+    let oldFileId = null;
+    const listResponse = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name)`, {
+      headers: { 'Authorization': `Bearer ${gdriveToken}` }
+    });
+    const fileList = await listResponse.json();
+    const existingFiles = fileList.files || [];
+    
+    // যদি আগে কোনো ব্যাকআপ থাকে, তার ID সেভ করে রাখো
+    if (existingFiles.length > 0) {
+      oldFileId = existingFiles[0].id;
+      console.log(`📌 পুরানো ব্যাকআপ ফাউন্ড: ${existingFiles[0].name}`);
+    }
+    
+    // ২. নতুন ব্যাকআপ ফাইল তৈরি
     const backupData = prepareBackupData();
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
@@ -5736,7 +5751,7 @@ if (!await ensureValidToken()) {
     })], { type: 'application/json' }));
     form.append('file', blob);
     
-    // ৪. আপলোড রিকোয়েস্ট
+    // ৪. নতুন ব্যাকআপ আপলোড
     const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${gdriveToken}` },
@@ -5745,14 +5760,34 @@ if (!await ensureValidToken()) {
     
     const result = await response.json();
     
+    // ৫. নতুন ব্যাকআপ সফল হলে, পুরানোটি ডিলিট করো
     if (result.id) {
-      showToast('ব্যাকআপ সফল!', 'success');
+      // নতুন ব্যাকআপ সফল হয়েছে!
+      console.log(`✅ নতুন ব্যাকআপ আপলোড সফল: ${result.id}`);
+      
+      // এখন পুরানো ব্যাকআপ ডিলিট করো (যদি থাকে)
+      if (oldFileId) {
+        try {
+          await fetch(`https://www.googleapis.com/drive/v3/files/${oldFileId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${gdriveToken}` }
+          });
+          console.log(`🗑️ পুরানো ব্যাকআপ ডিলিট হয়েছে: ${oldFileId}`);
+          showToast('✅ ব্যাকআপ সফল! (পুরানো ব্যাকআপ ডিলিট হয়েছে)', 'success');
+        } catch (deleteErr) {
+          console.warn('পুরানো ব্যাকআপ ডিলিট করতে সমস্যা:', deleteErr);
+          showToast('✅ ব্যাকআপ সফল! (পুরানো ডিলিট করতে সমস্যা ছিল)', 'warning');
+        }
+      } else {
+        showToast('✅ ব্যাকআপ সফল! (প্রথম ব্যাকআপ)', 'success');
+      }
       playSound('success');
     } else {
       throw new Error(result.error?.message || 'আপলোড ব্যর্থ');
     }
   } catch (err) {
-    showToast('ব্যাকআপ ব্যর্থ: ' + err.message, 'error');
+    console.error('ব্যাকআপ ব্যর্থ:', err);
+    showToast('❌ ব্যাকআপ ব্যর্থ: ' + err.message, 'error');
   } finally {
     hideGlobalLoader();
   }
