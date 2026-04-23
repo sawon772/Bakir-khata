@@ -212,21 +212,29 @@
     .search-input:not(:placeholder-shown) ~ .clear-btn {
       display: block;
     }
-    
-    /* মেনু */
-    #main-menu {
-      position: fixed;
-      top: 80px;
-      left: 16px;
-      z-index: 100;
-      background: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      padding: 0.75rem;
-      width: 20rem;
-      max-height: calc(100vh - 100px);
-      overflow-y: auto;
-    }
+
+/* মেনু - বাম, উপরে ও নিচে পুরোপুরি লেগে থাকার জন্য */
+#main-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  background: white;
+  border-radius: 0;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding: 0.75rem;
+  padding-bottom: 4rem;  /* ← এই লাইন যোগ করুন (নিচে ফাকা জায়গা) */
+  width: 20rem;
+  height: 100vh;
+  overflow-y: auto;
+}
+    /* মোবাইলের জন্য - মেনু পুরো বামে ও পূর্ণ উচ্চতায় */
+@media (max-width: 640px) {
+  #main-menu {
+    width: 85%;
+    max-width: 300px;
+  }
+}
     
     #user-menu {
       position: fixed;
@@ -775,22 +783,151 @@
         </div>
       </div>
       
-      <!-- ব্যবহারের নিয়ম -->
-      <div class="mb-3 p-2 bg-gray-50 rounded-lg">
-        <p class="text-sm font-medium text-gray-800 mb-2">📖 ব্যবহারের নিয়ম</p>
-        <div class="text-xs text-gray-600 space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">প্রথম ব্যবহার:</span> দোকানের নাম দিন</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">👥 কাস্টমার যোগ:</span> নাম দিন (মোবাইল/ঠিকানা/ছবি ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📝 বাকি এন্ট্রি:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💰 পেমেন্ট:</span> কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💰 ফান্ড দাতা:</span> নাম দিন (মোবাইল/ঠিকানা ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📸 ছবি আপলোড:</span> ক্যামেরা বা গ্যালারি থেকে (ঐচ্ছিক)</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">💡 টিপস:</span> কাস্টমার/দাতা সিলেক্ট করলে পূর্বের বাকি দেখাবে</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">✏️ এডিট:</span> পেন্সিল আইকনে ক্লিক করে তথ্য হালনাগাদ করুন</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">🗑️ ডিলিট:</span> ডিলিট করলে ডাটা স্থায়ীভাবে মুছে যাবে</p>
-          <p class="flex items-start gap-1"><span class="text-gray-600">•</span> <span class="font-medium">📥 ব্যাকআপ:</span> রিপোর্ট ট্যাব থেকে JSON ডাউনলোড করুন</p>
-        </div>
+      <!-- ব্যবহারের নিয়ম - আপডেটেড ভার্সন -->
+<div class="mb-3 p-2 bg-gray-50 rounded-lg">
+  <p class="text-sm font-medium text-gray-800 mb-2">📖 ব্যবহারের নিয়ম</p>
+  
+  <!-- অ্যাকর্ডিয়ন স্টাইল নিয়মাবলী -->
+  <div class="space-y-2 text-xs text-gray-600">
+    
+    <!-- ১. প্রথম ব্যবহার -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule1')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">🚀 ১. প্রথম ব্যবহার</span>
+        <svg id="rule1-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule1" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ অ্যাপ খোলার পর <span class="font-medium text-emerald-600">"দোকানের নাম"</span> দিন (যেমন: রহিম স্টোর)</p>
+        <p>✓ নাম দেওয়ার পর মূল ড্যাশবোর্ড দেখাবে</p>
+        <p>✓ পরবর্তীতে মেনু থেকে দোকানের নাম পরিবর্তন করতে পারবেন</p>
       </div>
+    </div>
+    
+    <!-- ২. কাস্টমার যোগ ও ব্যবস্থাপনা -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule2')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">👥 ২. কাস্টমার যোগ ও ব্যবস্থাপনা</span>
+        <svg id="rule2-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule2" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ নিচের <span class="font-medium text-emerald-600">➕ বাটন</span> বা প্রতিটি ট্যাবে <span class="font-medium text-emerald-600">"+ নতুন কাস্টমার"</span> বাটনে ক্লিক করুন</p>
+        <p>✓ <span class="font-medium">নাম</span> দেওয়া আবশ্যক (মোবাইল/ঠিকানা/ছবি ঐচ্ছিক)</p>
+        <p>✓ <span class="font-medium text-yellow-600">প্রাথমিক বাকি</span> যোগ করতে পারেন (ঐচ্ছিক)</p>
+        <p>✓ <span class="font-medium text-blue-600">পরবর্তী পেমেন্টের তারিখ</span> সেট করলে নির্ধারিত তারিখের পর নাম লাল দেখাবে</p>
+        <p>✓ কাস্টমার কার্ডে <span class="font-medium text-emerald-600">✏️</span> আইকনে এডিট, <span class="font-medium text-emerald-600">🗑️</span> আইকনে ডিলিট করুন</p>
+        <p class="text-red-500">⚠️ ডিলিট করলে কাস্টমারের সব লেনদেন মুছে যাবে</p>
+      </div>
+    </div>
+    
+    <!-- ৩. লেনদেনের নিয়ম -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule3')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">💰 ৩. লেনদেন (বাকি/পেমেন্ট)</span>
+        <svg id="rule3-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule3" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ <span class="font-medium text-red-600">📝 বাকি এন্ট্রি</span>: নিচের লাল বাটন → কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+        <p>✓ <span class="font-medium text-blue-600">💰 পেমেন্ট নিন</span>: নিচের নীল বাটন → কাস্টমার → টাকা → তারিখ → নোট (ঐচ্ছিক)</p>
+        <p>✓ কাস্টমার সিলেক্ট করলে <span class="font-medium">পূর্বের বাকি</span> দেখাবে</p>
+        <p>✓ লেনদেনের সময় <span class="font-medium text-yellow-600">"পরবর্তী পেমেন্টের শেষ তারিখ"</span> সেট করতে পারেন</p>
+        <p>✓ <span class="font-medium">📌 নোট</span> যোগ করলে লেনদেনের বিবরণ বুঝতে সহজ হয়</p>
+        <p>✓ প্রতিটি লেনদেনের পাশে <span class="font-medium">🗑️</span> আইকন দিয়ে ডিলিট করুন</p>
+      </div>
+    </div>
+    
+    <!-- ৪. ফান্ড ব্যবস্থাপনা -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule4')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">🏦 ৪. ফান্ড ব্যবস্থাপনা</span>
+        <svg id="rule4-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule4" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ <span class="font-medium text-purple-600">ফান্ড দাতা যোগ</span>: ফান্ড ট্যাব থেকে "+ নতুন দাতা" বাটনে ক্লিক করুন</p>
+        <p>✓ <span class="font-medium text-purple-600">💰 ফান্ড গ্রহণ</span>: নিচের বেগুনি বাটন → দাতা → টাকা → তারিখ</p>
+        <p>✓ <span class="font-medium text-indigo-600">💸 ফান্ড পরিশোধ</span>: নিচের নীল বাটন → দাতা → টাকা → তারিখ</p>
+        <p>✓ ফান্ড দাতার <span class="font-medium">ব্যালেন্স শূন্য</span> না হলে দাতা ডিলিট করা যাবে না</p>
+      </div>
+    </div>
+    
+    <!-- ৫. ছবি আপলোড -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule5')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">📸 ৫. ছবি আপলোড (প্রোফাইল/কাস্টমার)</span>
+        <svg id="rule5-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule5" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ প্রোফাইল ছবি: মেনুতে প্রোফাইল ইমেজের <span class="font-medium">📷 ক্যামেরা আইকন</span> এ ক্লিক করুন</p>
+        <p>✓ কাস্টমার ছবি: কাস্টমার কার্ডের ছবির নিচে <span class="font-medium">📷 আইকন</span> এ ক্লিক করুন</p>
+        <p>✓ <span class="font-medium text-blue-600">ক্যামেরা</span> বা <span class="font-medium text-green-600">গ্যালারি</span> থেকে ছবি নিতে পারেন</p>
+        <p>✓ ছবির সাইজ <span class="font-medium">৫ MB এর কম</span> হতে হবে</p>
+      </div>
+    </div>
+    
+    <!-- ৬. ব্যাকআপ ও ডাটা সুরক্ষা -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule6')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">💾 ৬. ব্যাকআপ ও ডাটা সুরক্ষা</span>
+        <svg id="rule6-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule6" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ <span class="font-medium text-blue-600">Google ড্রাইভ ব্যাকআপ</span>: মেনুতে Google Drive সংযোগ করুন, অটো ব্যাকআপ চালু হবে</p>
+        <p>✓ <span class="font-medium text-green-600">অফলাইন ব্যাকআপ</span>: মেনুতে "অফলাইন ব্যাকআপ সক্রিয় করুন" অন রাখুন</p>
+        <p>✓ <span class="font-medium text-orange-600">JSON ব্যাকআপ</span>: রিপোর্ট ট্যাব থেকে "ডাটা ব্যাকআপ (JSON)" ডাউনলোড করুন</p>
+        <p>✓ <span class="font-medium text-red-600">⚠️ গেস্ট মোডে ডাটা শুধু এই ডিভাইসে থাকে</span> - নিয়মিত ব্যাকআপ নিন</p>
+      </div>
+    </div>
+    
+    <!-- ৭. শেয়ারিং ফিচার -->
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <button onclick="toggleRule('rule7')" class="w-full px-3 py-2 text-left flex justify-between items-center bg-gray-100 hover:bg-gray-200">
+        <span class="font-medium text-emerald-700">📤 ৭. শেয়ারিং ফিচার</span>
+        <svg id="rule7-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule7" class="hidden p-3 space-y-1 bg-white">
+        <p>✓ <span class="font-medium">কাস্টমার শেয়ার</span>: কাস্টমার কার্ডের শেয়ার আইকন 📤 → PNG ইমেজ শেয়ার</p>
+        <p>✓ <span class="font-medium">প্রোফাইল শেয়ার</span>: মেনুতে "প্রোফাইল শেয়ার" → আপনার ব্যবসার তথ্য শেয়ার</p>
+        <p>✓ <span class="font-medium">PDF রিপোর্ট</span>: রিপোর্ট ট্যাব থেকে সম্পূর্ণ ব্যবসার PDF রিপোর্ট ডাউনলোড</p>
+      </div>
+    </div>
+    
+    <!-- ৮. টিপস ও ট্রিকস -->
+    <div class="border border-green-200 rounded-lg overflow-hidden bg-green-50">
+      <button onclick="toggleRule('rule8')" class="w-full px-3 py-2 text-left flex justify-between items-center">
+        <span class="font-medium text-green-700">💡 ৮. টিপস ও ট্রিকস</span>
+        <svg id="rule8-icon" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
+      </button>
+      <div id="rule8" class="hidden p-3 space-y-1">
+        <p>✓ 🎤 <span class="font-medium">ভয়েস সার্চ</span>: সার্চ বারে মাইক আইকন → নাম বলে খুঁজুন</p>
+        <p>✓ 📅 <span class="font-medium">ডেট ফিল্টার</span>: লেনদেন ট্যাবে আজ/সপ্তাহ/মাস অনুযায়ী ফিল্টার করুন</p>
+        <p>✓ 🔍 <span class="font-medium">সার্চ ক্লিয়ার</span>: সার্চ বারে × বাটন দিয়ে খালি করুন</p>
+        <p>✓ 🔊 <span class="font-medium">সাউন্ড ইফেক্ট</span>: মেনু থেকে অন/অফ করুন</p>
+        <p>✓ 🌐 <span class="font-medium">ভাষা পরিবর্তন</span>: মেনুতে বাংলা/ইংরেজি নির্বাচন করুন</p>
+        <p>✓ 📊 <span class="font-medium">খরচের হিসাব</span>: মেনু থেকে আপনার দৈনিক/মাসিক খরচ ট্র্যাক করুন</p>
+      </div>
+    </div>
+    
+  </div>
+  
+  <p class="text-xs text-gray-400 text-center mt-3 border-t pt-2">
+    📱 অ্যাপটি APK ও ব্রাউজার উভয় ভার্সনে কাজ করে
+  </p>
+</div>
       
       <!-- গেস্ট মোড সতর্কতা -->
       <div id="menu-guest-warning" class="mb-3 hidden">
@@ -6002,6 +6139,22 @@ function stopAutoBackup() {
 
 function closeGDriveModal() {
   document.getElementById('gdrive-list-modal').classList.add('hidden');
+}
+  
+  // অ্যাকর্ডিয়ন টগল ফাংশন - ব্যবহারের নিয়মের জন্য
+function toggleRule(ruleId) {
+  const content = document.getElementById(ruleId);
+  const icon = document.getElementById(ruleId + '-icon');
+  
+  if (content) {
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+  }
 }
   
   // Initialize
