@@ -3452,6 +3452,8 @@ function updateGoogleProfileImage(user) {
 }
 
    async function saveData(item) {
+   // 🔥 লেনদেনের পর অটোব্যাকআপ
+  triggerAutoBackupOnChange();
   showGlobalLoader("সংরক্ষণ হচ্ছে...");
   try {
     if (!isGuest && currentUser) {
@@ -3484,6 +3486,8 @@ function updateGoogleProfileImage(user) {
   }
 }
    async function updateData(item) {
+   // 🔥 আপডেটের পর অটোব্যাকআপ
+triggerAutoBackupOnChange();
   showGlobalLoader("আপডেট হচ্ছে...");
   try {
     if (!isGuest && currentUser) {
@@ -3522,6 +3526,8 @@ function updateGoogleProfileImage(user) {
 }
 
    async function deleteData(item) {
+   // 🔥 ডিলিটের পর অটোব্যাকআপ
+ triggerAutoBackupOnChange();
   showGlobalLoader("মুছে ফেলা হচ্ছে...");
   try {
     if (!isGuest && currentUser) {
@@ -5609,6 +5615,44 @@ function disconnectGDrive() {
   showToast('সংযোগ বিচ্ছিন্ন হয়েছে', 'info');
 }
 
+  // টোকেন রিফ্রেশ ফাংশন (মেয়াদ শেষ হলে)
+async function refreshGDriveToken() {
+  if (!tokenClient) {
+    createTokenClient();
+  }
+  
+  return new Promise((resolve, reject) => {
+    tokenClient.requestAccessToken({ prompt: '', hint: 'refresh' }, (response) => {
+      if (response.access_token) {
+        gdriveToken = response.access_token;
+        gdriveSignedIn = true;
+        saveGDriveToken(gdriveToken);
+        updateGDriveUI(true);
+        resolve(true);
+      } else {
+        reject(false);
+      }
+    });
+  });
+}
+
+// API কল করার আগে টোকেন চেক করে রিফ্রেশ
+async function ensureValidToken() {
+  if (!gdriveToken) return false;
+  
+  const savedTime = localStorage.getItem('gdrive_token_time');
+  if (savedTime && (Date.now() - savedTime) > 3500000) { // 58 মিনিট পর রিফ্রেশ
+    console.log('🔄 টোকেন মেয়াদ প্রায় শেষ, রিফ্রেশ করা হচ্ছে...');
+    try {
+      await refreshGDriveToken();
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+  return true;
+}
+  
 // UI আপডেট
 function updateGDriveUI(isConnected) {
   const statusText = document.getElementById('gdrive-status-text');
@@ -5649,6 +5693,12 @@ async function uploadBackupToDrive() {
   }
   
   showGlobalLoader('ব্যাকআপ আপলোড হচ্ছে...');
+  // 🔥 টোকেন চেক ও রিফ্রেশ
+if (!await ensureValidToken()) {
+  showToast('টোকেন মেয়াদ শেষ, পুনরায় সংযোগ করুন', 'warning');
+  hideGlobalLoader();
+  return;
+}
   
   try {
     // ১. ব্যাকআপ ফোল্ডার তৈরি বা খুঁজে বের করা
@@ -5812,19 +5862,27 @@ async function restoreFromDrive(fileId) {
   }
 }
   
-  // অটো ব্যাকআপ সেটআপ (প্রতি ২৪ ঘন্টা পরপর)
+ // অটো ব্যাকআপ সেটআপ (প্রতি ৬ ঘন্টা + লেনদেনের পর)
 let autoBackupInterval = null;
 
 function setupAutoBackup() {
   if (autoBackupInterval) clearInterval(autoBackupInterval);
   
-  // প্রতি ২৪ ঘন্টা পর পর ব্যাকআপ নিবে
+  // 🔥 প্রতি ৬ ঘন্টা পর পর ব্যাকআপ নিবে (২৪ এর বদলে ৬)
   autoBackupInterval = setInterval(() => {
-    if (gdriveSignedIn) {
-      console.log('🔄 অটো ব্যাকআপ শুরু হচ্ছে...');
+    if (gdriveSignedIn && gdriveToken) {
+      console.log('🔄 অটো ব্যাকআপ শুরু হচ্ছে...', new Date().toLocaleString());
       uploadBackupToDrive();
     }
-  }, 24 * 60 * 60 * 1000); // 24 ঘন্টা
+  }, 6 * 60 * 60 * 1000); // 6 ঘন্টা
+}
+
+// 🔥 নতুন লেনদেন হলে অটো ব্যাকআপ নেওয়ার ফাংশন
+function triggerAutoBackupOnChange() {
+  if (gdriveSignedIn && gdriveToken) {
+    console.log('🔄 লেনদেন পরিবর্তন হয়েছে, ব্যাকআপ নিচ্ছি...');
+    setTimeout(() => uploadBackupToDrive(), 2000); // 2 সেকেন্ড দেরি করে
+  }
 }
 
 // অটো ব্যাকআপ বন্ধ করার ফাংশন
