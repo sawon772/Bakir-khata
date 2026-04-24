@@ -5686,54 +5686,14 @@ function saveGDriveToken(token) {
   localStorage.setItem('gdrive_token_time', Date.now());
 }
 
-  // এই পুরো ফাংশনটি কপি করে পেস্ট করুন
-async function refreshGDriveToken() {
-  if (!tokenClient) {
-    createTokenClient();
-  }
-  
-  return new Promise((resolve, reject) => {
-    tokenClient.requestAccessToken({ prompt: '', hint: 'refresh' }, (response) => {
-      if (response.access_token) {
-        gdriveToken = response.access_token;
-        gdriveSignedIn = true;
-        saveGDriveToken(gdriveToken);
-        updateGDriveUI(true);
-        setupAutoRefresh();  // ← এই লাইনটি যোগ করুন
-        console.log('✅ টোকেন রিফ্রেশ সফল');
-        resolve(true);
-      } else {
-        gdriveSignedIn = false;
-        updateGDriveUI(false);
-        reject(false);
-      }
-    });
-  });
-}
-  
-  // এই পুরো ফাংশনটি কপি করে পেস্ট করুন
-let refreshInterval = null;
-
-function setupAutoRefresh() {
-  if (refreshInterval) clearInterval(refreshInterval);
-  
-  refreshInterval = setInterval(() => {
-    if (gdriveSignedIn && gdriveToken) {
-      console.log('🔄 টোকেন রিফ্রেশ হচ্ছে...', new Date().toLocaleTimeString());
-      refreshGDriveToken();
-    }
-  }, 50 * 60 * 1000); // 50 মিনিট পর পর
-}
-  
 function loadSavedGDriveToken() {
   const savedToken = localStorage.getItem('gdrive_token');
   const savedTime = localStorage.getItem('gdrive_token_time');
   
-  if (savedToken && savedTime && (Date.now() - savedTime) < 3300000) { // 55 মিনিট
+  if (savedToken && savedTime && (Date.now() - savedTime) < 3600000) { // 1 ঘন্টা
     gdriveToken = savedToken;
     gdriveSignedIn = true;
     updateGDriveUI(true);
-    setupAutoRefresh();  // ← এই লাইন যোগ করুন
     console.log('✅ সেভ করা টোকেন লোড হয়েছে');
     return true;
   }
@@ -5776,20 +5736,7 @@ async function connectGDrive() {
   try {
     await loadGoogleAPI();
     if (!tokenClient) createTokenClient();
-    
-    // 🔥 টোকেন পাবার পরে callback যোগ করুন
-    tokenClient.requestAccessToken({ prompt: '' }, (response) => {
-      if (response.access_token) {
-        gdriveToken = response.access_token;
-        gdriveSignedIn = true;
-        saveGDriveToken(gdriveToken);
-        updateGDriveUI(true);
-        setupAutoRefresh();      // ← অটো রিফ্রেশ চালু
-        setupAutoBackup();       // ← অটো ব্যাকআপ চালু
-        showToast('✅ Google Drive সংযুক্ত হয়েছে!', 'success');
-      }
-    });
-    
+    tokenClient.requestAccessToken({ prompt: '' });
   } catch (err) {
     showToast('সংযোগ ব্যর্থ: ' + err.message, 'error');
   } finally {
@@ -5805,23 +5752,38 @@ function disconnectGDrive() {
   showToast('সংযোগ বিচ্ছিন্ন হয়েছে', 'info');
 }
 
- 
+  // টোকেন রিফ্রেশ ফাংশন (মেয়াদ শেষ হলে)
+async function refreshGDriveToken() {
+  if (!tokenClient) {
+    createTokenClient();
+  }
+  
+  return new Promise((resolve, reject) => {
+    tokenClient.requestAccessToken({ prompt: '', hint: 'refresh' }, (response) => {
+      if (response.access_token) {
+        gdriveToken = response.access_token;
+        gdriveSignedIn = true;
+        saveGDriveToken(gdriveToken);
+        updateGDriveUI(true);
+        resolve(true);
+      } else {
+        reject(false);
+      }
+    });
+  });
+}
 
 // API কল করার আগে টোকেন চেক করে রিফ্রেশ
 async function ensureValidToken() {
   if (!gdriveToken) return false;
   
   const savedTime = localStorage.getItem('gdrive_token_time');
-  const now = Date.now();
-  
-  // 55 মিনিট পার হলে রিফ্রেশ করবে (58 এর পরিবর্তে 55)
-  if (savedTime && (now - savedTime) > 3300000) {
-    console.log('🔄 টোকেন রিফ্রেশ করা হচ্ছে...');
+  if (savedTime && (Date.now() - savedTime) > 3500000) { // 58 মিনিট পর রিফ্রেশ
+    console.log('🔄 টোকেন মেয়াদ প্রায় শেষ, রিফ্রেশ করা হচ্ছে...');
     try {
       await refreshGDriveToken();
       return true;
     } catch(e) {
-      console.log('❌ টোকেন রিফ্রেশ ব্যর্থ');
       return false;
     }
   }
@@ -5862,12 +5824,6 @@ function prepareBackupData() {
 
 // ব্যাকআপ আপলোড
 async function uploadBackupToDrive() {
-  // 🔥 এই লাইনটি প্রথমে যোগ করুন
-  const isValid = await ensureValidToken();
-  if (!isValid) {
-    showToast('টোকেন মেয়াদ শেষ, পুনরায় সংযোগ করুন', 'warning');
-    return;
-  }
   if (!gdriveSignedIn) {
     showToast('আগে Google Drive এ সংযোগ করুন', 'warning');
     return;
