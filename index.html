@@ -5823,7 +5823,7 @@ function prepareBackupData() {
 }
 
 // ব্যাকআপ আপলোড
-async function uploadBackupToDrive() {
+  async function uploadBackupToDrive() {
   if (!gdriveSignedIn) {
     showToast('আগে Google Drive এ সংযোগ করুন', 'warning');
     return;
@@ -5831,7 +5831,6 @@ async function uploadBackupToDrive() {
   
   showGlobalLoader('ব্যাকআপ আপলোড হচ্ছে...');
   
-  // টোকেন চেক (যদি ensureValidToken ফাংশন না থাকে)
   if (!gdriveToken) {
     showToast('টোকেন নেই, পুনরায় সংযোগ করুন', 'warning');
     hideGlobalLoader();
@@ -5839,27 +5838,62 @@ async function uploadBackupToDrive() {
   }
   
   try {
-    // ১. ব্যাকআপ ফোল্ডার তৈরি বা খুঁজে বের করা
+    // 🔥 ফোল্ডার আইডি চেক ও রিসেট (সমাধানের মূল অংশ)
     let folderId = localStorage.getItem('gdrive_folder_id');
+    let folderValid = false;
     
+    // ফোল্ডার আসলে আছে কিনা চেক করো
+    if (folderId) {
+      try {
+        const checkRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folderId}?fields=id`, {
+          headers: { 'Authorization': `Bearer ${gdriveToken}` }
+        });
+        folderValid = checkRes.ok;
+        if (!checkRes.ok) {
+          console.log('📁 পুরানো ফোল্ডার নেই, নতুন বানানো হবে');
+          localStorage.removeItem('gdrive_folder_id');
+          folderId = null;
+        }
+      } catch(e) {
+        folderValid = false;
+        localStorage.removeItem('gdrive_folder_id');
+        folderId = null;
+      }
+    }
+    
+    // ফোল্ডার তৈরি বা সার্চ করা
     if (!folderId) {
-      const folderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${gdriveToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'Bakir Khata Backups',
-          mimeType: 'application/vnd.google-apps.folder'
-        })
+      // আগে নাম দিয়ে সার্চ করো (একই নামের ফোল্ডার থাকলে ব্যবহার করবে)
+      const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='Bakir Khata Backups' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`, {
+        headers: { 'Authorization': `Bearer ${gdriveToken}` }
       });
-      const folder = await folderRes.json();
-      folderId = folder.id;
+      const searchData = await searchRes.json();
+      
+      if (searchData.files && searchData.files.length > 0) {
+        // পুরানো ফোল্ডার পাওয়া গেছে
+        folderId = searchData.files[0].id;
+        console.log('📁 পুরানো ফোল্ডার পাওয়া গেছে:', folderId);
+      } else {
+        // নতুন ফোল্ডার তৈরি
+        const folderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${gdriveToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            name: 'Bakir Khata Backups',
+            mimeType: 'application/vnd.google-apps.folder'
+          })
+        });
+        const folder = await folderRes.json();
+        folderId = folder.id;
+        console.log('📁 নতুন ফোল্ডার তৈরি হয়েছে:', folderId);
+      }
       localStorage.setItem('gdrive_folder_id', folderId);
     }
     
-    // 🔥 আগের ব্যাকআপ ফাইলের ID সেভ করে রাখো (ডিলিট করার জন্য পরে)
+    // 🔥 আগের ব্যাকআপ ফাইলের ID সেভ করে রাখো
     let oldFileId = null;
     const listResponse = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&fields=files(id,name)`, {
       headers: { 'Authorization': `Bearer ${gdriveToken}` }
@@ -5867,19 +5901,18 @@ async function uploadBackupToDrive() {
     const fileList = await listResponse.json();
     const existingFiles = fileList.files || [];
     
-    // যদি আগে কোনো ব্যাকআপ থাকে, তার ID সেভ করে রাখো
     if (existingFiles.length > 0) {
       oldFileId = existingFiles[0].id;
       console.log(`📌 পুরানো ব্যাকআপ ফাউন্ড: ${existingFiles[0].name}`);
     }
     
-    // ২. নতুন ব্যাকআপ ফাইল তৈরি
+    // নতুন ব্যাকআপ ফাইল তৈরি
     const backupData = prepareBackupData();
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const fileName = `bakir_khata_${new Date().toISOString().split('T')[0]}.json`;
     
-    // ৩. ফর্মডাটা তৈরি
+    // ফর্মডাটা তৈরি
     const form = new FormData();
     form.append('metadata', new Blob([JSON.stringify({
       name: fileName,
@@ -5888,7 +5921,7 @@ async function uploadBackupToDrive() {
     })], { type: 'application/json' }));
     form.append('file', blob);
     
-    // ৪. নতুন ব্যাকআপ আপলোড
+    // নতুন ব্যাকআপ আপলোড
     const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${gdriveToken}` },
@@ -5897,12 +5930,9 @@ async function uploadBackupToDrive() {
     
     const result = await response.json();
     
-    // ৫. নতুন ব্যাকআপ সফল হলে, পুরানোটি ডিলিট করো
     if (result.id) {
-      // নতুন ব্যাকআপ সফল হয়েছে!
       console.log(`✅ নতুন ব্যাকআপ আপলোড সফল: ${result.id}`);
       
-      // এখন পুরানো ব্যাকআপ ডিলিট করো (যদি থাকে)
       if (oldFileId) {
         try {
           await fetch(`https://www.googleapis.com/drive/v3/files/${oldFileId}`, {
@@ -5913,10 +5943,10 @@ async function uploadBackupToDrive() {
           showToast('✅ ব্যাকআপ সফল! (পুরানো ব্যাকআপ ডিলিট হয়েছে)', 'success');
         } catch (deleteErr) {
           console.warn('পুরানো ব্যাকআপ ডিলিট করতে সমস্যা:', deleteErr);
-          showToast('✅ ব্যাকআপ সফল! (পুরানো ডিলিট করতে সমস্যা ছিল)', 'warning');
+          showToast('✅ ব্যাকআপ সফল!', 'success');
         }
       } else {
-        showToast('✅ ব্যাকআপ সফল! (প্রথম ব্যাকআপ)', 'success');
+        showToast('✅ ব্যাকআপ সফল!', 'success');
       }
       playSound('success');
     } else {
@@ -5929,9 +5959,10 @@ async function uploadBackupToDrive() {
     hideGlobalLoader();
   }
 }
-
+  
+  
 // ব্যাকআপ লিস্ট দেখানো
-async function showBackupList() {
+  async function showBackupList() {
   if (!gdriveSignedIn) {
     showToast('আগে Google Drive এ সংযোগ করুন', 'warning');
     return;
@@ -5943,14 +5974,31 @@ async function showBackupList() {
   container.innerHTML = '<div class="text-center py-8 text-gray-500">লোড হচ্ছে...</div>';
   
   try {
-    const folderId = localStorage.getItem('gdrive_folder_id');
-    if (!folderId) {
-      container.innerHTML = '<div class="text-center py-8 text-gray-500">কোনো ব্যাকআপ নেই</div>';
+    // 🔥 সমাধান ১: নাম দিয়ে ফোল্ডার সার্চ করো (localStorage-এর উপর নির্ভর না করে)
+    let folderId = null;
+    
+    // "Bakir Khata Backups" নামে ফোল্ডার খোঁজো
+    const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='Bakir Khata Backups' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id)`, {
+      headers: { 'Authorization': `Bearer ${gdriveToken}` }
+    });
+    
+    const searchData = await searchRes.json();
+    
+    if (searchData.files && searchData.files.length > 0) {
+      // ফোল্ডার পাওয়া গেছে
+      folderId = searchData.files[0].id;
+      console.log('📁 ফোল্ডার পাওয়া গেছে:', folderId);
+      
+      // লোকাল স্টোরেজ আপডেট করে দাও (পরবর্তীতে দ্রুত কাজ করার জন্য)
+      localStorage.setItem('gdrive_folder_id', folderId);
+    } else {
+      // কোনো ফোল্ডার নেই
+      container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 কোনো ব্যাকআপ ফোল্ডার পাওয়া যায়নি। প্রথমে ব্যাকআপ নিন।</div>';
       return;
     }
     
     // 🔥 ফাইলগুলোর মেটাডাটা সহ আনো (createdTime, size, etc.)
-    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents&orderBy=createdTime desc&fields=files(id,name,createdTime,size)`, {
+    const response = await fetch(`https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&orderBy=createdTime desc&fields=files(id,name,createdTime,size)`, {
       headers: { 'Authorization': `Bearer ${gdriveToken}` }
     });
     
@@ -5958,11 +6006,11 @@ async function showBackupList() {
     const files = result.files || [];
     
     if (files.length === 0) {
-      container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 কোনো ব্যাকআপ নেই</div>';
+      container.innerHTML = '<div class="text-center py-8 text-gray-500">📭 কোনো ব্যাকআপ নেই। প্রথমে ব্যাকআপ নিন।</div>';
       return;
     }
     
-    // 🔥 ফাইল সাইজ ফরম্যাট করার ফাংশন
+    // ফাইল সাইজ ফরম্যাট করার ফাংশন
     function formatFileSize(bytes) {
       if (!bytes) return 'অজানা সাইজ';
       if (bytes < 1024) return bytes + ' B';
@@ -5970,7 +6018,7 @@ async function showBackupList() {
       return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     }
     
-    // 🔥 বিডি সময় ফরম্যাট করার ফাংশন
+    // বিডি সময় ফরম্যাট করার ফাংশন
     function formatBanglaDateTime(dateString) {
       const date = new Date(dateString);
       return date.toLocaleString('bn-BD', {
@@ -5988,7 +6036,7 @@ async function showBackupList() {
       <div class="bg-gray-50 rounded-lg p-3 border-l-4 border-blue-500 mb-2">
         <div class="flex justify-between items-start">
           <div class="flex-1">
-            <p class="text-sm font-medium text-gray-800">📄 ${file.name}</p>
+            <p class="text-sm font-medium text-gray-800">📄 ${escapeHtml(file.name)}</p>
             <div class="mt-1 space-y-0.5">
               <p class="text-xs text-gray-500 flex items-center gap-1">
                 <span>📅</span> ${formatBanglaDateTime(file.createdTime)}
@@ -6002,7 +6050,7 @@ async function showBackupList() {
             <button onclick="restoreFromDrive('${file.id}')" class="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 transition-colors" title="রিস্টোর">
               🔄 রিস্টোর
             </button>
-            <button onclick="deleteSingleBackup('${file.id}', '${file.name}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors" title="ডিলিট">
+            <button onclick="deleteSingleBackup('${file.id}', '${escapeHtml(file.name)}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors" title="ডিলিট">
               🗑️ ডিলিট
             </button>
           </div>
@@ -6012,15 +6060,26 @@ async function showBackupList() {
     
     // ব্যাকআপ সংখ্যা দেখানো
     const totalBackups = files.length;
-    const summaryHtml = `<div class="text-center text-xs text-gray-500 mt-2 pt-2 border-t">📦 মোট ব্যাকআপ: ${totalBackups}টি</div>`;
+    const summaryHtml = `<div class="text-center text-xs text-gray-500 mt-2 pt-2 border-t">📦 মোট ব্যাকআপ: ${totalBackups}টি (সব ডিভাইস মিলিয়ে)</div>`;
     container.innerHTML += summaryHtml;
     
   } catch (err) {
     console.error('ব্যাকআপ লিস্ট লোড ব্যর্থ:', err);
-    container.innerHTML = '<div class="text-center py-8 text-red-500">❌ লোড করতে ব্যর্থ: ' + err.message + '</div>';
+    container.innerHTML = '<div class="text-center py-8 text-red-500">❌ লোড করতে ব্যর্থ: ' + escapeHtml(err.message) + '</div>';
   }
 }
 
+// escapeHtml ফাংশন (যদি না থাকে তবে যোগ করুন)
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+  
   // 🔥 একক ব্যাকআপ ডিলিট করার ফাংশন
 async function deleteSingleBackup(fileId, fileName) {
   if (!confirm(`"${fileName}" ব্যাকআপটি ডিলিট করতে চান?`)) {
