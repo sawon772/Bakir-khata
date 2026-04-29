@@ -3589,7 +3589,6 @@ function updateGoogleProfileImage(user) {
 }
 
    async function saveData(item) {
-   // 🔥 লেনদেনের পর অটোব্যাকআপ
   triggerAutoBackupOnChange();
   showGlobalLoader("সংরক্ষণ হচ্ছে...");
   try {
@@ -3598,10 +3597,7 @@ function updateGoogleProfileImage(user) {
       const newRef = userRef.push();
       await newRef.set(item);
       
-      // 👇 লোকাল ব্যাকআপ সেভ (যদি অন থাকে)
       if (localBackupEnabled) {
-        const newItem = { ...item, __backendId: newRef.key };
-        allData.push(newItem);
         await saveToLocalBackup();
       }
       
@@ -3611,7 +3607,6 @@ function updateGoogleProfileImage(user) {
       allData.push(item);
       localStorage.setItem('guest_data', JSON.stringify(allData));
       
-      // 👇 লোকাল ব্যাকআপ আপডেট
       if (localBackupEnabled) {
         await saveToLocalBackup();
       }
@@ -3623,22 +3618,14 @@ function updateGoogleProfileImage(user) {
   }
 }
    async function updateData(item) {
-   // 🔥 আপডেটের পর অটোব্যাকআপ
-triggerAutoBackupOnChange();
+  triggerAutoBackupOnChange();
   showGlobalLoader("আপডেট হচ্ছে...");
   try {
     if (!isGuest && currentUser) {
       const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
       await userRef.set(item);
       
-      // 👇 লোকাল ব্যাকআপ আপডেট
       if (localBackupEnabled) {
-        const index = allData.findIndex(d => d.__backendId === item.__backendId);
-        if (index > -1) {
-          allData[index] = item;
-        } else {
-          allData.push(item);
-        }
         await saveToLocalBackup();
       }
       
@@ -3650,7 +3637,6 @@ triggerAutoBackupOnChange();
         localStorage.setItem('guest_data', JSON.stringify(allData));
       }
       
-      // 👇 লোকাল ব্যাকআপ আপডেট
       if (localBackupEnabled) {
         await saveToLocalBackup();
       }
@@ -3663,21 +3649,15 @@ triggerAutoBackupOnChange();
 }
 
    async function deleteData(item) {
-   // 🔥 ডিলিটের পর অটোব্যাকআপ
- triggerAutoBackupOnChange();
+  triggerAutoBackupOnChange();
   showGlobalLoader("মুছে ফেলা হচ্ছে...");
   try {
     if (!isGuest && currentUser) {
       const userRef = database.ref(`users/${currentUser.uid}/data/${item.__backendId}`);
       await userRef.remove();
       
-      // 👇 লোকাল ব্যাকআপ আপডেট
       if (localBackupEnabled) {
-        const index = allData.findIndex(d => d.__backendId === item.__backendId);
-        if (index > -1) {
-          allData.splice(index, 1);
-          await saveToLocalBackup();
-        }
+        await saveToLocalBackup();
       }
       
       return { isOk: true };
@@ -3688,7 +3668,6 @@ triggerAutoBackupOnChange();
         localStorage.setItem('guest_data', JSON.stringify(allData));
       }
       
-      // 👇 লোকাল ব্যাকআপ আপডেট
       if (localBackupEnabled) {
         await saveToLocalBackup();
       }
@@ -5142,119 +5121,98 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     }
 
     async function addTransaction(e, type) {
-      e.preventDefault();
-      
-      if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
-        showToast(currentLanguage === 'bn' ? 'সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!' : 'Maximum transaction limit reached!', 'error');
-        playSound('error');
-        return;
-      }
+  e.preventDefault();
+  
+  if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
+    showToast(currentLanguage === 'bn' ? 'সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!' : 'Maximum transaction limit reached!', 'error');
+    playSound('error');
+    return;
+  }
 
-      const btn = document.getElementById('submit-transaction-btn');
-      btn.disabled = true;
-      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
+  const btn = document.getElementById('submit-transaction-btn');
+  btn.disabled = true;
+  btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
-      const select = document.getElementById('transaction-customer');
-      const selectedOption = select.options[select.selectedIndex];
+  const select = document.getElementById('transaction-customer');
+  const selectedOption = select.options[select.selectedIndex];
 
-      const transactionData = {
-        type: type,
-        customer_id: select.value,
-        customer_name: selectedOption.dataset.name,
-        amount: parseFloat(document.getElementById('transaction-amount').value),
-        date: document.getElementById('transaction-date').value,
-        note: document.getElementById('transaction-note').value.trim(),
-        created_at: new Date().toISOString(),
-timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      };
-      // বাকি এন্ট্রির সময় যদি নতুন ডিউ ডেট সেট করা হয়, তাহলে কাস্টমারের প্রোফাইল আপডেট করো
-const newDueDate = document.getElementById('transaction-due-date')?.value;
-if (type === 'due' && newDueDate) {
-  const customerIndex = allData.findIndex(d => d.customer_id === select.value && d.type === 'customer');
-  if (customerIndex !== -1) {
-    allData[customerIndex].next_payment_date = newDueDate;
-    await updateData(allData[customerIndex]);
+  const transactionData = {
+    type: type,
+    customer_id: select.value,
+    customer_name: selectedOption.dataset.name,
+    amount: parseFloat(document.getElementById('transaction-amount').value),
+    date: document.getElementById('transaction-date').value,
+    note: document.getElementById('transaction-note').value.trim(),
+    created_at: new Date().toISOString(),
+    timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  };
+  
+  // বাকি এন্ট্রির সময় যদি নতুন ডিউ ডেট সেট করা হয়, তাহলে কাস্টমারের প্রোফাইল আপডেট করো
+  const newDueDate = document.getElementById('transaction-due-date')?.value;
+  if (type === 'due' && newDueDate) {
+    const customerIndex = allData.findIndex(d => d.customer_id === select.value && d.type === 'customer');
+    if (customerIndex !== -1) {
+      allData[customerIndex].next_payment_date = newDueDate;
+      await updateData(allData[customerIndex]);
+    }
+  }
+
+  const result = await saveData(transactionData);
+  
+  if (result.isOk) {
+    showToast(type === 'due' ? 
+      (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
+      (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
+    playSound('cash');
+    closeModal();  // ← শুধু মডাল বন্ধ হবে, আর ডাটা রিলোড করা হবে না
+  } else {
+    showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
+    playSound('error');
+    btn.disabled = false;
+    btn.textContent = type === 'due' ? 
+      (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
+      (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
   }
 }
-   
-      const result = await saveData(transactionData);
-      
-      if (result.isOk) {
-        if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
-        } else {
-          loadGuestData();
-        }
-        showToast(type === 'due' ? 
-          (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
-          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
-        playSound('cash');
-        // ডাটা রিফ্রেশ করা
-if (!isGuest && currentUser) {
-  loadUserData(currentUser.uid);
-} else {
-  loadGuestData();
-}
-        closeModal();
-      } else {
-        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
-        playSound('error');
-        btn.disabled = false;
-        btn.textContent = type === 'due' ? 
-          (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
-          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
-      }
-    }
 
     async function addFundTransaction(e, type) {
-      e.preventDefault();
-      
-      const btn = document.getElementById('submit-fund-btn');
-      btn.disabled = true;
-      btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
+  e.preventDefault();
+  
+  const btn = document.getElementById('submit-fund-btn');
+  btn.disabled = true;
+  btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
-      const select = document.getElementById('fund-provider');
-      const selectedOption = select.options[select.selectedIndex];
+  const select = document.getElementById('fund-provider');
+  const selectedOption = select.options[select.selectedIndex];
 
-      const fundData = {
-        type: type,
-        provider_id: select.value,
-        provider_name: selectedOption.dataset.name,
-        amount: parseFloat(document.getElementById('fund-amount').value),
-        date: document.getElementById('fund-date').value,
-        note: document.getElementById('fund-note').value.trim(),
-        created_at: new Date().toISOString(),
-timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-      };
+  const fundData = {
+    type: type,
+    provider_id: select.value,
+    provider_name: selectedOption.dataset.name,
+    amount: parseFloat(document.getElementById('fund-amount').value),
+    date: document.getElementById('fund-date').value,
+    note: document.getElementById('fund-note').value.trim(),
+    created_at: new Date().toISOString(),
+    timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  };
 
-      const result = await saveData(fundData);
-      
-      if (result.isOk) {
-        if (!isGuest && currentUser) {
-          // Firebase auto-updates via listener
-        } else {
-          loadGuestData();
-        }
-        showToast(type === 'fund-receive' ? 
-          (currentLanguage === 'bn' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'Fund received!') : 
-          (currentLanguage === 'bn' ? 'ফান্ড পরিশোধ করা হয়েছে!' : 'Fund paid!'), 'success');
-        playSound('cash');
-        // ডাটা রিফ্রেশ করা
-if (!isGuest && currentUser) {
-  loadUserData(currentUser.uid);
-} else {
-  loadGuestData();
+  const result = await saveData(fundData);
+  
+  if (result.isOk) {
+    showToast(type === 'fund-receive' ? 
+      (currentLanguage === 'bn' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'Fund received!') : 
+      (currentLanguage === 'bn' ? 'ফান্ড পরিশোধ করা হয়েছে!' : 'Fund paid!'), 'success');
+    playSound('cash');
+    closeModal();  // ← শুধু মডাল বন্ধ
+  } else {
+    showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
+    playSound('error');
+    btn.disabled = false;
+    btn.textContent = type === 'fund-receive' ? 
+      (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
+      (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
+  }
 }
-        closeModal();
-      } else {
-        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
-        playSound('error');
-        btn.disabled = false;
-        btn.textContent = type === 'fund-receive' ? 
-          (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
-          (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
-      }
-    }
 
     // Delete functions
     function initiateDeleteCustomer(backendId) {
