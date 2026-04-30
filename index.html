@@ -1172,10 +1172,16 @@
           <button onclick="downloadPDFReport()" class="w-full btn-purple text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 mt-3">
   📄 PDF রিপোর্ট ডাউনলোড করুন
 </button>
+          <button onclick="importData()" class="w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">
+  📤 ডাটা ইম্পোর্ট (JSON)
+</button>
+<input type="file" id="import-file-input" accept=".json" class="hidden" onchange="handleFileImport(event)">
+          
           <button onclick="exportData()" class="export-btn w-full btn-blue text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2">📥 ডাটা ব্যাকআপ (JSON)</button>
         </div>
       </div>
     </div>
+    
     
     <!-- Floating Action Buttons -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-2">
@@ -5384,6 +5390,78 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
       showToast(currentLanguage === 'bn' ? 'ব্যাকআপ ডাউনলোড হয়েছে!' : 'Backup downloaded!', 'success');
       playSound('success');
     }
+  
+  // JSON ইম্পোর্ট ফাংশন
+function importData() {
+  if (allData.length > 0) {
+    if (confirm('⚠️ সতর্কতা: আপনার সকল ডাটা মুছে যাবে! আপনি কি JSON ফাইল থেকে ইম্পোর্ট করতে চান?')) {
+      document.getElementById('import-file-input').click();
+    }
+  } else {
+    document.getElementById('import-file-input').click();
+  }
+}
+
+async function handleFileImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  showGlobalLoader("ইম্পোর্ট হচ্ছে...");
+
+  try {
+    const text = await file.text();
+    const imported = JSON.parse(text);
+
+    // চেক করুন ফাইলটি সঠিক ফরম্যাটে আছে কিনা
+    if (!imported.allData && !imported.customers && !imported.all_transactions) {
+      throw new Error('ইনভ্যালিড JSON ফাইল');
+    }
+
+    // পুরনো ডাটা ডিলিট
+    if (!isGuest && currentUser) {
+      await database.ref(`users/${currentUser.uid}/data`).set(null);
+    } else {
+      allData = [];
+      localStorage.setItem('guest_data', JSON.stringify([]));
+    }
+
+    // নতুন ডাটা লোড
+    let newAllData = [];
+    if (imported.allData) {
+      newAllData = imported.allData;
+    } else {
+      // পুরনো ফরম্যাট সাপোর্ট
+      if (imported.customers) newAllData.push(...imported.customers);
+      if (imported.fund_providers) newAllData.push(...imported.fund_providers);
+      if (imported.all_transactions) newAllData.push(...imported.all_transactions);
+      if (imported.fund_transactions) newAllData.push(...imported.fund_transactions);
+    }
+
+    // ফায়ারবেসে সেভ
+    if (!isGuest && currentUser) {
+      for (const item of newAllData) {
+        await database.ref(`users/${currentUser.uid}/data`).push().set(item);
+      }
+    } else {
+      allData = newAllData;
+      localStorage.setItem('guest_data', JSON.stringify(allData));
+    }
+
+    // লোকাল ব্যাকআপ আপডেট
+    if (localBackupEnabled) await saveToLocalBackup();
+
+    showToast('✅ ডাটা ইম্পোর্ট সফল!', 'success');
+    playSound('success');
+    renderCurrentView();
+  } catch (err) {
+    console.error(err);
+    showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error');
+    playSound('error');
+  } finally {
+    hideGlobalLoader();
+    event.target.value = '';
+  }
+}
   
   // ============================================
 // PDF রিপোর্ট ডাউনলোড ফাংশন
