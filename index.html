@@ -703,6 +703,35 @@
   </div>
   <p class="text-xs text-gray-500 mt-1">চালু থাকলে ডাটা লোকাল স্টোরেজেও সেভ হবে</p>
 </div>
+      <!-- লোকেশন ট্র্যাকিং সেকশন -->
+<div class="mb-3 p-2 bg-blue-50 rounded-lg">
+  <p class="text-sm font-medium text-blue-800 mb-2">📍 লোকেশন ট্র্যাকিং</p>
+  <div class="space-y-3">
+    <button onclick="getUserLocation()" 
+      class="w-full text-left text-sm text-blue-600 hover:bg-blue-100 p-2 rounded-lg transition-colors flex items-center gap-2">
+      <span>📍</span> আমার অবস্থান দেখুন
+    </button>
+    
+    <div id="locationDisplayArea" class="hidden">
+      <div class="text-xs text-gray-600 bg-white p-2 rounded-lg border border-blue-200">
+        <p class="font-medium text-blue-800">📌 আপনার সংরক্ষিত অবস্থান:</p>
+        <p id="savedLocationText" class="mt-1 break-all">-</p>
+        <button onclick="clearSavedLocation()" 
+          class="mt-2 text-xs text-red-500 hover:underline flex items-center gap-1">
+          <span>🗑️</span> সংরক্ষিত অবস্থান মুছুন
+        </button>
+      </div>
+    </div>
+    
+    <div id="locationStatusArea" class="hidden">
+      <div class="text-xs text-gray-600 bg-white p-2 rounded-lg border border-blue-200">
+        <p id="locationStatusText" class="text-blue-600">অবস্থান সংগ্রহ করা হচ্ছে...</p>
+      </div>
+    </div>
+    
+    <p class="text-[11px] text-gray-400 mt-1">⚠️ প্রথমবার অনুমতি দিতে হবে। অবস্থান শুধু এই ডিভাইসে সংরক্ষণ করা হবে।</p>
+  </div>
+</div>
       
       <!-- স্টোরেজ চেক বাটন -->
 <div class="mb-3 p-2 bg-blue-50 rounded-lg">
@@ -1358,7 +1387,112 @@
         }
       }
     }
+// লোকেশন সংক্রান্ত অনুবাদ
+const locationTranslations = {
+  bn: {
+    locationSaved: '📍 অবস্থান সংরক্ষিত হয়েছে!',
+    locationCleared: '🗑️ সংরক্ষিত অবস্থান মুছে ফেলা হয়েছে।',
+    locationUnavailable: '❌ অবস্থান পাওয়া যায়নি। পরে আবার চেষ্টা করুন।',
+    notAllowed: '🔒 অবস্থানের অনুমতি দেওয়া হয়নি। "Allow" দিন।',
+    locationUnsupported: '⚠️ আপনার ব্রাউজার জিওলোকেশন সাপোর্ট করে না।'
+  },
+  en: {
+    locationSaved: '📍 Location saved!',
+    locationCleared: '🗑️ Saved location cleared.',
+    locationUnavailable: '❌ Location unavailable. Try again.',
+    notAllowed: '🔒 Location permission denied. Click "Allow".',
+    locationUnsupported: '⚠️ Geolocation not supported.'
+  }
+};
 
+// সংরক্ষিত অবস্থান UI তে দেখানো
+function updateLocationUI() {
+  const saved = localStorage.getItem('user_location');
+  const displayArea = document.getElementById('locationDisplayArea');
+  const textEl = document.getElementById('savedLocationText');
+  if (saved && displayArea && textEl) {
+    try {
+      const loc = JSON.parse(saved);
+      const lat = loc.lat.toFixed(6);
+      const lng = loc.lng.toFixed(6);
+      const address = loc.address || 'জিওকোডিং ব্যর্থ';
+      textEl.innerHTML = `
+        <div class="font-medium text-blue-800">📍 ${escapeHtml(address)}</div>
+        <div class="text-[10px] text-gray-500">অক্ষাংশ: ${lat} | দ্রাঘিমাংশ: ${lng}</div>
+        <div class="text-[10px] text-gray-400">শেষ আপডেট: ${new Date(loc.timestamp).toLocaleString()}</div>
+      `;
+      displayArea.classList.remove('hidden');
+    } catch(e) { console.error(e); }
+  } else if (displayArea) {
+    displayArea.classList.add('hidden');
+  }
+}
+
+// অবস্থান নেওয়া
+async function getUserLocation() {
+  if (!navigator.geolocation) {
+    showToast(locationTranslations[currentLanguage]?.locationUnsupported || locationTranslations.en.locationUnsupported, 'error');
+    return;
+  }
+  const statusArea = document.getElementById('locationStatusArea');
+  const statusText = document.getElementById('locationStatusText');
+  if (statusArea) statusArea.classList.remove('hidden');
+  if (statusText) statusText.innerHTML = '<span class="animate-pulse">📍 অবস্থান সংগ্রহ করা হচ্ছে...</span>';
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      let addressName = '';
+      try {
+        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=${currentLanguage === 'bn' ? 'bn' : 'en'}`;
+        const res = await fetch(url, { headers: { 'User-Agent': 'BakirKhataApp/1.0' } });
+        const data = await res.json();
+        if (data.display_name) {
+          const parts = data.display_name.split(',');
+          addressName = parts.slice(0, 3).join(',');
+        } else addressName = 'স্থান নাম পাওয়া যায়নি';
+      } catch(e) { addressName = 'জিওকোডিং ত্রুটি'; }
+      
+      localStorage.setItem('user_location', JSON.stringify({
+        lat: latitude, lng: longitude, address: addressName, timestamp: Date.now()
+      }));
+      if (statusArea) statusArea.classList.add('hidden');
+      updateLocationUI();
+      showToast(locationTranslations[currentLanguage]?.locationSaved || locationTranslations.en.locationSaved, 'success');
+      if (typeof playSound === 'function') playSound('success');
+    },
+    (error) => {
+      if (statusArea) statusArea.classList.add('hidden');
+      let msg = locationTranslations[currentLanguage]?.locationUnavailable || locationTranslations.en.locationUnavailable;
+      if (error.code === 1) msg = locationTranslations[currentLanguage]?.notAllowed || locationTranslations.en.notAllowed;
+      showToast(msg, 'error');
+      if (typeof playSound === 'function') playSound('error');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function clearSavedLocation() {
+  localStorage.removeItem('user_location');
+  updateLocationUI();
+  showToast(locationTranslations[currentLanguage]?.locationCleared || locationTranslations.en.locationCleared, 'info');
+  if (typeof playSound === 'function') playSound('success');
+}
+
+// পেজ লোডে আগের সেভ করা লোকেশন দেখাবে
+setTimeout(updateLocationUI, 500);
+
+// হেল্পার ফাংশন (XSS প্রতিরোধ)
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
+}
+  
     // ============================================
     // ভাষা সেটিংস - Translations
     // ============================================
