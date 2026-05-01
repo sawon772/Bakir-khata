@@ -362,6 +362,102 @@
   display: inline-block;
   font-weight: normal;
 }
+    
+    /* নামাজ কাউন্টডাউন অ্যানিমেশন */
+@keyframes pulse-green {
+  0% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.02); color: #047857; }
+  100% { opacity: 0.7; transform: scale(1); }
+}
+.prayer-timer-animate {
+  animation: pulse-green 1s ease-in-out infinite;
+}
+    
+    /* নামাজ কার্ড – গ্লাসমরফিজম + গ্রেডিয়েন্ট */
+.prayer-glass-card {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.9), rgba(16, 185, 129, 0.85));
+  backdrop-filter: blur(2px);
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 35px -10px rgba(16, 185, 129, 0.4), inset 0 1px 1px rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.prayer-glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 25px 40px -12px rgba(16, 185, 129, 0.6);
+}
+
+/* টাইমার টেক্সট – স্পার্কলিং এফেক্ট */
+.prayer-timer-glow {
+  font-size: 2rem !important;      /* বড় ও স্পষ্ট */
+  font-weight: 800;
+  letter-spacing: 2px;
+  background: linear-gradient(135deg, #fff8e7, #ffe6b3);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.prayer-timer-glow {
+  background-size: 200% auto;
+}
+
+/* তথ্যের টেক্সট (যেমন "যোহর ওয়াক্ত শুরু হতে") */
+.prayer-info-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fef9c3;
+  background: rgba(0,0,0,0.2);
+  display: inline-block;
+  padding: 0.2rem 0.8rem;
+  border-radius: 40px;
+  backdrop-filter: blur(4px);
+}
+
+/* লোকেশন স্ট্যাটাস ও বাটন */
+.prayer-location-badge {
+  background: #064e3b;
+  color: #ccfbf1;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.prayer-refresh-btn {
+  background: rgba(255,255,240,0.2);
+  border: 1px solid #fde047;
+  color: #fef9c3;
+  padding: 0.2rem 0.7rem;
+  border-radius: 40px;
+  font-size: 0.7rem;
+  transition: all 0.2s;
+}
+.prayer-refresh-btn:hover {
+  background: #fde047;
+  color: #064e3b;
+  transform: scale(1.02);
+}
+    /* মডালের ভেতরের স্ক্রল সুন্দর করার জন্য */
+#fullPrayerTimesList {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+#fullPrayerTimesList::-webkit-scrollbar {
+  width: 4px;
+}
+#fullPrayerTimesList::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+    
     /* বার নামের অ্যানিমেশন - ডান থেকে বামে স্লাইড */
 @keyframes slideInFromRight {
   0% {
@@ -703,6 +799,28 @@
   </div>
   <p class="text-xs text-gray-500 mt-1">চালু থাকলে ডাটা লোকাল স্টোরেজেও সেভ হবে</p>
 </div>
+      
+  <!-- নামাজের সময়সূচি (পরবর্তী ওয়াক্ত) - আপডেটেড ভার্সন -->
+<div class="mb-3 p-2 rounded-lg prayer-glass-card">
+  <div class="flex justify-between items-center mb-2">
+    <p class="text-sm font-medium text-emerald-800 flex items-center gap-1">
+      <span class="text-xl">🕌</span> পরবর্তী নামাজ
+    </p>
+    <button onclick="showFullPrayerSchedule()" class="text-white bg-white/20 hover:bg-white/30 rounded-full p-1 transition" title="সম্পূর্ণ সময়সূচি">
+      📅
+    </button>
+  </div>
+  <div id="prayerCountdownArea" class="text-center py-3">
+    <div id="prayerInfo" class="prayer-info-text mb-1"></div>
+    <div id="prayerTimer" class="prayer-timer-glow"></div>
+    <div class="flex justify-center items-center gap-2 mt-2">
+      <span id="prayerLocationStatus" class="prayer-location-badge"></span>
+      <button id="refreshPrayerLocationBtn" onclick="refreshPrayerLocation()" 
+        class="prayer-refresh-btn">📍 রিফ্রেশ</button>
+    </div>
+  </div>
+</div>
+      
       <!-- লোকেশন ট্র্যাকিং সেকশন -->
 <div class="mb-3 p-2 bg-blue-50 rounded-lg">
   <p class="text-sm font-medium text-blue-800 mb-2">📍 লোকেশন ট্র্যাকিং</p>
@@ -6376,6 +6494,255 @@ function stopAutoBackup() {
 function closeGDriveModal() {
   document.getElementById('gdrive-list-modal').classList.add('hidden');
 }
+  // ======================= নামাজের সময়সূচি (পরবর্তী ওয়াক্ত) =======================
+let prayerTimerInterval = null;
+let currentPrayerTimes = null;
+let userPrayerLocation = null;
+
+// লোকেশন রিফ্রেশ (বাটন ক্লিক)
+async function refreshPrayerLocation() {
+  if (!navigator.geolocation) {
+    showToast('জিওলোকেশন সাপোর্টেড না', 'error');
+    return;
+  }
+  showToast('লোকেশন সংগ্রহ করা হচ্ছে...', 'info');
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      userPrayerLocation = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('prayer_user_location', JSON.stringify(userPrayerLocation));
+      await fetchPrayerTimes();
+      startPrayerCountdown();
+      showToast('লোকেশন আপডেট হয়েছে', 'success');
+    },
+    (err) => {
+      showToast('লোকেশন অনুমতি দিন', 'error');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+// নামাজের সময় API থেকে আনা (Aladhan API)
+async function fetchPrayerTimes() {
+  let lat, lng;
+  const storedLoc = localStorage.getItem('prayer_user_location') || localStorage.getItem('user_location');
+  if (storedLoc) {
+    try {
+      const loc = JSON.parse(storedLoc);
+      lat = loc.lat;
+      lng = loc.lng;
+    } catch(e) {}
+  }
+  if (!lat || !lng) {
+    lat = 23.8103;  // ডিফল্ট ঢাকা
+    lng = 90.4125;
+  }
+
+  const today = new Date();
+  const dateStr = `${today.getDate()}-${today.getMonth()+1}-${today.getFullYear()}`;
+  const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${lat}&longitude=${lng}&method=4`;
+  
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.code === 200) {
+      currentPrayerTimes = data.data.timings;
+      const locSpan = document.getElementById('prayerLocationStatus');
+      if (locSpan) locSpan.innerText = `📍 ${storedLoc ? 'সংযুক্ত' : 'ডিফল্ট ঢাকা'}`;
+      return true;
+    }
+  } catch(e) {
+    console.error('নামাজের সময় লোড ব্যর্থ', e);
+  }
+  return false;
+}
+
+// বর্তমান সময়ের সাথে তুলনা করে পরবর্তী ওয়াক্তের তথ্য
+function getNextPrayerInfo() {
+  if (!currentPrayerTimes) return null;
+  
+  const now = new Date();
+  const currentTotalSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const prayerOrder = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+  let prayerTimesInSeconds = {};
+  
+  for (let p of prayerOrder) {
+    if (currentPrayerTimes[p]) {
+      let [hours, minutes] = currentPrayerTimes[p].split(':').map(Number);
+      prayerTimesInSeconds[p] = hours * 3600 + minutes * 60;
+    }
+  }
+  
+  // বর্তমান কোন ওয়াক্ত চলছে?
+  let currentPrayer = null;
+  let currentPrayerEndSeconds = null;
+  
+  for (let i = 0; i < prayerOrder.length; i++) {
+    let p = prayerOrder[i];
+    let startSec = prayerTimesInSeconds[p];
+    let endSec = (i+1 < prayerOrder.length) ? prayerTimesInSeconds[prayerOrder[i+1]] : (24*3600);
+    if (currentTotalSeconds >= startSec && currentTotalSeconds < endSec) {
+      currentPrayer = p;
+      currentPrayerEndSeconds = endSec;
+      break;
+    }
+  }
+  
+  if (currentPrayer && currentPrayerEndSeconds) {
+    let remainingSeconds = currentPrayerEndSeconds - currentTotalSeconds;
+    if (remainingSeconds < 0) remainingSeconds += 24*3600;
+    return { type: 'current', prayerName: currentPrayer, remainingSeconds: remainingSeconds };
+  }
+  
+  // পরবর্তী ওয়াক্ত
+  let nextPrayer = null;
+  let nextPrayerTimeSeconds = null;
+  
+  for (let p of prayerOrder) {
+    if (prayerTimesInSeconds[p] > currentTotalSeconds) {
+      nextPrayer = p;
+      nextPrayerTimeSeconds = prayerTimesInSeconds[p];
+      break;
+    }
+  }
+  
+  if (!nextPrayer && currentPrayerTimes['Fajr']) {
+    nextPrayer = 'Fajr';
+    let [fh, fm] = currentPrayerTimes['Fajr'].split(':').map(Number);
+    nextPrayerTimeSeconds = 24*3600 + (fh*3600 + fm*60);
+  }
+  
+  if (nextPrayer && nextPrayerTimeSeconds) {
+    let remainingSeconds = nextPrayerTimeSeconds - currentTotalSeconds;
+    if (remainingSeconds < 0) remainingSeconds += 24*3600;
+    return { type: 'next', prayerName: nextPrayer, remainingSeconds: remainingSeconds };
+  }
+  
+  return null;
+}
+
+// কাউন্টডাউন টাইমার আপডেট
+function updatePrayerCountdown() {
+  const infoDiv = document.getElementById('prayerInfo');
+  const timerDiv = document.getElementById('prayerTimer');
+  if (!infoDiv || !timerDiv) return;
+  
+  if (!currentPrayerTimes) {
+    infoDiv.innerText = 'সময় লোড হয়নি';
+    timerDiv.innerText = '--:--:--';
+    return;
+  }
+  
+  const nextInfo = getNextPrayerInfo();
+  if (!nextInfo) {
+    infoDiv.innerText = 'তথ্য নেই';
+    timerDiv.innerText = '--:--:--';
+    return;
+  }
+  
+  const remainingSec = nextInfo.remainingSeconds;
+  const hours = Math.floor(remainingSec / 3600);
+  const minutes = Math.floor((remainingSec % 3600) / 60);
+  const seconds = remainingSec % 60;
+  const timeStr = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+  timerDiv.innerText = timeStr;
+  
+  const prayerNameBangla = {
+    'Fajr': 'ফজর', 'Dhuhr': 'যোহর', 'Asr': 'আসর', 'Maghrib': 'মাগরিব', 'Isha': 'ইশা'
+  };
+  const bnName = prayerNameBangla[nextInfo.prayerName] || nextInfo.prayerName;
+  
+  if (nextInfo.type === 'current') {
+    infoDiv.innerHTML = `🕌 ${bnName} ওয়াক্ত শেষ হতে বাকি`;
+  } else {
+    infoDiv.innerHTML = `⏳ ${bnName} ওয়াক্ত শুরু হতে`;
+  }
+}
+
+// কাউন্টডাউন টাইমার শুরু
+function startPrayerCountdown() {
+  if (prayerTimerInterval) clearInterval(prayerTimerInterval);
+  updatePrayerCountdown();
+  prayerTimerInterval = setInterval(updatePrayerCountdown, 1000);
+}
+
+// নামাজ ফিচার ইনিশিয়ালাইজ
+async function initPrayerFeature() {
+  const statusDiv = document.getElementById('prayerLocationStatus');
+  if (statusDiv) statusDiv.innerText = 'লোকেশন সেট হচ্ছে...';
+  
+  const storedLoc = localStorage.getItem('prayer_user_location') || localStorage.getItem('user_location');
+  if (storedLoc) {
+    try {
+      userPrayerLocation = JSON.parse(storedLoc);
+      if (statusDiv) statusDiv.innerText = `📍 সংরক্ষিত লোকেশন`;
+    } catch(e) {}
+  }
+  
+  await fetchPrayerTimes();
+  startPrayerCountdown();
+  
+  // প্রতি 6 ঘন্টা পর পর সময় রিলোড
+  setInterval(async () => {
+    await fetchPrayerTimes();
+  }, 6 * 3600 * 1000);
+}
+
+// সম্পূর্ণ সময়সূচি মডাল দেখানো (📅 আইকনে ক্লিক করবে)
+function showFullPrayerSchedule() {
+  const modal = document.getElementById('prayerScheduleModal');
+  if (!modal) return;
+  
+  if (!currentPrayerTimes) {
+    document.getElementById('fullPrayerTimesList').innerHTML = '<div class="text-center text-red-500">সময়সূচি লোড হয়নি। ইন্টারনেট চেক করুন।</div>';
+    modal.classList.remove('hidden');
+    return;
+  }
+  
+  const prayerNames = {
+    'Fajr': 'ফজর', 'Sunrise': 'সূর্যোদয়', 'Dhuhr': 'যোহর', 'Asr': 'আসর', 
+    'Maghrib': 'মাগরিব', 'Isha': 'ইশা', 'Imsak': 'ইমসাক', 'Midnight': 'মধ্যরাত'
+  };
+  
+  const today = new Date();
+  const formattedDate = today.toLocaleDateString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  
+  let html = `<div class="text-center text-sm text-gray-500 mb-2">📅 ${formattedDate}</div>`;
+  
+  for (let [key, bangla] of Object.entries(prayerNames)) {
+    if (currentPrayerTimes[key]) {
+      html += `
+        <div class="flex justify-between items-center py-2 border-b border-gray-100">
+          <span class="font-medium text-gray-700">🕌 ${bangla}</span>
+          <span class="text-emerald-700 font-mono">${currentPrayerTimes[key]}</span>
+        </div>
+      `;
+    }
+  }
+  
+  document.getElementById('fullPrayerTimesList').innerHTML = html;
+  modal.classList.remove('hidden');
+}
+
+// সময়সূচি মডাল বন্ধ
+function closePrayerScheduleModal() {
+  document.getElementById('prayerScheduleModal').classList.add('hidden');
+}
+
+// মডালের বাইরে ক্লিক করলেও বন্ধ হবে
+if (typeof document !== 'undefined') {
+  document.addEventListener('click', function(e) {
+    const modal = document.getElementById('prayerScheduleModal');
+    if (modal && !modal.classList.contains('hidden') && e.target === modal) {
+      closePrayerScheduleModal();
+    }
+  });
+}
   
   // অ্যাকর্ডিয়ন টগল ফাংশন - ব্যবহারের নিয়মের জন্য
 function toggleRule(ruleId) {
@@ -6486,6 +6853,8 @@ if (loadSavedGDriveToken()) {
   // ডেট ফিল্টার সেট করুন
   setDateFilter('all');
   
+  initPrayerFeature();
+  
   // 👇 এটাই মূল ফিক্স: অ্যাপ স্টার্টআপে ব্যাকআপ সেভ করুন
   if (localBackupEnabled) {
     setTimeout(() => {
@@ -6497,5 +6866,18 @@ if (loadSavedGDriveToken()) {
 
 init();
   </script>
+  <!-- নামাজের সময়সূচির মডাল -->
+<div id="prayerScheduleModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-sm w-full max-h-[80vh] overflow-y-auto p-5 shadow-2xl">
+    <div class="flex justify-between items-center border-b pb-2 mb-3">
+      <h3 class="text-lg font-bold text-emerald-700">🕌 আজকের নামাজের সময়সূচি</h3>
+      <button onclick="closePrayerScheduleModal()" class="text-gray-400 text-2xl">&times;</button>
+    </div>
+    <div id="fullPrayerTimesList" class="space-y-3">
+      <div class="text-center text-gray-500">লোড হচ্ছে...</div>
+    </div>
+    <button onclick="closePrayerScheduleModal()" class="mt-4 w-full py-2 bg-emerald-600 text-white rounded-xl">বন্ধ করুন</button>
+  </div>
+</div>
 </body>
 </html>
