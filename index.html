@@ -3685,6 +3685,12 @@ function updateGoogleProfileImage(user) {
   }
 }
 
+  // বর্তমান তারিখ+সময় ISO ফরম্যাটে রিটার্ন করে
+function getCurrentDateTime() {
+  const now = new Date();
+  return now.toISOString(); // "2025-04-01T15:30:45.123Z"
+}
+  
     // Utility functions
     function toBengaliNumber(num) {
       const bengaliDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
@@ -3768,39 +3774,37 @@ function isOverdue(dateStr) {
     // কাস্টমার লিস্ট সাজানো
     // ============================================
     function getCustomers() {
-      const customerMap = new Map();
-      allData.filter(d => d.type === 'customer').forEach(c => {
-        customerMap.set(c.customer_id, c);
-      });
-      
-      const customers = Array.from(customerMap.values());
-      
-      const customersWithLastTransaction = customers.map(customer => {
-        const customerTransactions = allData.filter(d => 
-          d.customer_id === customer.customer_id && 
-          (d.type === 'due' || d.type === 'payment')
-        );
-        
-        let lastTransactionDate = null;
-        if (customerTransactions.length > 0) {
-          customerTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-          lastTransactionDate = customerTransactions[0].date;
-        }
-        
-        return {
-          ...customer,
-          last_transaction_date: lastTransactionDate || customer.created_at
-        };
-      });
-      
-      customersWithLastTransaction.sort((a, b) => {
-        if (a.last_transaction_date && !b.last_transaction_date) return -1;
-        if (!a.last_transaction_date && b.last_transaction_date) return 1;
-        return new Date(b.last_transaction_date) - new Date(a.last_transaction_date);
-      });
-      
-      return customersWithLastTransaction;
+  const customerMap = new Map();
+  allData.filter(d => d.type === 'customer').forEach(c => {
+    customerMap.set(c.customer_id, c);
+  });
+  const customers = Array.from(customerMap.values());
+
+  const customersWithLastTransaction = customers.map(customer => {
+    const customerTransactions = allData.filter(d => 
+      d.customer_id === customer.customer_id && 
+      (d.type === 'due' || d.type === 'payment')
+    );
+    let lastTransactionDateTime = null;
+    if (customerTransactions.length > 0) {
+      customerTransactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
+      lastTransactionDateTime = customerTransactions[0].datetime || customerTransactions[0].created_at;
     }
+    return {
+      ...customer,
+      last_transaction_datetime: lastTransactionDateTime || customer.created_at
+    };
+  });
+
+  // সর্বশেষ লেনদেনের datetime অনুযায়ী descending সাজানো
+  customersWithLastTransaction.sort((a, b) => {
+    const dateA = a.last_transaction_datetime ? new Date(a.last_transaction_datetime) : new Date(0);
+    const dateB = b.last_transaction_datetime ? new Date(b.last_transaction_datetime) : new Date(0);
+    return dateB - dateA;
+  });
+
+  return customersWithLastTransaction;
+}
 
     // Get fund providers
     function getFundProviders() {
@@ -3824,10 +3828,10 @@ function isOverdue(dateStr) {
     }
 
     // Get all fund transactions
-    function getFunds() {
-      return allData.filter(d => d.type === 'fund-receive' || d.type === 'fund-payment')
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+   function getFunds() {
+  return allData.filter(d => d.type === 'fund-receive' || d.type === 'fund-payment')
+    .sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
+}
 
     // Calculate total fund balance
     function getTotalFundBalance() {
@@ -3840,10 +3844,10 @@ function isOverdue(dateStr) {
     }
 
     // Get all transactions
-    function getTransactions() {
-      return allData.filter(d => d.type === 'due' || d.type === 'payment' || d.type === 'fund-receive' || d.type === 'fund-payment')
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-    }
+   function getTransactions() {
+  return allData.filter(d => d.type === 'due' || d.type === 'payment' || d.type === 'fund-receive' || d.type === 'fund-payment')
+    .sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
+}
 
     // Calculate customer balance
     function getCustomerBalance(customerId) {
@@ -4816,6 +4820,7 @@ function isOverdue(dateStr) {
         
         const balance = getCustomerBalance(personId);
         const transactions = getTransactions().filter(t => t.customer_id === personId);
+        transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
         const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64`;
         
         const balanceText = balance > 0 ? 
@@ -4897,7 +4902,7 @@ function isOverdue(dateStr) {
   
   const balance = getFundProviderBalance(personId);
   const transactions = getFunds().filter(t => t.provider_id === personId);
-  
+transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
   content.innerHTML = `
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-xl font-bold text-gray-800">💰 ${provider.provider_name}</h2>
@@ -5150,6 +5155,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     date: document.getElementById('transaction-date').value,
     note: document.getElementById('transaction-note').value.trim(),
     created_at: new Date().toISOString(),
+    datetime: getCurrentDateTime(),
     timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   };
   
@@ -5199,6 +5205,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     date: document.getElementById('fund-date').value,
     note: document.getElementById('fund-note').value.trim(),
     created_at: new Date().toISOString(),
+    datetime: getCurrentDateTime(),
     timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   };
 
