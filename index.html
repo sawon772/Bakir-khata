@@ -851,6 +851,19 @@
   </div>
 </div>
       
+      <!-- ফ্লোটিং বাটন দেখান/লুকান সেটিংস -->
+<div class="mb-3 p-2 bg-indigo-50 rounded-lg">
+  <p class="text-sm font-medium text-indigo-800 mb-2">⚡ শর্টকাট বাটন</p>
+  <div class="flex items-center justify-between">
+    <span class="text-sm text-gray-700">ফ্লোটিং বাটন দেখান</span>
+    <button onclick="toggleFloatButtons()" id="float-buttons-toggle-btn" class="px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1">
+      <span id="float-buttons-icon">🔘</span>
+      <span id="float-buttons-text">অন</span>
+    </button>
+  </div>
+  <p class="text-xs text-gray-500 mt-1">বন্ধ করলে নিচের বাটনগুলো লুকিয়ে যাবে (+,📝,💳,💰,💸)</p>
+</div>
+      
       <!-- স্টোরেজ চেক বাটন -->
 <div class="mb-3 p-2 bg-blue-50 rounded-lg">
   <p class="text-sm font-medium text-blue-800 mb-2">📊 স্টোরেজ মনিটর</p>
@@ -6494,6 +6507,76 @@ function stopAutoBackup() {
 function closeGDriveModal() {
   document.getElementById('gdrive-list-modal').classList.add('hidden');
 }
+  
+  // ============================================
+// ফ্লোটিং বাটন দেখান/লুকান ফিচার
+// ============================================
+
+let floatButtonsVisible = true; // ডিফল্ট অন
+
+// স্টোরেজ থেকে সেভ করা সেটিং লোড
+const savedFloatButtons = localStorage.getItem('float_buttons_visible');
+if (savedFloatButtons !== null) {
+  floatButtonsVisible = savedFloatButtons === 'true';
+} else {
+  floatButtonsVisible = true;
+  localStorage.setItem('float_buttons_visible', 'true');
+}
+
+// ফ্লোটিং বাটনের কন্টেইনার নির্বাচন (যেখানে সব বাটন আছে)
+function getFloatButtonsContainer() {
+  // আপনার কোডে ফ্লোটিং বাটনগুলি .fixed.bottom-6.right-6 এর ভিতরে আছে
+  return document.querySelector('.fixed.bottom-6.right-6');
+}
+
+// বাটনগুলির ভিজিবিলিটি আপডেট
+function updateFloatButtonsVisibility() {
+  const container = getFloatButtonsContainer();
+  if (container) {
+    if (floatButtonsVisible) {
+      container.style.display = 'flex';
+    } else {
+      container.style.display = 'none';
+    }
+  }
+  
+  // টগল বাটনের UI আপডেট
+  const toggleBtn = document.getElementById('float-buttons-toggle-btn');
+  const iconSpan = document.getElementById('float-buttons-icon');
+  const textSpan = document.getElementById('float-buttons-text');
+  
+  if (toggleBtn) {
+    if (floatButtonsVisible) {
+      toggleBtn.className = 'px-3 py-1 rounded-full text-sm bg-emerald-600 text-white flex items-center gap-1';
+      if (iconSpan) iconSpan.textContent = '🔘';
+      if (textSpan) textSpan.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    } else {
+      toggleBtn.className = 'px-3 py-1 rounded-full text-sm bg-gray-400 text-white flex items-center gap-1';
+      if (iconSpan) iconSpan.textContent = '⚪';
+      if (textSpan) textSpan.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    }
+  }
+}
+
+// টগল ফাংশন (বাটন ক্লিক করলে)
+function toggleFloatButtons() {
+  floatButtonsVisible = !floatButtonsVisible;
+  localStorage.setItem('float_buttons_visible', floatButtonsVisible);
+  updateFloatButtonsVisibility();
+  
+  showToast(
+    floatButtonsVisible ? 
+    (currentLanguage === 'bn' ? 'শর্টকাট বাটন দেখানো হবে' : 'Shortcut buttons will be shown') : 
+    (currentLanguage === 'bn' ? 'শর্টকাট বাটন লুকানো হবে' : 'Shortcut buttons will be hidden'),
+    'success'
+  );
+}
+
+// পেজ লোডে ভিজিবিলিটি সেট করা
+setTimeout(() => {
+  updateFloatButtonsVisibility();
+}, 100);
+  
   // ======================= নামাজের সময়সূচি (পরবর্তী ওয়াক্ত) =======================
 let prayerTimerInterval = null;
 let currentPrayerTimes = null;
