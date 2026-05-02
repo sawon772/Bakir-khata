@@ -473,6 +473,269 @@
 .day-name-animate {
   animation: slideInFromRight 0.5s ease-out;
 }
+    
+    /* ============================================
+   প্রফেশনাল ডার্ক মোড স্টাইল
+   ============================================ */
+
+/* ডার্ক মোডের রুট ভেরিয়েবল */
+.dark-mode {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --input-bg: #0f172a;
+  --input-border: #334155;
+  --hover-bg: #334155;
+  --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+/* মূল ব্যাকগ্রাউন্ড */
+.dark-mode body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%) !important;
+}
+
+/* কার্ড ও কন্টেইনার */
+.dark-mode .bg-white,
+.dark-mode .card-shadow,
+.dark-mode .bg-white\:95 {
+  background-color: var(--bg-card) !important;
+  background-image: none !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 4px 15px var(--shadow-color) !important;
+}
+
+/* স্টিকি হেডার */
+.dark-mode .sticky-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+}
+
+/* সব কার্ডের জন্য */
+.dark-mode .stat-card,
+.dark-mode .advance-stat-card,
+.dark-mode .non-due-stat-card,
+.dark-mode .fund-stat-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.dark-mode .stat-card p:not(.text-red-600):not(.text-emerald-600),
+.dark-mode .stat-label {
+  color: var(--text-secondary) !important;
+}
+
+/* টেক্সট কালার */
+.dark-mode .text-gray-800,
+.dark-mode .text-gray-700,
+.dark-mode .text-gray-900,
+.dark-mode .font-medium.text-gray-800,
+.dark-mode .text-gray-600:not(.text-red-600):not(.text-emerald-600) {
+  color: var(--text-primary) !important;
+}
+
+.dark-mode .text-gray-500,
+.dark-mode .text-gray-400,
+.dark-mode .text-xs.text-gray-500,
+.dark-mode .text-sm.text-gray-500 {
+  color: var(--text-secondary) !important;
+}
+
+/* গুরুত্বপূর্ণ রঙ অপরিবর্তিত রাখা (ব্যবসায়িক রঙ) */
+.dark-mode .text-red-600,
+.dark-mode .text-red-500,
+.dark-mode .bg-red-50,
+.dark-mode .due-customer-card .font-bold.text-red-600,
+#total-due.dark-mode {
+  color: #f87171 !important;
+}
+
+.dark-mode .text-emerald-600,
+.dark-mode .text-emerald-500,
+#total-customers.dark-mode,
+#total-non-due.dark-mode {
+  color: #34d399 !important;
+}
+
+.dark-mode .text-yellow-600,
+#total-advance.dark-mode {
+  color: #fbbf24 !important;
+}
+
+.dark-mode .text-purple-600,
+#total-fund.dark-mode {
+  color: #c084fc !important;
+}
+
+/* ইনপুট ফিল্ড */
+.dark-mode input,
+.dark-mode select,
+.dark-mode textarea,
+.dark-mode .border-2,
+.dark-mode .border-gray-200,
+.dark-mode .border-gray-300 {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode input::placeholder,
+.dark-mode textarea::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.dark-mode input:focus,
+.dark-mode select:focus,
+.dark-mode textarea:focus {
+  border-color: #059669 !important;
+  outline: none !important;
+}
+
+/* বাটন স্টাইল - বেশিরভাগ অপরিবর্তিত রাখা */
+.dark-mode .btn-primary,
+.dark-mode .bg-emerald-600,
+.dark-mode .bg-gradient-to-r.from-emerald-600 {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+}
+
+.dark-mode .btn-danger,
+.dark-mode .bg-red-500:not(.bg-red-50) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+}
+
+.dark-mode .btn-blue,
+.dark-mode .bg-blue-600 {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+}
+
+.dark-mode .btn-purple,
+.dark-mode .bg-purple-600 {
+  background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%) !important;
+}
+
+.dark-mode .btn-indigo,
+.dark-mode .bg-indigo-600 {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+}
+
+.dark-mode .btn-warning {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+}
+
+/* সেকশন ব্যাকগ্রাউন্ড (সেটিংস মেনু) */
+.dark-mode .bg-emerald-50,
+.dark-mode .bg-blue-50,
+.dark-mode .bg-amber-50,
+.dark-mode .bg-green-50,
+.dark-mode .bg-purple-50,
+.dark-mode .bg-rose-50,
+.dark-mode .bg-indigo-50,
+.dark-mode .bg-gray-50,
+.dark-mode .bg-yellow-50,
+.dark-mode .bg-red-50 {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* মেনু ও মডাল */
+.dark-mode #main-menu,
+.dark-mode #user-menu,
+.dark-mode .modal-content,
+.dark-mode .bg-white.rounded-2xl,
+.dark-mode .bg-white.rounded-xl,
+.dark-mode .bg-white.rounded-lg {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-mode #main-menu .border-b,
+.dark-mode .border-t,
+.dark-mode .border-gray-100,
+.dark-mode .border-gray-200 {
+  border-color: var(--border-color) !important;
+}
+
+/* মডাল ওভারলে */
+.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* ট্যাব */
+.dark-mode .tab-btn:not(.tab-active) {
+  background-color: transparent !important;
+  color: var(--text-secondary) !important;
+}
+
+.dark-mode .tab-active {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: white !important;
+}
+
+/* হেডার */
+.dark-mode header,
+.dark-mode .bg-gradient-to-r.from-emerald-600.to-teal-600 {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 100%) !important;
+}
+
+/* সার্চ বার */
+.dark-mode #search-input {
+  background-color: var(--input-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.dark-mode #search-input:focus {
+  border-color: #059669 !important;
+}
+
+/* টোস্ট মেসেজ */
+.dark-mode .toast.bg-emerald-500 {
+  background: #059669 !important;
+}
+.dark-mode .toast.bg-red-500 {
+  background: #dc2626 !important;
+}
+.dark-mode .toast.bg-yellow-500 {
+  background: #d97706 !important;
+}
+
+/* কাস্টমার কার্ডের বর্ডার */
+.dark-mode .due-customer-card {
+  border-left-color: #f87171 !important;
+}
+.dark-mode .advance-customer-card {
+  border-left-color: #fbbf24 !important;
+}
+.dark-mode .non-due-customer-card {
+  border-left-color: #64748b !important;
+}
+.dark-mode .fund-provider-card {
+  border-left-color: #c084fc !important;
+}
+
+/* স্ক্রলবার */
+.dark-mode ::-webkit-scrollbar {
+  width: 6px;
+}
+.dark-mode ::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+.dark-mode ::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 3px;
+}
+.dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* নামাজ কার্ড ডার্ক মোড */
+.dark-mode .prayer-glass-card {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(16, 185, 129, 0.85)) !important;
+}
+    
   </style>
 </head>
 <body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
@@ -787,6 +1050,18 @@
         </div>
         <p class="text-xs text-gray-500 mt-1">সফল লেনদেন ও সতর্কবার্তায় শব্দ</p>
       </div>
+      
+      <!-- ডার্ক মোড সেটিংস -->
+<div class="mb-3 p-2 bg-gray-100 rounded-lg dark-mode-toggle-area">
+  <p class="text-sm font-medium text-gray-800 mb-2">🌙 ডার্ক মোড</p>
+  <div class="flex items-center justify-between">
+    <span class="text-sm text-gray-700">ডার্ক থিম ব্যবহার করুন</span>
+    <button onclick="toggleDarkMode()" id="dark-mode-btn" class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gray-300 text-gray-700">
+      <span id="dark-mode-icon">🌙</span> <span id="dark-mode-text">অফ</span>
+    </button>
+  </div>
+  <p class="text-xs text-gray-500 mt-1">চোখের আরামের জন্য ডার্ক থিম</p>
+</div>
       
       <!-- লোকাল ব্যাকআপ সেটিংস -->
 <div class="mb-3 p-2 bg-green-50 rounded-lg">
@@ -1776,6 +2051,8 @@ function escapeHtml(str) {
       document.getElementById('menu-sound-text').textContent = soundEnabled ? translations[lang]['on'] : translations[lang]['off'];
       
       renderCurrentView();
+      // ডার্ক মোড বাটনের টেক্সট আপডেট
+updateDarkModeButtonText();
       // চার্ট রি-রেন্ডার (যদি রিপোর্ট ট্যাব খোলা থাকে)
 if (currentTab === 'reports' && typeof renderTransactionChart === 'function') {
   renderTransactionChart();
@@ -2780,6 +3057,78 @@ async function deleteCategory(category) {
       return data.code === enteredCode;
     }
 
+// ============================================
+// প্রফেশনাল ডার্ক মোড ফাংশন
+// ============================================
+
+// ডার্ক মোড টগল ফাংশন
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDark = document.body.classList.contains('dark-mode');
+  
+  // লোকাল স্টোরেজে সেভ
+  localStorage.setItem('dark_mode', isDark ? 'true' : 'false');
+  
+  // বাটন UI আপডেট
+  const darkBtn = document.getElementById('dark-mode-btn');
+  const darkIcon = document.getElementById('dark-mode-icon');
+  const darkText = document.getElementById('dark-mode-text');
+  
+  if (darkBtn) {
+    if (isDark) {
+      darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-indigo-600 text-white';
+      if (darkIcon) darkIcon.textContent = '☀️';
+      if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    } else {
+      darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gray-300 text-gray-700';
+      if (darkIcon) darkIcon.textContent = '🌙';
+      if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    }
+  }
+  
+  // চার্ট রি-রেন্ডার (যদি থাকে)
+  if (typeof renderTransactionChart === 'function' && currentTab === 'reports') {
+    setTimeout(() => renderTransactionChart(), 100);
+  }
+  
+  // টোস্ট মেসেজ দেখান
+  showToast(
+    isDark ? 
+    (currentLanguage === 'bn' ? 'ডার্ক মোড সক্রিয় | চোখের আরামের জন্য থিম পরিবর্তন করা হয়েছে' : 'Dark mode activated | Theme changed for eye comfort') : 
+    (currentLanguage === 'bn' ? 'লাইট মোড সক্রিয়' : 'Light mode activated'),
+    'success',
+    2000
+  );
+}
+
+// পেজ লোডে ডার্ক মোড চেক করা
+function initDarkMode() {
+  const savedDarkMode = localStorage.getItem('dark_mode');
+  if (savedDarkMode === 'true') {
+    document.body.classList.add('dark-mode');
+    
+    // বাটন UI আপডেট
+    const darkBtn = document.getElementById('dark-mode-btn');
+    const darkIcon = document.getElementById('dark-mode-icon');
+    const darkText = document.getElementById('dark-mode-text');
+    
+    if (darkBtn) {
+      darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-indigo-600 text-white';
+      if (darkIcon) darkIcon.textContent = '☀️';
+      if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    }
+  }
+}
+
+// ভাষা পরিবর্তনের সময় ডার্ক মোড বাটন টেক্সট আপডেট
+function updateDarkModeButtonText() {
+  const isDark = document.body.classList.contains('dark-mode');
+  const darkText = document.getElementById('dark-mode-text');
+  if (darkText) {
+    darkText.textContent = isDark ? (currentLanguage === 'bn' ? 'অন' : 'On') : (currentLanguage === 'bn' ? 'অফ' : 'Off');
+  }
+}  
+  
     // ============================================
     // সাউন্ড ফাংশন
     // ============================================
@@ -7145,6 +7494,9 @@ if (loadSavedGDriveToken()) {
 if (typeof renderTransactionChart === 'function') {
   // কিছু করার দরকার নেই, পরে কল হবে
 }
+  
+  // ডার্ক মোড চেক করুন
+initDarkMode();
   
   // 👇 এটাই মূল ফিক্স: অ্যাপ স্টার্টআপে ব্যাকআপ সেভ করুন
   if (localBackupEnabled) {
