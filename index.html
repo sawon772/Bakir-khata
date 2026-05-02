@@ -38,7 +38,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://apis.google.com/js/api.js"></script>
   <script src="https://accounts.google.com/gsi/client"></script>
-  
+  <!-- Chart.js for Graphs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { font-family: 'Hind Siliguri', sans-serif; }
     .tab-active { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; }
@@ -1282,6 +1283,18 @@
         <div id="content-reports" class="space-y-4 hidden">
           <div class="bg-white rounded-xl p-4 card-shadow">
             <h3 class="reports-summary-title font-bold text-lg text-gray-800 mb-3" data-bn="📈 সারাংশ" data-en="📈 Summary">📈 সারাংশ</h3>
+            <!-- মাসিক লেনদেন চার্ট -->
+<div class="bg-white rounded-xl p-4 card-shadow">
+  <div class="flex justify-between items-center mb-3">
+    <h3 class="font-bold text-lg text-gray-800">📊 মাসিক লেনদেনের প্রবণতা</h3>
+    <div class="flex gap-2">
+      <button onclick="changeChartPeriod('6')" id="chart-period-6" class="px-2 py-1 text-xs rounded-lg bg-emerald-600 text-white">৬ মাস</button>
+      <button onclick="changeChartPeriod('12')" id="chart-period-12" class="px-2 py-1 text-xs rounded-lg bg-gray-200 text-gray-700">১২ মাস</button>
+    </div>
+  </div>
+  <canvas id="transactionChart" width="400" height="200" style="max-height: 250px; width: 100%;"></canvas>
+  <p class="text-xs text-gray-400 text-center mt-2">গত ৬ মাসের বাকি ও পেমেন্টের প্রবণতা</p>
+</div>
             <div class="space-y-2">
               <div class="flex justify-between py-2 border-b">
                 <span class="total-customers-label text-gray-600" data-bn="মোট কাস্টমার" data-en="Total Customers">মোট কাস্টমার</span>
@@ -1763,6 +1776,10 @@ function escapeHtml(str) {
       document.getElementById('menu-sound-text').textContent = soundEnabled ? translations[lang]['on'] : translations[lang]['off'];
       
       renderCurrentView();
+      // চার্ট রি-রেন্ডার (যদি রিপোর্ট ট্যাব খোলা থাকে)
+if (currentTab === 'reports' && typeof renderTransactionChart === 'function') {
+  renderTransactionChart();
+}
       updateDayName();
     }
   
@@ -4800,8 +4817,174 @@ function isOverdue(dateStr) {
           </div>
         `).join('');
       }
+          // চার্ট রেন্ডার করুন
+if (typeof renderTransactionChart === 'function') {
+  renderTransactionChart();
+}
     }
 
+  // ============================================
+// লেনদেনের চার্ট ফাংশন
+// ============================================
+
+let currentChartPeriod = 6; // ডিফল্ট ৬ মাস
+let transactionChartInstance = null;
+
+// চার্ট রেন্ডার করার ফাংশন
+function renderTransactionChart() {
+  const months = [];
+  const dueData = [];
+  const paymentData = [];
+  
+  const today = new Date();
+  const period = currentChartPeriod;
+  
+  for (let i = period - 1; i >= 0; i--) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const monthName = monthDate.toLocaleString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', { month: 'short' });
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    
+    months.push(`${monthName} ${year}`);
+    
+    let monthlyDue = 0;
+    let monthlyPayment = 0;
+    
+    // সব লেনদেন চেক করুন
+    const allTransactions = getTransactions();
+    for (let j = 0; j < allTransactions.length; j++) {
+      const t = allTransactions[j];
+      const transDate = new Date(t.date);
+      if (transDate.getMonth() === month && transDate.getFullYear() === year) {
+        if (t.type === 'due') monthlyDue += t.amount;
+        if (t.type === 'payment') monthlyPayment += t.amount;
+      }
+    }
+    
+    dueData.push(monthlyDue);
+    paymentData.push(monthlyPayment);
+  }
+  
+  const ctx = document.getElementById('transactionChart');
+  if (!ctx) return;
+  
+  // পুরানো চার্ট থাকলে ডিলিট করুন
+  if (transactionChartInstance) {
+    transactionChartInstance.destroy();
+  }
+  
+  // চার্টের রঙ
+  const dueColor = '#dc2626';      // লাল
+  const dueBgColor = 'rgba(220, 38, 38, 0.7)';
+  const paymentColor = '#10b981';   // সবুজ
+  const paymentBgColor = 'rgba(16, 185, 129, 0.7)';
+  
+  // নতুন চার্ট তৈরি
+  transactionChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [
+        {
+          label: currentLanguage === 'bn' ? '📝 বাকি দেওয়া' : '📝 Due Given',
+          data: dueData,
+          backgroundColor: dueBgColor,
+          borderColor: dueColor,
+          borderWidth: 1.5,
+          borderRadius: 6,
+          barPercentage: 0.65,
+          categoryPercentage: 0.8
+        },
+        {
+          label: currentLanguage === 'bn' ? '💰 পেমেন্ট নেওয়া' : '💰 Payment Received',
+          data: paymentData,
+          backgroundColor: paymentBgColor,
+          borderColor: paymentColor,
+          borderWidth: 1.5,
+          borderRadius: 6,
+          barPercentage: 0.65,
+          categoryPercentage: 0.8
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: {
+            font: { size: 11, weight: 'bold' },
+            boxWidth: 12,
+            usePointStyle: true,
+            pointStyle: 'rectRounded'
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: { size: 12 },
+          bodyFont: { size: 11 },
+          callbacks: {
+            label: function(context) {
+              const label = context.dataset.label || '';
+              const value = context.raw;
+              return label + ': ৳ ' + value.toLocaleString('en-IN');
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0,0,0,0.05)',
+            drawBorder: true
+          },
+          ticks: {
+            callback: function(value) {
+              if (value >= 100000) return '৳' + (value / 1000).toFixed(0) + 'k';
+              if (value >= 1000) return '৳' + (value / 1000).toFixed(1) + 'k';
+              return '৳' + value;
+            },
+            font: { size: 10 }
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            font: { size: 10 },
+            rotation: 0,
+            maxRotation: 45,
+            autoSkip: true
+          }
+        }
+      },
+      // অ্যানিমেশন যোগ করা
+      animation: {
+        duration: 800,
+        easing: 'easeOutQuart'
+      }
+    }
+  });
+}
+
+// চার্টের সময়সীমা পরিবর্তন (৬ মাস / ১২ মাস)
+function changeChartPeriod(months) {
+  currentChartPeriod = parseInt(months);
+  
+  // বাটন স্টাইল আপডেট
+  document.getElementById('chart-period-6').className = months === '6' ? 
+    'px-2 py-1 text-xs rounded-lg bg-emerald-600 text-white' : 
+    'px-2 py-1 text-xs rounded-lg bg-gray-200 text-gray-700';
+  document.getElementById('chart-period-12').className = months === '12' ? 
+    'px-2 py-1 text-xs rounded-lg bg-emerald-600 text-white' : 
+    'px-2 py-1 text-xs rounded-lg bg-gray-200 text-gray-700';
+  
+  renderTransactionChart();
+}
+  
     // Modal functions
     function openModal(type, personId = null) {
       const overlay = document.getElementById('modal-overlay');
@@ -6957,6 +7140,11 @@ if (loadSavedGDriveToken()) {
   setDateFilter('all');
   
   initPrayerFeature();
+  
+  // চার্ট ফাংশন ডিফাইন আছে কিনা চেক
+if (typeof renderTransactionChart === 'function') {
+  // কিছু করার দরকার নেই, পরে কল হবে
+}
   
   // 👇 এটাই মূল ফিক্স: অ্যাপ স্টার্টআপে ব্যাকআপ সেভ করুন
   if (localBackupEnabled) {
