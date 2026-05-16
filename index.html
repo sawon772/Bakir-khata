@@ -746,7 +746,7 @@
     <p class="mt-4 text-emerald-800 font-medium" id="app-loader-text">অপেক্ষা করুন...</p>
   </div>
 
-  <div id="app" class="w-full h-full flex flex-col">
+  <div id="app" class="w-full h-full flex-col" style="display: none;">
     <!-- Hidden file inputs for image upload -->
     <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageSelect(event)">
     <input type="file" id="gallery-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
@@ -1196,6 +1196,53 @@
   <p class="text-xs text-gray-500 mt-1">আপনার দৈনিক, সাপ্তাহিক, মাসিক খরচ ট্র্যাক করুন</p>
 </div>
       
+      <!-- 🤖 এআই পাওয়ারড টুলস - Sawon 772 -->
+<div class="mb-3 p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg">
+    <p class="text-sm font-medium text-white mb-2">🤖 এআই পাওয়ারড টুলস</p>
+    <div class="space-y-2">
+        <button onclick="showCollectionLeaderboard()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🏆 লিডারবোর্ড দেখুন
+        </button>
+        <button onclick="showPredictionChart()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            📈 ভবিষ্যৎ আয়ের পূর্বাভাস
+        </button>
+        <button onclick="startVoiceAssistant()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🎤 ভয়েস অ্যাসিস্ট্যান্ট চালু/বন্ধ
+        </button>
+        <button onclick="exportAIPredictionsReport()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            📊 এআই রিপোর্ট ডাউনলোড (CSV)
+        </button>
+        <button onclick="requestNotificationPermission()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🔔 নোটিফিকেশন অনুমতি চাও
+        </button>
+    </div>
+</div>
+      
+      <!-- 📊 অ্যাডভান্সড টুলস - Sawon 772 -->
+<div class="mb-3 p-2 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-lg">
+    <p class="text-sm font-medium text-white mb-2">📊 অ্যাডভান্সড টুলস</p>
+    <div class="space-y-2">
+        <button onclick="showPaymentCalendar()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            📅 পেমেন্ট ক্যালেন্ডার
+        </button>
+        <button onclick="showBusinessHealth()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            📈 ব্যবসার স্বাস্থ্য সূচক
+        </button>
+        <button onclick="downloadExcelReport()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            📊 এক্সেল রিপোর্ট ডাউনলোড
+        </button>
+        <button onclick="setDailyTarget()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🎯 ডেইলি টার্গেট সেট করুন
+        </button>
+        <button onclick="enableAppLock()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🔒 অ্যাপ লক সক্রিয় করুন
+        </button>
+        <button onclick="disableAppLock()" class="w-full text-left text-sm text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
+            🔓 অ্যাপ লক নিষ্ক্রিয় করুন
+        </button>
+    </div>
+</div>
+      
       <!-- সহায়তা তথ্য -->
       <div class="mb-3 p-2 bg-indigo-50 rounded-lg">
         <p class="text-sm font-medium text-indigo-800 mb-2">🆘 সহায়তা</p>
@@ -1420,6 +1467,32 @@
         </div>
       </div>
     </div>
+    
+    <!-- টার্গেট ও প্রগ্রেস কন্টেইনার - Sawon 772 -->
+<div id="target-container" class="max-w-4xl mx-auto w-full px-4 py-2"></div>
+    
+    <!-- AI প্রেডিকশন উইজেট - Sawon 772 -->
+<div id="ai-widget-container" class="max-w-4xl mx-auto w-full px-4 py-2"></div>
+    
+    <!-- স্মার্ট কালেকশন অ্যাডভাইজর সেকশন - Sawon 772 -->
+<div id="smart-advisor-section" class="max-w-4xl mx-auto w-full px-4 py-2 hidden">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl p-4 shadow-lg border-l-8 border-blue-600">
+        <div class="flex justify-between items-start">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-2xl">🤖</span>
+                    <h3 class="font-bold text-gray-800">স্মার্ট কালেকশন অ্যাডভাইজর</h3>
+                    <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">AI সাজেশন</span>
+                </div>
+                <div id="advice-message-container">
+                    <p class="text-gray-500 text-sm">লোড হচ্ছে...</p>
+                </div>
+                <div id="advice-action-btn" class="mt-3"></div>
+            </div>
+            <button onclick="closeAdvisor()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+        </div>
+    </div>
+</div>
     
     <!-- Navigation Tabs -->
     <div class="max-w-4xl mx-auto w-full px-4 py-2">
@@ -3091,6 +3164,7 @@ function toggleDarkMode() {
     setTimeout(() => renderTransactionChart(), 100);
   }
   
+  
   // টোস্ট মেসেজ দেখান
   showToast(
     isDark ? 
@@ -4634,6 +4708,8 @@ function isOverdue(dateStr) {
       }
       else if (currentTab === 'transactions') renderTransactions();
       else if (currentTab === 'reports') renderReports();
+      // 👇 এই লাইনটি যোগ করুন (সবার শেষে)
+    showSmartAdvice();
     }
 
     function updateStats() {
@@ -4798,6 +4874,12 @@ function isOverdue(dateStr) {
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                       </svg>
+        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
+    💳
+</button>
+          																															<button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
+    🤖
+</button>
                     </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
@@ -4868,6 +4950,12 @@ function isOverdue(dateStr) {
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                       </svg>
+        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
+    💳
+</button>
+        <button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
+    🤖
+</button>
                     </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
@@ -4937,6 +5025,12 @@ function isOverdue(dateStr) {
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                       </svg>
+        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
+    💳
+</button>
+        <button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
+    🤖
+</button>
                     </button>
                     <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                     <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
@@ -4991,6 +5085,7 @@ function isOverdue(dateStr) {
   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
   </svg>
+        
 </button>
                 <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
                 <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
@@ -5647,6 +5742,7 @@ function changeChartPeriod(months) {
                 <p class="text-xs mt-1">${balanceText}</p>
                 ${customer.mobile ? `<p class="text-sm mt-2">📞 <a href="tel:${customer.mobile}" class="hover:underline">${customer.mobile}</a></p>` : ''}
                 ${customer.address ? `<p class="text-sm">📍 ${customer.address}</p>` : ''}
+          ${getProgressBar(customerId)}				
               </div>
             </div>
           </div>
@@ -7379,6 +7475,778 @@ if (typeof document !== 'undefined') {
   });
 }
   
+  
+  // ============================================
+// স্মার্ট কালেকশন অ্যাডভাইজর ফাংশন - Sawon 772
+// ============================================
+
+function showSmartAdvice() {
+    const customers = getCustomers();
+    if (!customers || customers.length === 0) return;
+
+    const eligibleCustomers = customers.filter(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        return balance > 0 && c.mobile && c.mobile.trim() !== '';
+    }).sort((a, b) => getCustomerBalance(b.customer_id) - getCustomerBalance(a.customer_id));
+
+    if (eligibleCustomers.length === 0) {
+        const advisorSection = document.getElementById('smart-advisor-section');
+        if (advisorSection) advisorSection.classList.add('hidden');
+        return;
+    }
+
+    const topAdvice = eligibleCustomers.slice(0, 3);
+    const advice = topAdvice[Math.floor(Math.random() * topAdvice.length)];
+    const balance = getCustomerBalance(advice.customer_id);
+    
+    let message = '';
+    let suggestionAmount = 0;
+    let remainingAfterPayment = 0;
+    
+    if (balance >= 10000) {
+        suggestionAmount = Math.floor(balance * 0.3);
+        remainingAfterPayment = balance - suggestionAmount;
+        message = `💡 <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) এর কাছে আপনার মোট পাওনা <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। আপনি যদি আজকে <span class="font-bold text-green-600">${formatCurrency(suggestionAmount)}</span> টাকা আদায় করতে পারেন, তাহলে আপনার বাকি কমে দাঁড়াবে <span class="font-bold text-emerald-700">${formatCurrency(remainingAfterPayment)}</span> টাকা।`;
+    } 
+    else if (balance >= 5000 && balance < 10000) {
+        suggestionAmount = Math.floor(balance * 0.5);
+        remainingAfterPayment = balance - suggestionAmount;
+        message = `🎯 <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) কে ফোন দিন। ${formatCurrency(suggestionAmount)} টাকা নিলে আপনার বাকি ${formatCurrency(remainingAfterPayment)} হবে।`;
+    }
+    else if (balance > 0 && balance < 5000) {
+        suggestionAmount = balance;
+        remainingAfterPayment = 0;
+        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) এর কাছ থেকে সম্পূর্ণ <span class="font-bold text-green-600">${formatCurrency(balance)}</span> টাকা নিয়ে নিন। তাহলে আপনার অ্যাকাউন্ট ক্লিয়ার হবে।`;
+    }
+
+    const actionHtml = `
+        <button onclick="openPaymentFromAdvice('${advice.customer_id}', ${suggestionAmount})" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md inline-flex items-center gap-2">
+            <span>💰</span> ${formatCurrency(suggestionAmount)} টাকা আদায় করুন
+        </button>
+        <button onclick="window.location.href='tel:${advice.mobile}'" 
+            class="ml-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md inline-flex items-center gap-2">
+            <span>📞</span> কল করুন
+        </button>
+    `;
+
+    const messageContainer = document.getElementById('advice-message-container');
+    const actionContainer = document.getElementById('advice-action-btn');
+    const advisorSection = document.getElementById('smart-advisor-section');
+    
+    if (messageContainer) messageContainer.innerHTML = `<p class="text-gray-700 text-sm leading-relaxed">${message}</p>`;
+    if (actionContainer) actionContainer.innerHTML = actionHtml;
+    if (advisorSection) advisorSection.classList.remove('hidden');
+}
+
+function openPaymentFromAdvice(customerId, suggestedAmount) {
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    if (!customer) return;
+    
+    openModal('payment', customerId);
+    
+    setTimeout(() => {
+        const amountInput = document.getElementById('transaction-amount');
+        if (amountInput) {
+            amountInput.value = suggestedAmount;
+            amountInput.style.backgroundColor = '#fef3c7';
+            setTimeout(() => {
+                if (amountInput) amountInput.style.backgroundColor = '';
+            }, 1000);
+        }
+    }, 300);
+    
+    if (typeof playSound === 'function') playSound('cash');
+}
+
+function closeAdvisor() {
+    const advisorSection = document.getElementById('smart-advisor-section');
+    if (advisorSection) advisorSection.classList.add('hidden');
+}
+  
+ // ============================================
+// 🤖 এআই পাওয়ারড টুলস - সমস্ত ফাংশন একসাথে
+// ============================================
+
+// 1. AI প্রেডিকশন উইজেট
+function showAIPredictionWidget() {
+    const customers = getCustomers();
+    let highRisk = 0, mediumRisk = 0, lowRisk = 0;
+    let totalDueThisMonth = 0;
+    
+    customers.forEach(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        if (balance > 0) {
+            if (balance > 50000) highRisk++;
+            else if (balance > 10000) mediumRisk++;
+            else lowRisk++;
+            
+            const daysSinceLastPayment = c.last_payment_date ? 
+                (new Date() - new Date(c.last_payment_date)) / (1000 * 60 * 60 * 24) : 999;
+            
+            if (daysSinceLastPayment > 30) totalDueThisMonth += balance * 0.5;
+            else if (daysSinceLastPayment > 15) totalDueThisMonth += balance * 0.3;
+        }
+    });
+    
+    const container = document.getElementById('ai-widget-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl p-3 shadow-lg">
+                <div class="flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <p class="text-xs opacity-70">🤖 এআই প্রেডিকশন</p>
+                        <p class="text-sm font-bold">এই মাসে আদায় হতে পারে: ${formatCurrency(Math.round(totalDueThisMonth))}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-xs bg-red-500 px-2 py-1 rounded-full">🔴 হাই ${highRisk}</span>
+                        <span class="text-xs bg-yellow-500 px-2 py-1 rounded-full">🟡 মিড ${mediumRisk}</span>
+                        <span class="text-xs bg-green-500 px-2 py-1 rounded-full">🟢 লো ${lowRisk}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// 2. কাস্টমার AI অ্যানালাইসিস
+function showCustomerAIAnalysis(customerId) {
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    if (!customer) return;
+    
+    const balance = getCustomerBalance(customerId);
+    const transactions = getTransactions().filter(t => t.customer_id === customerId);
+    
+    let totalPaid = 0;
+    let avgPayment = 0;
+    let lastPaymentDate = null;
+    let paymentGaps = [];
+    
+    transactions.forEach(t => {
+        if (t.type === 'payment') {
+            totalPaid += t.amount;
+            if (lastPaymentDate) {
+                const gap = (new Date(t.date) - new Date(lastPaymentDate)) / (1000 * 60 * 60 * 24);
+                paymentGaps.push(gap);
+            }
+            lastPaymentDate = t.date;
+        }
+    });
+    
+    const paymentCount = transactions.filter(t => t.type === 'payment').length;
+    if (paymentCount > 0) avgPayment = totalPaid / paymentCount;
+    
+    const avgGap = paymentGaps.length > 0 ? paymentGaps.reduce((a,b) => a+b,0)/paymentGaps.length : 0;
+    
+    let reliabilityScore = 10;
+    if (avgGap > 60) reliabilityScore -= 3;
+    else if (avgGap > 30) reliabilityScore -= 1.5;
+    if (balance > 50000) reliabilityScore -= 2;
+    else if (balance > 20000) reliabilityScore -= 1;
+    if (avgPayment < 500) reliabilityScore -= 1;
+    reliabilityScore = Math.max(1, Math.min(10, Math.round(reliabilityScore)));
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <div class="max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
+                <h2 class="text-xl font-bold text-gray-800">🤖 AI বিশ্লেষণ: ${customer.customer_name}</h2>
+                <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+            </div>
+            
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-4 text-white mb-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm opacity-80">AI ক্রেডিট রেটিং</p>
+                        <p class="text-3xl font-bold">${reliabilityScore}<span class="text-lg">/10</span></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm opacity-80">পরিশোধের ধরণ</p>
+                        <p class="font-bold">${avgGap <= 15 ? '🚀 খুব দ্রুত' : avgGap <= 30 ? '✅ নিয়মিত' : avgGap <= 60 ? '⚠️ ধীর' : '❌ অনিয়মিত'}</p>
+                    </div>
+                </div>
+                <div class="mt-3 w-full bg-white/30 rounded-full h-2">
+                    <div class="bg-yellow-400 h-2 rounded-full" style="width: ${reliabilityScore * 10}%"></div>
+                </div>
+            </div>
+            
+            <div class="space-y-3">
+                <div class="bg-blue-50 rounded-xl p-3 border-l-4 border-blue-500">
+                    <p class="font-bold text-blue-800">📊 লেনদেন বিশ্লেষণ</p>
+                    <p class="text-sm text-gray-700 mt-1">গড় পেমেন্ট: ${formatCurrency(avgPayment)} | সর্বশেষ পেমেন্ট: ${lastPaymentDate ? formatDate(lastPaymentDate) : 'কখনো করেনি'}</p>
+                </div>
+                
+                <div class="bg-green-50 rounded-xl p-3 border-l-4 border-green-500">
+                    <p class="font-bold text-green-800">💰 কালেকশন স্ট্রাটেজি</p>
+                    <p class="text-sm text-gray-700 mt-1">
+                        ${balance > 50000 ? '🎯 সাপ্তাহিক ২ বার ফোন করুন। ছোট কিস্তির প্রস্তাব দিন।' : 
+                          balance > 20000 ? '📌 প্রতি ১৫ দিন পর পর ফোন করুন। ডিসকাউন্ট অফার করতে পারেন।' :
+                          balance > 0 ? '✅ মাসে একবার রিমাইন্ডার যথেষ্ট।' :
+                          '🎉 কোনো বাকি নেই! নতুন পণ্য অফার করুন।'}
+                    </p>
+                </div>
+            </div>
+            
+            <button onclick="openPaymentFromAdvice('${customerId}', ${Math.floor(balance * 0.3)})" 
+                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-medium">
+                💰 এখনই পেমেন্ট নিন
+            </button>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+// 3. লিডারবোর্ড
+function showCollectionLeaderboard() {
+    const customers = getCustomers();
+    const leaderboard = customers.map(c => ({
+        name: c.customer_name,
+        balance: getCustomerBalance(c.customer_id),
+        totalPaid: getTransactions().filter(t => t.customer_id === c.customer_id && t.type === 'payment')
+            .reduce((sum, t) => sum + t.amount, 0),
+    })).filter(c => c.balance > 0).sort((a,b) => b.balance - a.balance).slice(0, 10);
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">🏆 কালেকশন লিডারবোর্ড</h2>
+        <div class="space-y-2 max-h-96 overflow-y-auto">
+            ${leaderboard.map((c, i) => `
+                <div class="flex items-center justify-between p-3 ${i === 0 ? 'bg-yellow-50' : i === 1 ? 'bg-gray-50' : i === 2 ? 'bg-orange-50' : 'bg-white'} rounded-lg">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}`}</span>
+                        <div>
+                            <p class="font-bold">${c.name}</p>
+                            <p class="text-xs text-gray-500">মোট পরিশোধ: ${formatCurrency(c.totalPaid)}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-red-600">${formatCurrency(c.balance)}</p>
+                        <p class="text-xs text-gray-400">বাকি আছে</p>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+// 4. ভবিষ্যৎ পূর্বাভাস চার্ট
+function showPredictionChart() {
+    const transactions = getTransactions();
+    const monthlyData = {};
+    
+    for (let i = 0; i < 6; i++) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        
+        let monthlyPayment = 0;
+        transactions.forEach(t => {
+            if (t.type === 'payment' && t.date.startsWith(monthKey)) {
+                monthlyPayment += t.amount;
+            }
+        });
+        monthlyData[monthKey] = monthlyPayment;
+    }
+    
+    const values = Object.values(monthlyData).reverse();
+    const trend = values.length > 1 ? (values[values.length-1] - values[0]) / (values.length-1) : 0;
+    
+    const next6Months = [];
+    let lastValue = values[values.length-1];
+    for (let i = 1; i <= 6; i++) {
+        lastValue += trend;
+        next6Months.push(Math.max(0, Math.round(lastValue)));
+    }
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">📈 ভবিষ্যৎ আয়ের পূর্বাভাস (AI)</h2>
+        <div class="space-y-3">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-4">
+                <p class="text-sm opacity-90">প্রক্ষিত প্রবৃদ্ধি</p>
+                <p class="text-2xl font-bold">${trend > 0 ? '+' : ''}${Math.round(trend)} টাকা/মাস</p>
+            </div>
+            
+            <div class="space-y-2">
+                ${next6Months.map((amount, i) => `
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
+                        <span class="text-sm">${i+1} মাস পরে</span>
+                        <span class="font-bold text-emerald-600">${formatCurrency(amount)}</span>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+        <button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+// 5. ভয়েস অ্যাসিস্ট্যান্ট
+let isVoiceAssistantActive = false;
+let voiceRecognition = null;
+
+function startVoiceAssistant() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        showToast('ভয়েস অ্যাসিস্ট্যান্ট সাপোর্টেড না', 'error');
+        return;
+    }
+    
+    if (isVoiceAssistantActive && voiceRecognition) {
+        voiceRecognition.stop();
+        isVoiceAssistantActive = false;
+        showToast('🔴 ভয়েস অ্যাসিস্ট্যান্ট বন্ধ', 'info');
+        return;
+    }
+    
+    voiceRecognition = new SpeechRecognition();
+    voiceRecognition.continuous = true;
+    voiceRecognition.lang = 'bn-BD';
+    voiceRecognition.interimResults = false;
+    
+    voiceRecognition.onresult = (event) => {
+        const transcript = event.results[event.results.length-1][0].transcript.toLowerCase();
+        
+        if (transcript.includes('মোট বাকি')) {
+            showToast(`মোট বাকি: ${formatCurrency(getTotalDue())}`, 'info');
+        }
+        else if (transcript.includes('পেমেন্ট')) {
+            openModal('payment');
+            showToast('পেমেন্ট মডাল খোলা হচ্ছে', 'success');
+        }
+        else if (transcript.includes('রিপোর্ট')) {
+            showTab('reports');
+        }
+    };
+    
+    voiceRecognition.start();
+    isVoiceAssistantActive = true;
+    showToast('🎤 ভয়েস অ্যাসিস্ট্যান্ট চালু... "মোট বাকি" বলুন', 'success');
+}
+
+// 6. নোটিফিকেশন ফাংশন
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+    }
+}
+
+function sendDailySummary() {
+    if (Notification.permission === 'granted') {
+        const totalDue = getTotalDue();
+        const customers = getCustomers();
+        const dueCount = customers.filter(c => getCustomerBalance(c.customer_id) > 0).length;
+        
+        new Notification('📊 দৈনিক সারাংশ', {
+            body: `${dueCount} জন কাস্টমারের কাছে ${formatCurrency(totalDue)} টাকা বাকি আছে।`,
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23059669" width="100" height="100"/><text x="50" y="70" text-anchor="middle" font-size="60" fill="white">📒</text></svg>'
+        });
+    }
+}
+
+// 7. AI রিপোর্ট এক্সপোর্ট (CSV)
+function exportAIPredictionsReport() {
+    const customers = getCustomers();
+    const aiReport = customers.map(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        const transactions = getTransactions().filter(t => t.customer_id === c.customer_id);
+        const totalPaid = transactions.filter(t => t.type === 'payment').reduce((s, t) => s + t.amount, 0);
+        
+        let riskLevel = 'নিম্ন';
+        if (balance > 50000) riskLevel = 'উচ্চ';
+        else if (balance > 10000) riskLevel = 'মাঝারি';
+        
+        let strategy = 'মাসিক রিমাইন্ডার';
+        if (riskLevel === 'উচ্চ') strategy = 'সাপ্তাহিক ফোন + এসএমএস';
+        else if (riskLevel === 'মাঝারি') strategy = '১৫ দিন পর পর রিমাইন্ডার';
+        
+        return { নাম: c.customer_name, মোবাইল: c.mobile || '-', বাকি: balance, মোট_পরিশোধ: totalPaid, রিস্ক: riskLevel, পরামর্শ: strategy };
+    }).filter(r => r.বাকি > 0);
+    
+    const csvRows = [['নাম', 'মোবাইল', 'বাকি পরিমাণ', 'মোট পরিশোধ', 'রিস্ক লেভেল', 'পরামর্শ']];
+    aiReport.forEach(r => {
+        csvRows.push([r.নাম, r.মোবাইল, r.বাকি, r.মোট_পরিশোধ, r.রিস্ক, r.পরামর্শ]);
+    });
+    
+    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `ai_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    showToast('AI রিপোর্ট ডাউনলোড হয়েছে!', 'success');
+}
+
+// 8. অটো রিমাইন্ডার
+let reminderInterval = null;
+
+function startAutoReminder() {
+    if (reminderInterval) clearInterval(reminderInterval);
+    
+    reminderInterval = setInterval(() => {
+        const customers = getCustomers();
+        const today = new Date().toISOString().split('T')[0];
+        
+        customers.forEach(c => {
+            const balance = getCustomerBalance(c.customer_id);
+            if (balance > 0 && c.next_payment_date && c.next_payment_date <= today) {
+                showToast(`⏰ রিমাইন্ডার: ${c.customer_name} এর ${formatCurrency(balance)} টাকা বাকি আছে!`, 'warning', 5000);
+                playSound('warning');
+            }
+        });
+    }, 24 * 60 * 60 * 1000);
+}
+  
+  // ============================================
+// 🚀 অ্যাডভান্সড এআই টুলস - সব ফাংশন একসাথে
+// ============================================
+
+// 1. প্রগ্রেস বার ফাংশন
+function getProgressBar(customerId) {
+    const balance = getCustomerBalance(customerId);
+    const transactions = getTransactions().filter(t => t.customer_id === customerId && t.type === 'due');
+    const totalGiven = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const recovered = totalGiven - balance;
+    const percentage = totalGiven > 0 ? (recovered / totalGiven) * 100 : 0;
+    
+    return `
+        <div class="mt-2">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                <span>আদায় হয়েছে: ${formatCurrency(recovered)}</span>
+                <span>বাকি: ${formatCurrency(Math.max(0, balance))}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: ${percentage}%"></div>
+            </div>
+            <p class="text-xs text-right text-gray-400 mt-1">${Math.round(percentage)}% সম্পন্ন</p>
+        </div>
+    `;
+}
+
+// 2. পেমেন্ট ক্যালেন্ডার
+function showPaymentCalendar() {
+    const transactions = getTransactions().filter(t => t.type === 'payment');
+    const paymentsByDate = {};
+    
+    transactions.forEach(t => {
+        const date = t.date;
+        if (!paymentsByDate[date]) paymentsByDate[date] = 0;
+        paymentsByDate[date] += t.amount;
+    });
+    
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const startOffset = (firstDay.getDay() + 6) % 7;
+    
+    let calendarHtml = `<div class="grid grid-cols-7 gap-1 text-center text-xs font-bold mb-2 text-gray-600">
+        <span>সোম</span><span>মঙ্গল</span><span>বুধ</span><span>বৃহস্পতি</span><span>শুক্র</span><span>শনি</span><span>রবি</span>
+    </div><div class="grid grid-cols-7 gap-1">`;
+    
+    for (let i = 0; i < startOffset; i++) {
+        calendarHtml += `<div class="h-12 p-1"></div>`;
+    }
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const amount = paymentsByDate[dateStr] || 0;
+        const hasPayment = amount > 0;
+        
+        calendarHtml += `
+            <div class="h-14 p-1 border rounded-lg ${hasPayment ? 'bg-green-50 border-green-300' : 'border-gray-200'}">
+                <div class="text-xs font-medium ${hasPayment ? 'text-green-700' : 'text-gray-500'}">${d}</div>
+                ${hasPayment ? `<div class="text-[10px] text-green-600 font-bold">৳${(amount/1000).toFixed(1)}k</div>` : ''}
+            </div>
+        `;
+    }
+    calendarHtml += `</div>`;
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `<h2 class="text-xl font-bold mb-4">📅 পেমেন্ট ক্যালেন্ডার - ${today.toLocaleString('default', { month: 'long', year: 'numeric' })}</h2>${calendarHtml}<button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>`;
+    modal.classList.remove('hidden');
+}
+
+// 3. মোবাইল ব্যাংকিং অপশন
+function showMobileBankingOptions(amount, customerName, customerId) {
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">💰 ${formatCurrency(amount)} টাকা আদায়ের মাধ্যম</h2>
+        <div class="space-y-3">
+            <button onclick="copyPaymentInfo('bKash', '01881385068', ${amount}, '${customerName}', '${customerId}')" class="w-full bg-pink-500 text-white p-3 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">💝</span>
+                <div class="flex-1 text-left"><p class="font-bold">bKash</p><p class="text-xs opacity-80">মার্চেন্ট: 01881385068</p></div>
+                <span>📋</span>
+            </button>
+            <button onclick="copyPaymentInfo('Nagad', '01881385068', ${amount}, '${customerName}', '${customerId}')" class="w-full bg-orange-500 text-white p-3 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">💛</span>
+                <div class="flex-1 text-left"><p class="font-bold">Nagad</p><p class="text-xs opacity-80">নম্বর: 01881385068</p></div>
+                <span>📋</span>
+            </button>
+            <button onclick="copyPaymentInfo('Rocket', '01881385068', ${amount}, '${customerName}', '${customerId}')" class="w-full bg-blue-500 text-white p-3 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">🚀</span>
+                <div class="flex-1 text-left"><p class="font-bold">Rocket</p><p class="text-xs opacity-80">নম্বর: 01881385068</p></div>
+                <span>📋</span>
+            </button>
+            <button onclick="recordPaymentDirectly(${amount}, '${customerId}')" class="w-full bg-emerald-600 text-white p-3 rounded-xl flex items-center gap-3">
+                <span class="text-2xl">✅</span>
+                <div class="flex-1 text-left"><p class="font-bold">নগদ পেমেন্ট</p><p class="text-xs opacity-80">হাতে নগদ নিলে ক্লিক করুন</p></div>
+                <span>💰</span>
+            </button>
+        </div>
+        <button onclick="closeModal()" class="w-full mt-4 py-2 bg-gray-200 rounded-lg">বন্ধ করুন</button>
+    `;
+    modal.classList.remove('hidden');
+}
+
+function copyPaymentInfo(method, number, amount, customerName, customerId) {
+    const message = `প্রিয় গ্রাহক ${customerName},\n\nআপনার ${formatCurrency(amount)} টাকা পরিশোধ করুন ${method}: ${number}\n\nধন্যবাদ - ${defaultConfig.shop_name}`;
+    navigator.clipboard.writeText(message);
+    showToast(`${method} তথ্য কপি হয়েছে! গ্রাহককে পাঠান`, 'success');
+    playSound('success');
+}
+
+async function recordPaymentDirectly(amount, customerId) {
+    closeModal();
+    const today = new Date().toISOString().split('T')[0];
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    
+    const paymentData = {
+        type: 'payment',
+        customer_id: customerId,
+        customer_name: customer.customer_name,
+        amount: amount,
+        date: today,
+        note: 'মোবাইল ব্যাংকিং এর মাধ্যমে পেমেন্ট',
+        created_at: new Date().toISOString(),
+        datetime: getCurrentDateTime(),
+        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
+    
+    await saveData(paymentData);
+    showToast(`${formatCurrency(amount)} টাকা পেমেন্ট রেকর্ড করা হয়েছে!`, 'success');
+    playSound('cash');
+    renderCurrentView();
+}
+
+// 4. ব্যবসার স্বাস্থ্য সূচক
+function showBusinessHealth() {
+    const totalDue = getTotalDue();
+    const totalSales = getTransactions().filter(t => t.type === 'due').reduce((sum, t) => sum + t.amount, 0);
+    const totalRecovered = getTransactions().filter(t => t.type === 'payment').reduce((sum, t) => sum + t.amount, 0);
+    const dueToSalesRatio = totalSales > 0 ? (totalDue / totalSales) * 100 : 0;
+    const recoveryRate = totalSales > 0 ? (totalRecovered / totalSales) * 100 : 0;
+    
+    let healthStatus = '', healthColor = '', advice = '';
+    if (dueToSalesRatio <= 20) { healthStatus = 'চমৎকার'; healthColor = 'text-green-600'; advice = 'আপনার ব্যবসা খুব সুস্থ। এই ধারা বজায় রাখুন! 🎉'; }
+    else if (dueToSalesRatio <= 40) { healthStatus = 'ভালো'; healthColor = 'text-blue-600'; advice = 'ব্যবসা ভালো যাচ্ছে। নিয়মিত বাকি আদায় করুন। 👍'; }
+    else if (dueToSalesRatio <= 60) { healthStatus = 'সতর্কতা'; healthColor = 'text-yellow-600'; advice = 'বাকির পরিমাণ বাড়ছে। দ্রুত ব্যবস্থা নিন! ⚠️'; }
+    else { healthStatus = 'ঝুঁকিপূর্ণ'; healthColor = 'text-red-600'; advice = 'বিক্রির চেয়ে বাকি বেশি! কালেকশন টিম সক্রিয় করুন! 🔴'; }
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    content.innerHTML = `
+        <h2 class="text-xl font-bold mb-4">📊 ব্যবসার স্বাস্থ্য সূচক</h2>
+        <div class="space-y-4">
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-4 text-center">
+                <p class="text-sm opacity-80">ব্যবসার অবস্থা</p>
+                <p class="text-2xl font-bold ${healthColor}">${healthStatus}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-gray-50 p-3 rounded-xl text-center"><p class="text-xs text-gray-500">বাকি/বিক্রয় অনুপাত</p><p class="text-xl font-bold ${dueToSalesRatio > 40 ? 'text-red-600' : 'text-green-600'}">${dueToSalesRatio.toFixed(1)}%</p></div>
+                <div class="bg-gray-50 p-3 rounded-xl text-center"><p class="text-xs text-gray-500">আদায়ের হার</p><p class="text-xl font-bold text-emerald-600">${recoveryRate.toFixed(1)}%</p></div>
+            </div>
+            <div class="bg-blue-50 p-3 rounded-lg"><p class="font-bold text-blue-800">💡 এআই পরামর্শ</p><p class="text-sm text-gray-700 mt-1">${advice}</p></div>
+            <div class="w-full bg-gray-200 rounded-full h-3"><div class="bg-emerald-500 h-3 rounded-full transition-all" style="width: ${recoveryRate}%"></div></div>
+        </div>
+        <button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
+    `;
+    modal.classList.remove('hidden');
+}
+
+// 5. এক্সেল রিপোর্ট ডাউনলোড
+function downloadExcelReport() {
+    const customers = getCustomers();
+    const reportData = customers.map(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        const totalPaid = getTransactions().filter(t => t.customer_id === c.customer_id && t.type === 'payment').reduce((sum, t) => sum + t.amount, 0);
+        const totalDueGiven = getTransactions().filter(t => t.customer_id === c.customer_id && t.type === 'due').reduce((sum, t) => sum + t.amount, 0);
+        return {
+            'নাম': c.customer_name, 'মোবাইল': c.mobile || '-', 'ঠিকানা': c.address || '-',
+            'মোট বাকি': balance > 0 ? balance : 0, 'মোট অগ্রিম': balance < 0 ? Math.abs(balance) : 0,
+            'মোট দেওয়া': totalDueGiven, 'মোট নেওয়া': totalPaid,
+            'পরবর্তী পেমেন্টের তারিখ': c.next_payment_date || '-', 'স্ট্যাটাস': balance > 0 ? 'বাকি' : balance < 0 ? 'অগ্রিম' : 'শূন্য'
+        };
+    });
+    
+    const headers = Object.keys(reportData[0] || {});
+    const csvRows = [headers.join(',')];
+    reportData.forEach(row => {
+        const values = headers.map(header => `"${String(row[header] || '').replace(/"/g, '""')}"`);
+        csvRows.push(values.join(','));
+    });
+    
+    const blob = new Blob(["\uFEFF" + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.setAttribute('download', `ব্যবসা_রিপোর্ট_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('Excel রিপোর্ট ডাউনলোড হয়েছে!', 'success');
+}
+
+// 6. ডেইলি টার্গেট সেটিং
+let dailyTarget = parseInt(localStorage.getItem('daily_collection_target')) || 0;
+let todayCollection = 0;
+
+function setDailyTarget() {
+    const target = prompt('আজকের কালেকশন টার্গেট কত টাকা? (উদাহরণ: 5000)');
+    if (target && !isNaN(target) && parseInt(target) > 0) {
+        dailyTarget = parseInt(target);
+        localStorage.setItem('daily_collection_target', dailyTarget);
+        showToast(`আজকের টার্গেট সেট: ${formatCurrency(dailyTarget)}`, 'success');
+        updateTargetProgress();
+        playSound('success');
+    } else {
+        showToast('সঠিক টাকার পরিমাণ দিন', 'error');
+    }
+}
+
+function updateTargetProgress() {
+    const today = new Date().toISOString().split('T')[0];
+    todayCollection = getTransactions().filter(t => t.type === 'payment' && t.date === today).reduce((sum, t) => sum + t.amount, 0);
+    const percentage = dailyTarget > 0 ? (todayCollection / dailyTarget) * 100 : 0;
+    const remaining = dailyTarget - todayCollection;
+    
+    const targetContainer = document.getElementById('target-container');
+    if (targetContainer && dailyTarget > 0) {
+        targetContainer.innerHTML = `
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 mb-3">
+                <div class="flex justify-between items-center">
+                    <div><p class="text-xs text-gray-500">আজকের কালেকশন</p><p class="text-lg font-bold ${todayCollection >= dailyTarget ? 'text-green-600' : 'text-emerald-600'}">${formatCurrency(todayCollection)} / ${formatCurrency(dailyTarget)}</p></div>
+                    <button onclick="setDailyTarget()" class="text-xs bg-emerald-600 text-white px-2 py-1 rounded">টার্গেট সেট</button>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="${todayCollection >= dailyTarget ? 'bg-green-500' : 'bg-emerald-500'} h-2 rounded-full transition-all" style="width: ${Math.min(100, percentage)}%"></div></div>
+                ${remaining > 0 ? `<p class="text-xs text-gray-400 mt-1">আরও ${formatCurrency(remaining)} টাকা প্রয়োজন</p>` : '<p class="text-xs text-green-600 mt-1">🎉 টার্গেট পূরণ হয়েছে!</p>'}
+            </div>
+        `;
+    }
+}
+
+// 7. অ্যাপ লক
+let appLockEnabled = localStorage.getItem('app_pin') ? true : false;
+
+function enableAppLock() {
+    const pin = prompt('একটি 4-ডিজিটের পিন দিন:');
+    if (pin && pin.length === 4 && !isNaN(pin)) {
+        localStorage.setItem('app_pin', pin);
+        appLockEnabled = true;
+        showToast('🔒 অ্যাপ লক সক্রিয়! পরবর্তী লগইনে পিন লাগবে', 'success');
+        playSound('success');
+    } else {
+        showToast('4 ডিজিটের পিন দিন', 'error');
+    }
+}
+
+function disableAppLock() {
+    const enteredPin = prompt('বর্তমান পিন দিন:');
+    const savedPin = localStorage.getItem('app_pin');
+    if (enteredPin === savedPin) {
+        localStorage.removeItem('app_pin');
+        appLockEnabled = false;
+        showToast('🔓 অ্যাপ লক নিষ্ক্রিয়!', 'success');
+        playSound('success');
+    } else {
+        showToast('ভুল পিন!', 'error');
+    }
+}
+
+function checkAppLock() {
+    const savedPin = localStorage.getItem('app_pin');
+    if (savedPin && document.getElementById('app')) {
+        const enteredPin = prompt('🔒 অ্যাপ লক সক্রিয়। অ্যাপ খুলতে পিন দিন:');
+        if (enteredPin === savedPin) {
+            document.getElementById('app').style.display = 'flex';
+        } else {
+            alert('ভুল পিন! আবার চেষ্টা করুন।');
+            checkAppLock();
+        }
+    } else if (document.getElementById('app')) {
+        document.getElementById('app').style.display = 'flex';
+    }
+}
+
+// 8. রাতের বেলা অটো ডার্ক মোড
+function autoDarkModeByTime() {
+    const hour = new Date().getHours();
+    if (hour >= 20 || hour < 6) {
+        if (!document.body.classList.contains('dark-mode')) {
+            document.body.classList.add('dark-mode');
+            const darkText = document.getElementById('dark-mode-text');
+            if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+        }
+    } else {
+        if (document.body.classList.contains('dark-mode')) {
+            document.body.classList.remove('dark-mode');
+            const darkText = document.getElementById('dark-mode-text');
+            if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+        }
+    }
+}
+
+// 9. স্মার্ট অ্যালার্ট
+function checkAndAlert() {
+    const customers = getCustomers();
+    const today = new Date().toISOString().split('T')[0];
+    customers.forEach(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        if (balance >= 50000) {
+            showToast(`🚨 গুরুত্বপূর্ণ: ${c.customer_name} এর ${formatCurrency(balance)} টাকা বাকি! দ্রুত যোগাযোগ করুন।`, 'error', 8000);
+            playSound('warning');
+        }
+        if (c.next_payment_date && c.next_payment_date < today && balance > 0) {
+            showToast(`⏰ মেয়াদোত্তীর্ণ: ${c.customer_name} (${c.mobile || 'নম্বর নেই'}) - দয়া করে যোগাযোগ করুন`, 'warning', 6000);
+            playSound('warning');
+        }
+    });
+}
+
+// 10. প্রোফাইলে মোবাইল ব্যাংকিং বাটন
+function showCustomerActions(customerId) {
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    if (!customer) return;
+    const balance = getCustomerBalance(customerId);
+    if (balance > 0) {
+        showMobileBankingOptions(Math.min(balance, 5000), customer.customer_name, customerId);
+    } else {
+        showToast('এই কাস্টমারের কোনো বাকি নেই', 'info');
+    }
+}
+  
+  
   // অ্যাকর্ডিয়ন টগল ফাংশন - ব্যবহারের নিয়মের জন্য
 function toggleRule(ruleId) {
   const content = document.getElementById(ruleId);
@@ -7507,6 +8375,28 @@ initDarkMode();
   }
 }
 
+  // init() ফাংশনের ভিতরে, অন্যদের মতো করে
+setTimeout(() => {
+    showSmartAdvice();
+}, 1000);
+  
+  // AI ফিচার অটো-স্টার্ট
+setTimeout(() => {
+    showAIPredictionWidget();
+    startAutoReminder();
+    requestNotificationPermission();
+}, 2000);
+  
+  // অ্যাডভান্সড টুলস অটো-স্টার্ট
+setTimeout(() => {
+    updateTargetProgress();
+    autoDarkModeByTime();
+    setInterval(checkAndAlert, 60 * 60 * 1000); // প্রতি 1 ঘন্টা
+    setInterval(updateTargetProgress, 30 * 60 * 1000); // প্রতি 30 মিনিট
+    setInterval(autoDarkModeByTime, 60 * 60 * 1000); // প্রতি 1 ঘন্টা
+    checkAppLock();
+}, 2000);
+  
 init();
   </script>
   <!-- নামাজের সময়সূচির মডাল -->
