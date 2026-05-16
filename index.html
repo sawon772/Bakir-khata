@@ -8246,6 +8246,119 @@ function showCustomerActions(customerId) {
     }
 }
   
+  // ============================================
+// ফিক্সড ফাংশন - কাস্টমার হিস্ট্রি ও পেমেন্ট বাটন ঠিক করার জন্য
+// ============================================
+
+// ওভাররাইড করা viewCustomerHistory ফাংশন
+window.viewCustomerHistory = function(customerId) {
+    console.log("✅ viewCustomerHistory called for:", customerId);
+    
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    if (!customer) {
+        showToast('কাস্টমার পাওয়া যায়নি!', 'error');
+        return;
+    }
+    
+    const balance = getCustomerBalance(customerId);
+    const transactions = getTransactions().filter(t => t.customer_id === customerId);
+    transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
+    
+    const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64`;
+    
+    const balanceText = balance > 0 ? 
+        (currentLanguage === 'bn' ? 'বাকি' : 'Due') : 
+        balance < 0 ? 
+        (currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance') : 
+        (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
+    
+    const bgColor = balance > 0 ? 'from-red-500 to-red-600' : balance < 0 ? 'from-yellow-500 to-yellow-600' : 'from-gray-500 to-gray-600';
+    
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    // মডাল কন্টেন্ট তৈরি করা হচ্ছে
+    content.innerHTML = `
+        <div class="max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white pb-2 z-10">
+                <h2 class="text-xl font-bold text-gray-800">📋 ${escapeHtml(customer.customer_name)}</h2>
+                <button onclick="closeModal()" class="text-gray-400 text-2xl hover:text-gray-600">&times;</button>
+            </div>
+            
+            <!-- প্রোফাইল ও ব্যালেন্স সেকশন -->
+            <div class="flex items-center gap-3 mb-4">
+                <div class="relative">
+                    <img src="${customerImage}" class="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" alt="${escapeHtml(customer.customer_name)}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64'">
+                    <button onclick="closeModal(); openImageUploadModal('customer', '${customer.customer_id}')" class="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm hover:bg-emerald-600 cursor-pointer">
+                        📷
+                    </button>
+                </div>
+                <div class="flex-1">
+                    <div class="bg-gradient-to-r ${bgColor} rounded-xl p-4 text-white">
+                        <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
+                        <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
+                        <p class="text-xs mt-1">${balanceText}</p>
+                        ${customer.mobile ? `<p class="text-sm mt-2">📞 <a href="tel:${customer.mobile}" class="hover:underline" onclick="event.stopPropagation()">${customer.mobile}</a></p>` : ''}
+                        ${customer.address ? `<p class="text-sm">📍 ${escapeHtml(customer.address)}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- অ্যাকশন বাটন গ্রুপ - এখানেই পেমেন্ট বাটন আছে! -->
+            <div class="relative mb-4">
+                <div class="action-btns-group flex gap-3">
+                    <button onclick="closeModal(); setTimeout(() => openModal('due', '${customer.customer_id}'), 100);" class="flex-1 action-btn-due bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                        <span>📝</span> ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}
+                    </button>
+                    <button onclick="closeModal(); setTimeout(() => openModal('payment', '${customer.customer_id}'), 100);" class="flex-1 action-btn-payment bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                        <span>💰</span> ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}
+                    </button>
+                </div>
+                <div class="absolute top-0 right-0">
+                    <button onclick="shareCustomerCard('${customer.customer_id}')" class="share-icon-btn w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="${t('share_customer')}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? '📜 লেনদেনের ইতিহাস' : '📜 Transaction History'}</h3>
+            <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
+                ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>` : 
+                    transactions.map(t => `
+                        <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                            <div>
+                                <p class="text-sm font-medium ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
+                                    ${t.type === 'due' ? '📝 ' + (currentLanguage === 'bn' ? 'বাকি' : 'Due') : '💰 ' + (currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment')}
+                                </p>
+                                <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
+                                ${t.note ? `<p class="text-xs text-gray-400 mt-1">📌 ${escapeHtml(t.note)}</p>` : ''}
+                            </div>
+                            <p class="font-bold ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
+                                ${t.type === 'due' ? '+' : '-'}${formatCurrency(t.amount)}
+                            </p>
+                        </div>
+                    `).join('')
+                }
+            </div>
+            
+            <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-all">${currentLanguage === 'bn' ? '🔒 বন্ধ করুন' : '🔒 Close'}</button>
+        </div>
+    `;
+    
+    overlay.classList.remove('hidden');
+    
+    // মডাল বাইরে ক্লিক করলেও বন্ধ হবে
+    overlay.onclick = function(e) {
+        if (e.target === overlay) {
+            closeModal();
+        }
+    };
+};
+
+// নিশ্চিত করুন যে কাস্টমার লিস্ট রেন্ডার করার সময় সঠিক ফাংশন কল হচ্ছে
+console.log("✅ ফিক্সড viewCustomerHistory লোড হয়েছে!");
   
   // অ্যাকর্ডিয়ন টগল ফাংশন - ব্যবহারের নিয়মের জন্য
 function toggleRule(ruleId) {
@@ -8396,6 +8509,14 @@ setTimeout(() => {
     setInterval(autoDarkModeByTime, 60 * 60 * 1000); // প্রতি 1 ঘন্টা
     checkAppLock();
 }, 2000);
+  
+  // ফোর্সড রি-রেন্ডার - নিশ্চিত করতে যে সব কাস্টমার কার্ড আপডেটেড ফাংশন ব্যবহার করছে
+setTimeout(() => {
+    if (currentTab === 'customers' || currentTab === 'advance' || currentTab === 'non-due') {
+        renderCurrentView();
+    }
+    console.log("✅ কাস্টমার লিস্ট রি-রেন্ডার করা হয়েছে");
+}, 500);
   
 init();
   </script>
