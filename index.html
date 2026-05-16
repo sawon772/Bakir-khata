@@ -1472,24 +1472,24 @@
 <div id="target-container" class="max-w-4xl mx-auto w-full px-4 py-2"></div>
     
     <!-- AI প্রেডিকশন উইজেট - Sawon 772 -->
-<div id="ai-widget-container" class="max-w-4xl mx-auto w-full px-4 py-2"></div>
+<div id="ai-widget-container" class="max-w-4xl mx-auto w-full px-4 py-1"></div>
     
-    <!-- স্মার্ট কালেকশন অ্যাডভাইজর সেকশন - Sawon 772 -->
+    <!-- স্মার্ট কালেকশন অ্যাডভাইজর সেকশন - অটো রোটেট সংস্করণ -->
 <div id="smart-advisor-section" class="max-w-4xl mx-auto w-full px-4 py-2 hidden">
-    <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl p-4 shadow-lg border-l-8 border-blue-600">
-        <div class="flex justify-between items-start">
+    <div class="bg-gradient-to-r from-blue-50 to-indigo-100 rounded-2xl p-3 shadow-lg border-l-8 border-blue-600 relative">
+        <button id="close-advisor-btn" onclick="permanentlyCloseAdvisor()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-xl leading-none z-10">✕</button>
+        <div class="flex items-start gap-2 pr-6">
             <div class="flex-1">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="text-2xl">🤖</span>
-                    <h3 class="font-bold text-gray-800">স্মার্ট কালেকশন অ্যাডভাইজর</h3>
-                    <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">AI সাজেশন</span>
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-xl">🤖</span>
+                    <h3 class="font-bold text-gray-800 text-sm">স্মার্ট কালেকশন অ্যাডভাইজর</h3>
+                    <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">AI</span>
                 </div>
                 <div id="advice-message-container">
                     <p class="text-gray-500 text-sm">লোড হচ্ছে...</p>
                 </div>
-                <div id="advice-action-btn" class="mt-3"></div>
+                <div id="advice-action-btn" class="mt-2"></div>
             </div>
-            <button onclick="closeAdvisor()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
         </div>
     </div>
 </div>
@@ -7480,65 +7480,163 @@ if (typeof document !== 'undefined') {
 // স্মার্ট কালেকশন অ্যাডভাইজর ফাংশন - Sawon 772
 // ============================================
 
+// স্মার্ট অ্যাডভাইজর রোটেট করার জন্য ভেরিয়েবল
+let advisorRotateInterval = null;
+let advisorClosedPermanently = false;
+let currentAdviceIndex = 0;
+let eligibleAdviceList = [];
+
 function showSmartAdvice() {
     const customers = getCustomers();
     if (!customers || customers.length === 0) return;
 
-    const eligibleCustomers = customers.filter(c => {
-        const balance = getCustomerBalance(c.customer_id);
-        return balance > 0 && c.mobile && c.mobile.trim() !== '';
-    }).sort((a, b) => getCustomerBalance(b.customer_id) - getCustomerBalance(a.customer_id));
-
-    if (eligibleCustomers.length === 0) {
-        const advisorSection = document.getElementById('smart-advisor-section');
-        if (advisorSection) advisorSection.classList.add('hidden');
+    // চেক করুন - যদি পার্মানেন্টলি বন্ধ করা থাকে তাহাবে আর দেখাবে না
+    if (advisorClosedPermanently) {
+        document.getElementById('smart-advisor-section')?.classList.add('hidden');
         return;
     }
 
-    const topAdvice = eligibleCustomers.slice(0, 3);
-    const advice = topAdvice[Math.floor(Math.random() * topAdvice.length)];
+    // 🔥 পরিবর্তন: এখন মোবাইল নম্বর চেক করা হচ্ছে না - শুধু বাকি থাকলেই হবে
+    eligibleAdviceList = customers.filter(c => {
+        const balance = getCustomerBalance(c.customer_id);
+        return balance > 0;  // ← শুধু বাকি থাকলেই হবে, নম্বর লাগবে না
+    }).sort((a, b) => getCustomerBalance(b.customer_id) - getCustomerBalance(a.customer_id));
+
+    if (eligibleAdviceList.length === 0) {
+        document.getElementById('smart-advisor-section')?.classList.add('hidden');
+        return;
+    }
+
+    // অ্যাডভাইজর সেকশন দেখানো
+    const section = document.getElementById('smart-advisor-section');
+    if (section) section.classList.remove('hidden');
+    
+    // প্রথম পরামর্শ দেখানো
+    currentAdviceIndex = 0;
+    showAdviceByIndex(currentAdviceIndex);
+    
+    // আগের টাইমার বন্ধ করে নতুন শুরু
+    if (advisorRotateInterval) clearInterval(advisorRotateInterval);
+    
+    // ১০ সেকেন্ড পর প্রথম বার দেখাবে, তারপর প্রতি ৫ সেকেন্ড পর রোটেট হবে
+    setTimeout(() => {
+        startAdviceRotation();
+    }, 10000);
+}
+
+function startAdviceRotation() {
+    if (advisorRotateInterval) clearInterval(advisorRotateInterval);
+    
+    advisorRotateInterval = setInterval(() => {
+        // চেক করুন - যদি বন্ধ করা থাকে তাহাবে আর রোটেট করবে না
+        if (advisorClosedPermanently) {
+            if (advisorRotateInterval) clearInterval(advisorRotateInterval);
+            return;
+        }
+        
+        // একের পর এক পরামর্শ দেখানো
+        currentAdviceIndex++;
+        if (currentAdviceIndex >= eligibleAdviceList.length) {
+            currentAdviceIndex = 0; // শেষ হলে আবার শুরু থেকে
+        }
+        showAdviceByIndexAdvanced(currentAdviceIndex);
+        
+    }, 5000); // প্রতি ৫ সেকেন্ড পর
+}
+
+function showAdviceByIndex(index) {
+    if (!eligibleAdviceList[index]) return;
+    
+    const advice = eligibleAdviceList[index];
     const balance = getCustomerBalance(advice.customer_id);
+    const hasMobile = advice.mobile && advice.mobile.trim() !== '';
     
     let message = '';
     let suggestionAmount = 0;
-    let remainingAfterPayment = 0;
+    
+    // নামের সাথে নম্বর দেখানো হবে শুধুমাত্র থাকলে
+    const nameDisplay = hasMobile ? 
+        `${advice.customer_name} (📞 ${advice.mobile})` : 
+        `${advice.customer_name}`;
     
     if (balance >= 10000) {
         suggestionAmount = Math.floor(balance * 0.3);
-        remainingAfterPayment = balance - suggestionAmount;
-        message = `💡 <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) এর কাছে আপনার মোট পাওনা <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। আপনি যদি আজকে <span class="font-bold text-green-600">${formatCurrency(suggestionAmount)}</span> টাকা আদায় করতে পারেন, তাহলে আপনার বাকি কমে দাঁড়াবে <span class="font-bold text-emerald-700">${formatCurrency(remainingAfterPayment)}</span> টাকা।`;
+        message = `💡 <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর কাছে মোট পাওনা <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। আজ ${formatCurrency(suggestionAmount)} টাকা আদায় করুন।`;
     } 
-    else if (balance >= 5000 && balance < 10000) {
+    else if (balance >= 5000) {
         suggestionAmount = Math.floor(balance * 0.5);
-        remainingAfterPayment = balance - suggestionAmount;
-        message = `🎯 <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) কে ফোন দিন। ${formatCurrency(suggestionAmount)} টাকা নিলে আপনার বাকি ${formatCurrency(remainingAfterPayment)} হবে।`;
+        message = `🎯 <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর কাছ থেকে ${formatCurrency(suggestionAmount)} টাকা আদায় করুন।`;
     }
-    else if (balance > 0 && balance < 5000) {
+    else if (balance > 0) {
         suggestionAmount = balance;
-        remainingAfterPayment = 0;
-        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span> (📞 ${advice.mobile}) এর কাছ থেকে সম্পূর্ণ <span class="font-bold text-green-600">${formatCurrency(balance)}</span> টাকা নিয়ে নিন। তাহলে আপনার অ্যাকাউন্ট ক্লিয়ার হবে।`;
+        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর কাছ থেকে সম্পূর্ণ ${formatCurrency(balance)} টাকা নিয়ে নিন।`;
     }
+
+    // কল বাটন শুধু দেখাবে যদি মোবাইল নম্বর থাকে
+    const callButton = hasMobile ? 
+        `<button onclick="window.location.href='tel:${advice.mobile}'" 
+            class="ml-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md inline-flex items-center gap-1">
+            <span>📞</span> কল করুন
+        </button>` : '';
 
     const actionHtml = `
         <button onclick="openPaymentFromAdvice('${advice.customer_id}', ${suggestionAmount})" 
-            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md inline-flex items-center gap-2">
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md inline-flex items-center gap-1">
             <span>💰</span> ${formatCurrency(suggestionAmount)} টাকা আদায় করুন
         </button>
-        <button onclick="window.location.href='tel:${advice.mobile}'" 
-            class="ml-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-md inline-flex items-center gap-2">
-            <span>📞</span> কল করুন
-        </button>
+        ${callButton}
     `;
 
     const messageContainer = document.getElementById('advice-message-container');
     const actionContainer = document.getElementById('advice-action-btn');
-    const advisorSection = document.getElementById('smart-advisor-section');
     
     if (messageContainer) messageContainer.innerHTML = `<p class="text-gray-700 text-sm leading-relaxed">${message}</p>`;
     if (actionContainer) actionContainer.innerHTML = actionHtml;
-    if (advisorSection) advisorSection.classList.remove('hidden');
+    
+    // অ্যানিমেশন এফেক্ট
+    const section = document.getElementById('smart-advisor-section');
+    if (section) {
+        section.classList.add('animate-pulse');
+        setTimeout(() => section.classList.remove('animate-pulse'), 500);
+    }
+    
+    // সাউন্ড বন্ধ রাখতে চাইলে এই লাইনটি কমেন্ট বা ডিলিট রাখুন
+    // if (typeof playSound === 'function') playSound('success');
 }
 
+// পার্মানেন্টলি অ্যাডভাইজর বন্ধ করা (✕ বাটনে)
+function permanentlyCloseAdvisor() {
+    advisorClosedPermanently = true;
+    
+    // টাইমার বন্ধ করা
+    if (advisorRotateInterval) {
+        clearInterval(advisorRotateInterval);
+        advisorRotateInterval = null;
+    }
+    
+    // সেকশন লুকানো
+    const section = document.getElementById('smart-advisor-section');
+    if (section) section.classList.add('hidden');
+    
+    // লোকাল স্টোরেজে সেভ করে রাখা (যাতে পেজ রিলোড না হওয়া পর্যন্ত না আসে)
+    sessionStorage.setItem('advisor_closed', 'true');
+    
+    showToast(currentLanguage === 'bn' ? 'অ্যাডভাইজর বন্ধ করা হয়েছে। পেজ রিলোড দিলে আবার আসবে।' : 'Advisor closed. Will reappear on page reload.', 'info', 3000);
+}
+
+// অ্যাপ রিলোড/লোড হওয়ার সময় চেক করা
+function resetAdvisorOnLoad() {
+    // সেশন স্টোরেজ চেক করা - যদি এই সেশনে বন্ধ করা থাকে তাহাবে শুরু করবে না
+    const wasClosed = sessionStorage.getItem('advisor_closed');
+    if (wasClosed === 'true') {
+        advisorClosedPermanently = true;
+        sessionStorage.removeItem('advisor_closed'); // একবার রিলোড দিলে আবার আসবে
+    } else {
+        advisorClosedPermanently = false;
+    }
+}
+
+// openPaymentFromAdvice ফাংশন আপডেট করা (ইতিমধ্যে থাকলে আপডেট করুন)
 function openPaymentFromAdvice(customerId, suggestedAmount) {
     const customer = getCustomers().find(c => c.customer_id === customerId);
     if (!customer) return;
@@ -7558,11 +7656,175 @@ function openPaymentFromAdvice(customerId, suggestedAmount) {
     
     if (typeof playSound === 'function') playSound('cash');
 }
+  
+  // ============================================
+// 🤖 অ্যাডভান্সড এআই ফিচারস - স্মার্টার ভার্সন
+// ============================================
 
-function closeAdvisor() {
-    const advisorSection = document.getElementById('smart-advisor-section');
-    if (advisorSection) advisorSection.classList.add('hidden');
+// 1. কাস্টমারের পেমেন্ট বিহেভিয়ার অ্যানালাইসিস
+function analyzeCustomerBehavior(customerId) {
+    const transactions = getTransactions().filter(t => t.customer_id === customerId);
+    const payments = transactions.filter(t => t.type === 'payment');
+    const dues = transactions.filter(t => t.type === 'due');
+    
+    if (payments.length === 0) {
+        return {
+            riskLevel: 'high',
+            avgPaymentGap: 999,
+            reliability: 'নতুন কাস্টমার, এখনো পেমেন্ট করেনি',
+            bestContactDay: 'শনিবার বা রবিবার',
+            suggestedAction: 'প্রথমে ছোট পরিমাণে বাকি দিন, সম্পর্ক তৈরি করুন'
+        };
+    }
+    
+    // পেমেন্টের গড় ব্যবধান বের করা
+    let gaps = [];
+    let lastDate = null;
+    payments.forEach(p => {
+        if (lastDate) {
+            const gap = (new Date(p.date) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+            gaps.push(gap);
+        }
+        lastDate = p.date;
+    });
+    
+    const avgGap = gaps.length > 0 ? gaps.reduce((a,b) => a+b,0) / gaps.length : 0;
+    
+    // রিস্ক লেভেল নির্ধারণ
+    let riskLevel = 'low';
+    let reliability = '';
+    let bestContactDay = 'মঙ্গলবার বা বুধবার';
+    let suggestedAction = '';
+    
+    const totalDue = getCustomerBalance(customerId);
+    const totalPaid = payments.reduce((sum, p) => sum + p.amount, 0);
+    const paymentRate = totalPaid > 0 ? (totalPaid / (totalPaid + totalDue)) * 100 : 0;
+    
+    if (avgGap <= 15 && paymentRate > 50) {
+        riskLevel = 'low';
+        reliability = 'অত্যন্ত নির্ভরযোগ্য - সময়মতো পেমেন্ট করে';
+        bestContactDay = 'শুক্রবার সকালে';
+        suggestedAction = 'এই কাস্টমারকে আরও পণ্য অফার করুন, সম্পর্ক ভালো';
+    } 
+    else if (avgGap <= 30 && paymentRate > 30) {
+        riskLevel = 'medium';
+        reliability = 'মাঝারি নির্ভরযোগ্য - কখনো দেরি করে';
+        bestContactDay = 'সোমবার বা বৃহস্পতিবার সন্ধ্যায়';
+        suggestedAction = 'নিয়মিত রিমাইন্ডার দিন, ১৫ দিন পর পর ফোন করুন';
+    } 
+    else {
+        riskLevel = 'high';
+        reliability = 'ঝুঁকিপূর্ণ - পেমেন্টে অনিয়মিত';
+        bestContactDay = 'শনিবার দুপুরে (অফিস সময়ের বাইরে)';
+        suggestedAction = 'সাপ্তাহিক ২ বার ফোন করুন, ছোট কিস্তির ব্যবস্থা নিন';
+    }
+    
+    // ওভারডিউ চেক
+    const today = new Date().toISOString().split('T')[0];
+    const customer = getCustomers().find(c => c.customer_id === customerId);
+    if (customer?.next_payment_date && customer.next_payment_date < today && totalDue > 0) {
+        riskLevel = 'critical';
+        reliability = '🚨 মেয়াদোত্তীর্ণ! জরুরি ভিত্তিতে যোগাযোগ করুন';
+        suggestedAction = 'আজই ফোন করুন! জরিমানা বা কিস্তির অপশন দিন';
+    }
+    
+    return {
+        riskLevel,
+        avgPaymentGap: avgGap,
+        reliability,
+        bestContactDay,
+        suggestedAction,
+        paymentRate: Math.round(paymentRate),
+        totalPaid,
+        totalDue
+    };
 }
+
+// 2. আপগ্রেডেড স্মার্ট অ্যাডভাইজার (AI বিহেভিয়ার অ্যানালাইসিস সহ)
+function showAdviceByIndexAdvanced(index) {
+    if (!eligibleAdviceList[index]) return;
+    
+    const advice = eligibleAdviceList[index];
+    const balance = getCustomerBalance(advice.customer_id);
+    const hasMobile = advice.mobile && advice.mobile.trim() !== '';
+    const behavior = analyzeCustomerBehavior(advice.customer_id);
+    
+    // রিস্ক লেভেল অনুযায়ী রঙ ও ইমোজি
+    const riskEmoji = {
+        'low': '🟢',
+        'medium': '🟡', 
+        'high': '🟠',
+        'critical': '🔴'
+    };
+    
+    const riskText = {
+        'low': 'নিরাপদ',
+        'medium': 'সতর্ক',
+        'high': 'ঝুঁকিপূর্ণ',
+        'critical': '🚨 জরুরি'
+    };
+    
+    let suggestionAmount = 0;
+    let message = '';
+    
+    // ব্যালেন্স ও বিহেভিয়ার অনুযায়ী সাজেশন
+    if (behavior.riskLevel === 'critical') {
+        suggestionAmount = balance;
+        message = `🚨 <span class="font-bold text-red-700">জরুরি!</span> <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর <span class="font-bold text-red-600">${formatCurrency(balance)}</span> টাকা <span class="font-bold text-red-600">মেয়াদোত্তীর্ণ!</span> আজই যোগাযোগ করুন।`;
+    }
+    else if (balance >= 50000) {
+        suggestionAmount = Math.floor(balance * 0.4);
+        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} - বাকি <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। <span class="font-bold">${behavior.reliability}</span> ${behavior.suggestedAction} আজ ${formatCurrency(suggestionAmount)} টাকা নেওয়ার চেষ্টা করুন।`;
+    }
+    else if (balance >= 20000) {
+        suggestionAmount = Math.floor(balance * 0.6);
+        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} (পেমেন্ট রেট: ${behavior.paymentRate}%)। ${behavior.suggestedAction} ${formatCurrency(suggestionAmount)} টাকা আদায় করুন।`;
+    }
+    else if (balance > 0) {
+        suggestionAmount = balance;
+        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর বাকি <span class="font-bold text-green-600">${formatCurrency(balance)}</span> টাকা। ${behavior.reliability} ${behavior.suggestedAction}`;
+    }
+    
+    // কল করার সেরা সময় দেখানো
+    const bestTimeNote = behavior.riskLevel !== 'critical' && balance > 0 ? 
+        `<div class="text-xs text-purple-600 mt-1">⏰ ${behavior.bestContactDay} যোগাযোগের সেরা সময়</div>` : '';
+    
+    const callButton = hasMobile ? 
+        `<button onclick="window.location.href='tel:${advice.mobile}'" 
+            class="ml-2 bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md inline-flex items-center gap-1">
+            <span>📞</span> কল করুন
+        </button>` : '';
+
+    const actionHtml = `
+        <button onclick="openPaymentFromAdvice('${advice.customer_id}', ${suggestionAmount})" 
+            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all shadow-md inline-flex items-center gap-1">
+            <span>💰</span> ${formatCurrency(suggestionAmount)} টাকা আদায় করুন
+        </button>
+        ${callButton}
+    `;
+
+    const messageContainer = document.getElementById('advice-message-container');
+    const actionContainer = document.getElementById('advice-action-btn');
+    
+    if (messageContainer) {
+        messageContainer.innerHTML = `
+            <p class="text-gray-700 text-sm leading-relaxed">${message}</p>
+            ${bestTimeNote}
+        `;
+    }
+    if (actionContainer) actionContainer.innerHTML = actionHtml;
+    
+    // অ্যানিমেশন এফেক্ট
+    const section = document.getElementById('smart-advisor-section');
+    if (section) {
+        section.classList.add('animate-pulse');
+        setTimeout(() => section.classList.remove('animate-pulse'), 500);
+    }
+}
+
+// 3. পুরানো showAdviceByIndex কে আপগ্রেড করা
+// আপনার বিদ্যমান showAdviceByIndex ফাংশনটিকে এই লাইনটি দিয়ে রিপ্লেস করুন:
+// showAdviceByIndex(currentAdviceIndex);  ->  showAdviceByIndexAdvanced(currentAdviceIndex);
   
  // ============================================
 // 🤖 এআই পাওয়ারড টুলস - সমস্ত ফাংশন একসাথে
@@ -7571,19 +7833,13 @@ function closeAdvisor() {
 // 1. AI প্রেডিকশন উইজেট
 function showAIPredictionWidget() {
     const customers = getCustomers();
-    let highRisk = 0, mediumRisk = 0, lowRisk = 0;
     let totalDueThisMonth = 0;
     
     customers.forEach(c => {
         const balance = getCustomerBalance(c.customer_id);
         if (balance > 0) {
-            if (balance > 50000) highRisk++;
-            else if (balance > 10000) mediumRisk++;
-            else lowRisk++;
-            
             const daysSinceLastPayment = c.last_payment_date ? 
                 (new Date() - new Date(c.last_payment_date)) / (1000 * 60 * 60 * 24) : 999;
-            
             if (daysSinceLastPayment > 30) totalDueThisMonth += balance * 0.5;
             else if (daysSinceLastPayment > 15) totalDueThisMonth += balance * 0.3;
         }
@@ -7592,18 +7848,9 @@ function showAIPredictionWidget() {
     const container = document.getElementById('ai-widget-container');
     if (container) {
         container.innerHTML = `
-            <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl p-3 shadow-lg">
-                <div class="flex justify-between items-center flex-wrap gap-2">
-                    <div>
-                        <p class="text-xs opacity-70">🤖 এআই প্রেডিকশন</p>
-                        <p class="text-sm font-bold">এই মাসে আদায় হতে পারে: ${formatCurrency(Math.round(totalDueThisMonth))}</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-xs bg-red-500 px-2 py-1 rounded-full">🔴 হাই ${highRisk}</span>
-                        <span class="text-xs bg-yellow-500 px-2 py-1 rounded-full">🟡 মিড ${mediumRisk}</span>
-                        <span class="text-xs bg-green-500 px-2 py-1 rounded-full">🟢 লো ${lowRisk}</span>
-                    </div>
-                </div>
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl px-3 py-1.5 shadow-lg text-sm flex justify-between items-center">
+                <span>🤖 <span class="font-bold">এআই পূর্বাভাস:</span> এই মাসে আদায় হতে পারে ${formatCurrency(Math.round(totalDueThisMonth))}</span>
+                <button onclick="showPredictionChart()" class="text-xs bg-white/20 px-2 py-0.5 rounded-full hover:bg-white/30">📈 বিস্তারিত</button>
             </div>
         `;
     }
@@ -8492,6 +8739,8 @@ initDarkMode();
 setTimeout(() => {
     showSmartAdvice();
 }, 1000);
+  
+  resetAdvisorOnLoad();
   
   // AI ফিচার অটো-স্টার্ট
 setTimeout(() => {
