@@ -7749,6 +7749,28 @@ function showAdviceByIndexAdvanced(index) {
     const hasMobile = advice.mobile && advice.mobile.trim() !== '';
     const behavior = analyzeCustomerBehavior(advice.customer_id);
     
+    // ========== লং টাইম নো পেমেন্ট চেক - সঠিকভাবে ==========
+    const paymentTransactions = getTransactions().filter(t => 
+        t.customer_id === advice.customer_id && t.type === 'payment'
+    );
+    
+    let daysSinceLastPayment = null;
+    let hasNeverPaid = paymentTransactions.length === 0;
+    let lastPaymentDateText = '';
+    
+    if (!hasNeverPaid) {
+        paymentTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const lastPaymentDate = new Date(paymentTransactions[0].date);
+        const today = new Date();
+        daysSinceLastPayment = Math.floor((today - lastPaymentDate) / (1000 * 60 * 60 * 24));
+        lastPaymentDateText = `শেষ পেমেন্ট: ${formatDate(paymentTransactions[0].date)} (${daysSinceLastPayment} দিন আগে)`;
+    } else {
+        // কখনো পেমেন্ট করেনি - কত দিন আগে কাস্টমার যোগ হয়েছে সেটা দেখাবে
+        const createdDate = new Date(advice.created_at || advice.datetime || advice.date || new Date());
+        daysSinceLastPayment = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+        lastPaymentDateText = `কখনো পেমেন্ট করেনি (যোগ হয়েছে ${daysSinceLastPayment} দিন আগে)`;
+    }
+    
     // রিস্ক লেভেল অনুযায়ী রঙ ও ইমোজি
     const riskEmoji = {
         'low': '🟢',
@@ -7757,37 +7779,57 @@ function showAdviceByIndexAdvanced(index) {
         'critical': '🔴'
     };
     
-    const riskText = {
-        'low': 'নিরাপদ',
-        'medium': 'সতর্ক',
-        'high': 'ঝুঁকিপূর্ণ',
-        'critical': '🚨 জরুরি'
-    };
-    
     let suggestionAmount = 0;
     let message = '';
     
-    // ব্যালেন্স ও বিহেভিয়ার অনুযায়ী সাজেশন
-    if (behavior.riskLevel === 'critical') {
+    // ========== পেমেন্ট না করার সময় অনুযায়ী সাজেশন ==========
+    if (daysSinceLastPayment > 60 && balance > 0) {
+        suggestionAmount = Math.floor(balance * 0.3);
+        message = `⏰🚨 <span class="font-bold text-red-700">জরুরি সতর্কতা!</span> <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} <span class="font-bold text-red-600">${daysSinceLastPayment} দিন ধরে</span> কোনো পেমেন্ট করেনি! বাকি <span class="font-bold text-red-600">${formatCurrency(balance)}</span> টাকা। আজই যোগাযোগ করুন!`;
+    }
+    else if (daysSinceLastPayment > 30 && balance > 0) {
+        suggestionAmount = Math.floor(balance * 0.5);
+        message = `⏰ <span class="font-bold text-orange-700">${daysSinceLastPayment} দিন ধরে পেমেন্ট নেই!</span> <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} - বাকি <span class="font-bold text-red-600">${formatCurrency(balance)}</span> টাকা। দ্রুত যোগাযোগ করুন।`;
+    }
+    else if (daysSinceLastPayment > 15 && balance > 0) {
+        suggestionAmount = Math.floor(balance * 0.7);
+        message = `⚠️ <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} <span class="font-bold text-yellow-600">${daysSinceLastPayment} দিন ধরে পেমেন্ট দেয়নি</span>। বাকি ${formatCurrency(balance)} টাকা। ${formatCurrency(suggestionAmount)} টাকা আদায়ের চেষ্টা করুন।`;
+    }
+    else if (behavior.riskLevel === 'critical') {
         suggestionAmount = balance;
-        message = `🚨 <span class="font-bold text-red-700">জরুরি!</span> <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর <span class="font-bold text-red-600">${formatCurrency(balance)}</span> টাকা <span class="font-bold text-red-600">মেয়াদোত্তীর্ণ!</span> আজই যোগাযোগ করুন।`;
+        message = `🔴 <span class="font-bold text-red-700">মেয়াদোত্তীর্ণ!</span> <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর ${formatCurrency(balance)} টাকা। আজই যোগাযোগ করুন।`;
     }
     else if (balance >= 50000) {
         suggestionAmount = Math.floor(balance * 0.4);
-        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} - বাকি <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। <span class="font-bold">${behavior.reliability}</span> ${behavior.suggestedAction} আজ ${formatCurrency(suggestionAmount)} টাকা নেওয়ার চেষ্টা করুন।`;
+        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} - বাকি <span class="font-bold text-red-600">${formatCurrency(balance)}</span>। আজ ${formatCurrency(suggestionAmount)} টাকা নেওয়ার চেষ্টা করুন।`;
     }
     else if (balance >= 20000) {
         suggestionAmount = Math.floor(balance * 0.6);
-        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} (পেমেন্ট রেট: ${behavior.paymentRate}%)। ${behavior.suggestedAction} ${formatCurrency(suggestionAmount)} টাকা আদায় করুন।`;
+        message = `${riskEmoji[behavior.riskLevel]} <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} (পেমেন্ট রেট: ${behavior.paymentRate}%)। ${formatCurrency(suggestionAmount)} টাকা আদায় করুন।`;
     }
     else if (balance > 0) {
         suggestionAmount = balance;
-        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর বাকি <span class="font-bold text-green-600">${formatCurrency(balance)}</span> টাকা। ${behavior.reliability} ${behavior.suggestedAction}`;
+        message = `✅ <span class="font-bold text-blue-700">${advice.customer_name}</span>${hasMobile ? ` (📞 ${advice.mobile})` : ''} এর বাকি ${formatCurrency(balance)} টাকা।`;
     }
     
-    // কল করার সেরা সময় দেখানো
-    const bestTimeNote = behavior.riskLevel !== 'critical' && balance > 0 ? 
-        `<div class="text-xs text-purple-600 mt-1">⏰ ${behavior.bestContactDay} যোগাযোগের সেরা সময়</div>` : '';
+    // নোটিফিকেশন মেসেজ (সঠিক দিন দেখাবে)
+    let warningNote = '';
+    if (daysSinceLastPayment > 60) {
+        warningNote = `<div class="text-xs text-red-600 mt-1 font-bold">⚠️ ${daysSinceLastPayment} দিন ধরে পেমেন্ট নেই! জরুরি ভিত্তিতে যোগাযোগ করুন</div>`;
+    } else if (daysSinceLastPayment > 30) {
+        warningNote = `<div class="text-xs text-orange-600 mt-1">⏰ ${daysSinceLastPayment} দিন ধরে পেমেন্ট নেই। দ্রুত ফোন দিন</div>`;
+    } else if (daysSinceLastPayment > 15) {
+        warningNote = `<div class="text-xs text-yellow-600 mt-1">⚠️ ${daysSinceLastPayment} দিন ধরে পেমেন্ট দেয়নি। রিমাইন্ডার দিন</div>`;
+    } else if (hasNeverPaid) {
+        warningNote = `<div class="text-xs text-blue-600 mt-1">🆕 নতুন কাস্টমার, এখনো পেমেন্ট করেনি</div>`;
+    } else {
+        warningNote = `<div class="text-xs text-purple-600 mt-1">⏰ ${behavior.bestContactDay} যোগাযোগের সেরা সময়</div>`;
+    }
+    
+    // শেষ পেমেন্টের তথ্য দেখানো (যদি থাকে)
+    const lastPaymentInfo = !hasNeverPaid ? 
+        `<div class="text-xs text-gray-500 mt-0.5">📅 ${lastPaymentDateText}</div>` : 
+        `<div class="text-xs text-gray-500 mt-0.5">📅 ${lastPaymentDateText}</div>`;
     
     const callButton = hasMobile ? 
         `<button onclick="window.location.href='tel:${advice.mobile}'" 
@@ -7809,7 +7851,8 @@ function showAdviceByIndexAdvanced(index) {
     if (messageContainer) {
         messageContainer.innerHTML = `
             <p class="text-gray-700 text-sm leading-relaxed">${message}</p>
-            ${bestTimeNote}
+            ${lastPaymentInfo}
+            ${warningNote}
         `;
     }
     if (actionContainer) actionContainer.innerHTML = actionHtml;
@@ -7821,11 +7864,6 @@ function showAdviceByIndexAdvanced(index) {
         setTimeout(() => section.classList.remove('animate-pulse'), 500);
     }
 }
-
-// 3. পুরানো showAdviceByIndex কে আপগ্রেড করা
-// আপনার বিদ্যমান showAdviceByIndex ফাংশনটিকে এই লাইনটি দিয়ে রিপ্লেস করুন:
-// showAdviceByIndex(currentAdviceIndex);  ->  showAdviceByIndexAdvanced(currentAdviceIndex);
-  
  // ============================================
 // 🤖 এআই পাওয়ারড টুলস - সমস্ত ফাংশন একসাথে
 // ============================================
