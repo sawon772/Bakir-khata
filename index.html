@@ -7873,25 +7873,95 @@ function showAdviceByIndexAdvanced(index) {
 
 // 1. AI প্রেডিকশন উইজেট
 function showAIPredictionWidget() {
-    const customers = getCustomers();
-    let totalDueThisMonth = 0;
+    // সরাসরি allData থেকে কাস্টমার বের করুন
+    const customers = allData.filter(item => item.type === 'customer');
+    let totalPredictedCollection = 0;
+    let highRiskCount = 0;
+    let mediumRiskCount = 0;
+    let lowRiskCount = 0;
     
-    customers.forEach(c => {
-        const balance = getCustomerBalance(c.customer_id);
-        if (balance > 0) {
-            const daysSinceLastPayment = c.last_payment_date ? 
-                (new Date() - new Date(c.last_payment_date)) / (1000 * 60 * 60 * 24) : 999;
-            if (daysSinceLastPayment > 30) totalDueThisMonth += balance * 0.5;
-            else if (daysSinceLastPayment > 15) totalDueThisMonth += balance * 0.3;
+    console.log('মোট কাস্টমার:', customers.length); // ডিবাগ করার জন্য
+    
+    if (customers.length === 0) {
+        const container = document.getElementById('ai-widget-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-xl px-3 py-1.5 shadow-lg text-sm flex justify-between items-center">
+                    <span>🤖 <span class="font-bold">এআই পূর্বাভাস:</span> কোনো কাস্টমার নেই</span>
+                    <button onclick="showPredictionChart()" class="text-xs bg-white/20 px-2 py-0.5 rounded-full hover:bg-white/30">📈 বিস্তারিত</button>
+                </div>
+            `;
         }
-    });
+        return;
+    }
+    
+    for (const customer of customers) {
+        const balance = getCustomerBalance(customer.customer_id);
+        if (balance <= 0) continue;
+        
+        // শেষ পেমেন্টের তারিখ বের করা
+        const paymentTransactions = allData.filter(t => 
+            t.customer_id === customer.customer_id && t.type === 'payment'
+        );
+        
+        let riskLevel = 'low';
+        
+        if (paymentTransactions.length === 0) {
+            const createdDate = new Date(customer.created_at || customer.datetime || customer.date || new Date());
+            const daysSinceCreated = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysSinceCreated > 60) riskLevel = 'high';
+            else if (daysSinceCreated > 30) riskLevel = 'medium';
+            else riskLevel = 'low';
+        } else {
+            paymentTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const lastPaymentDate = new Date(paymentTransactions[0].date);
+            const daysSinceLastPayment = Math.floor((new Date() - lastPaymentDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysSinceLastPayment > 60) riskLevel = 'high';
+            else if (daysSinceLastPayment > 30) riskLevel = 'medium';
+            else riskLevel = 'low';
+        }
+        
+        if (riskLevel === 'high') {
+            highRiskCount++;
+            totalPredictedCollection += balance * 0.2;
+        } else if (riskLevel === 'medium') {
+            mediumRiskCount++;
+            totalPredictedCollection += balance * 0.5;
+        } else {
+            lowRiskCount++;
+            totalPredictedCollection += balance * 0.8;
+        }
+    }
+    
+    if (highRiskCount === 0 && mediumRiskCount === 0 && lowRiskCount === 0) {
+        const container = document.getElementById('ai-widget-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl px-3 py-1.5 shadow-lg text-sm flex justify-between items-center">
+                    <span>🤖 <span class="font-bold">এআই পূর্বাভাস:</span> 🎉 কোনো বাকি কাস্টমার নেই!</span>
+                    <button onclick="showPredictionChart()" class="text-xs bg-white/20 px-2 py-0.5 rounded-full hover:bg-white/30">📈 বিস্তারিত</button>
+                </div>
+            `;
+        }
+        return;
+    }
     
     const container = document.getElementById('ai-widget-container');
     if (container) {
         container.innerHTML = `
-            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl px-3 py-1.5 shadow-lg text-sm flex justify-between items-center">
-                <span>🤖 <span class="font-bold">এআই পূর্বাভাস:</span> এই মাসে আদায় হতে পারে ${formatCurrency(Math.round(totalDueThisMonth))}</span>
-                <button onclick="showPredictionChart()" class="text-xs bg-white/20 px-2 py-0.5 rounded-full hover:bg-white/30">📈 বিস্তারিত</button>
+            <div class="bg-gradient-to-r from-gray-900 to-gray-800 text-white rounded-xl px-3 py-1.5 shadow-lg text-sm flex justify-between items-center">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span>🤖 <span class="font-bold">এআই পূর্বাভাস:</span></span>
+                    <span class="font-bold text-emerald-300">${formatCurrency(Math.round(totalPredictedCollection))}</span>
+                    <div class="flex gap-1">
+                        <span class="text-xs bg-red-500/50 px-1.5 py-0.5 rounded-full">🔴 ${highRiskCount}</span>
+                        <span class="text-xs bg-yellow-500/50 px-1.5 py-0.5 rounded-full">🟡 ${mediumRiskCount}</span>
+                        <span class="text-xs bg-green-500/50 px-1.5 py-0.5 rounded-full">🟢 ${lowRiskCount}</span>
+                    </div>
+                </div>
+                <button onclick="showPredictionChart()" class="text-xs bg-white/20 px-2 py-0.5 rounded-full hover:bg-white/30 whitespace-nowrap ml-2">📈 বিস্তারিত</button>
             </div>
         `;
     }
@@ -8027,30 +8097,44 @@ function showCollectionLeaderboard() {
 
 // 4. ভবিষ্যৎ পূর্বাভাস চার্ট
 function showPredictionChart() {
-    const transactions = getTransactions();
+    // allData থেকে পেমেন্ট ট্রানজেকশন বের করা
+    const transactions = allData.filter(t => t.type === 'payment');
     const monthlyData = {};
     
+    // গত 6 মাসের ডাটা সংগ্রহ
     for (let i = 0; i < 6; i++) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
         const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        const monthName = date.toLocaleString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' });
         
         let monthlyPayment = 0;
         transactions.forEach(t => {
-            if (t.type === 'payment' && t.date.startsWith(monthKey)) {
+            const transDate = new Date(t.date);
+            if (transDate.getFullYear() === date.getFullYear() && transDate.getMonth() === date.getMonth()) {
                 monthlyPayment += t.amount;
             }
         });
-        monthlyData[monthKey] = monthlyPayment;
+        monthlyData[monthKey] = { amount: monthlyPayment, name: monthName };
     }
     
-    const values = Object.values(monthlyData).reverse();
-    const trend = values.length > 1 ? (values[values.length-1] - values[0]) / (values.length-1) : 0;
+    const values = Object.values(monthlyData).map(v => v.amount);
+    const monthNames = Object.values(monthlyData).map(v => v.name).reverse();
+    const amounts = values.reverse();
     
+    // ট্রেন্ড ক্যালকুলেশন
+    let trend = 0;
+    if (amounts.length > 1) {
+        const last6MonthAvg = amounts.slice(0, 3).reduce((a,b) => a+b,0) / 3;
+        const first6MonthAvg = amounts.slice(3, 6).reduce((a,b) => a+b,0) / 3;
+        trend = last6MonthAvg - first6MonthAvg;
+    }
+    
+    // ভবিষ্যৎ 6 মাসের প্রেডিকশন
     const next6Months = [];
-    let lastValue = values[values.length-1];
+    let lastValue = amounts[amounts.length - 1] || 0;
     for (let i = 1; i <= 6; i++) {
-        lastValue += trend;
+        lastValue += trend / 2; // ধীরে ধীরে পরিবর্তন
         next6Months.push(Math.max(0, Math.round(lastValue)));
     }
     
@@ -8058,23 +8142,40 @@ function showPredictionChart() {
     const content = document.getElementById('modal-content');
     
     content.innerHTML = `
-        <h2 class="text-xl font-bold mb-4">📈 ভবিষ্যৎ আয়ের পূর্বাভাস (AI)</h2>
-        <div class="space-y-3">
-            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-4">
-                <p class="text-sm opacity-90">প্রক্ষিত প্রবৃদ্ধি</p>
-                <p class="text-2xl font-bold">${trend > 0 ? '+' : ''}${Math.round(trend)} টাকা/মাস</p>
+        <div class="max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
+                <h2 class="text-xl font-bold text-gray-800">📈 ভবিষ্যৎ আয়ের পূর্বাভাস (AI)</h2>
+                <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
             </div>
             
-            <div class="space-y-2">
-                ${next6Months.map((amount, i) => `
+            <div class="bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl p-4 mb-4">
+                <p class="text-sm opacity-90">প্রক্ষিত মাসিক প্রবৃদ্ধি</p>
+                <p class="text-2xl font-bold">${trend > 0 ? '+' : ''}${Math.round(trend)} টাকা</p>
+                <p class="text-xs opacity-70 mt-1">গত 6 মাসের তুলনায়</p>
+            </div>
+            
+            <div class="space-y-2 mb-4">
+                <p class="font-medium text-gray-700">📊 গত 6 মাসের পেমেন্ট প্রবণতা:</p>
+                ${amounts.map((amount, i) => `
                     <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg">
-                        <span class="text-sm">${i+1} মাস পরে</span>
+                        <span class="text-sm">${monthNames[i]}</span>
                         <span class="font-bold text-emerald-600">${formatCurrency(amount)}</span>
                     </div>
                 `).join('')}
             </div>
+            
+            <div class="border-t pt-3">
+                <p class="font-medium text-gray-700 mb-2">🔮 আগামী 6 মাসের পূর্বাভাস:</p>
+                ${next6Months.map((amount, i) => `
+                    <div class="flex justify-between items-center p-2 bg-blue-50 rounded-lg mb-1">
+                        <span class="text-sm">${i+1} মাস পরে</span>
+                        <span class="font-bold text-blue-600">${formatCurrency(amount)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            
+            <button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
         </div>
-        <button onclick="closeModal()" class="w-full mt-4 py-2 bg-emerald-600 text-white rounded-lg">বন্ধ করুন</button>
     `;
     
     modal.classList.remove('hidden');
