@@ -3188,21 +3188,29 @@ function toggleDarkMode() {
 
 // পেজ লোডে ডার্ক মোড চেক করা
 function initDarkMode() {
-  const savedDarkMode = localStorage.getItem('dark_mode');
-  if (savedDarkMode === 'true') {
-    document.body.classList.add('dark-mode');
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastAskedDate = localStorage.getItem('dark_mode_asked_date');
+    const userNightChoice = localStorage.getItem('night_dark_mode_choice');
+    const currentHour = new Date().getHours();
+    const isNightTime = (currentHour >= 20 || currentHour < 6);
     
-    // বাটন UI আপডেট
-    const darkBtn = document.getElementById('dark-mode-btn');
-    const darkIcon = document.getElementById('dark-mode-icon');
-    const darkText = document.getElementById('dark-mode-text');
-    
-    if (darkBtn) {
-      darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-indigo-600 text-white';
-      if (darkIcon) darkIcon.textContent = '☀️';
-      if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    if (isNightTime && lastAskedDate === todayStr && userNightChoice === 'no') {
+        // ইউজার NO বলেছে - লাইট মোডেই থাকবে
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('dark_mode', 'false');
+        updateDarkModeButtonUI(false);
+        return;
     }
-  }
+    
+    // বাকি সব ক্ষেত্রে সেভ করা সেটিং অনুসরণ করবে
+    const savedDarkMode = localStorage.getItem('dark_mode');
+    if (savedDarkMode === 'true') {
+        document.body.classList.add('dark-mode');
+        updateDarkModeButtonUI(true);
+    } else {
+        document.body.classList.remove('dark-mode');
+        updateDarkModeButtonUI(false);
+    }
 }
 
 // ভাষা পরিবর্তনের সময় ডার্ক মোড বাটন টেক্সট আপডেট
@@ -8543,6 +8551,126 @@ function showCustomerActions(customerId) {
 }
   
   // ============================================
+// 🌙 স্মার্ট ডার্ক মোড - রাতে জিজ্ঞেস করবে
+// ============================================
+
+function checkAndAskDarkMode() {
+    const now = new Date();
+    const hour = now.getHours();
+    const isNightTime = (hour >= 20 || hour < 6);
+    
+    if (!isNightTime) {
+        return;
+    }
+    
+    const todayStr = now.toISOString().split('T')[0];
+    const lastAskedDate = localStorage.getItem('dark_mode_asked_date');
+    
+    if (lastAskedDate === todayStr) {
+        return;
+    }
+    
+    showDarkModePrompt();
+}
+
+function showDarkModePrompt() {
+    // মডাল তৈরি করা
+    const overlay = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    content.innerHTML = `
+        <div class="text-center py-4">
+            <div class="text-5xl mb-3">🌙</div>
+            <h3 class="text-xl font-bold text-gray-800 mb-2">ডার্ক মোডে যেতে চান?</h3>
+            <p class="text-gray-600 text-sm mb-6">রাতের সময় চোখের আরামের জন্য ডার্ক মোড অন করতে পারেন।</p>
+            <div class="flex gap-3">
+                <button onclick="acceptDarkMode('${todayStr}')" class="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-medium">
+                    ✅ হ্যাঁ
+                </button>
+                <button onclick="rejectDarkMode('${todayStr}')" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">
+                    ❌ না
+                </button>
+            </div>
+            <button onclick="closeModal()" class="mt-4 text-xs text-gray-400 hover:text-gray-600">এখনই না</button>
+        </div>
+    `;
+    
+    overlay.classList.remove('hidden');
+}
+  
+  function acceptDarkMode(todayStr) {
+    document.body.classList.add('dark-mode');
+    updateDarkModeButtonUI(true);
+    localStorage.setItem('dark_mode_asked_date', todayStr);
+    localStorage.setItem('night_dark_mode_choice', 'yes');
+    localStorage.setItem('dark_mode', 'true');
+    updateDarkModeButtonText();
+    closeModal();
+    showToast('🌙 ডার্ক মোড সক্রিয় হয়েছে', 'success', 2000);
+}
+
+function rejectDarkMode(todayStr) {
+    document.body.classList.remove('dark-mode');
+    updateDarkModeButtonUI(false);
+    localStorage.setItem('dark_mode_asked_date', todayStr);
+    localStorage.setItem('night_dark_mode_choice', 'no');
+    localStorage.setItem('dark_mode', 'false');
+    updateDarkModeButtonText();
+    closeModal();
+    showToast('☀️ লাইট মোডে থাকবেন', 'info', 2000);
+}
+
+// ডার্ক মোড বাটনের UI আপডেট করার ফাংশন
+function updateDarkModeButtonUI(isDark) {
+    const darkBtn = document.getElementById('dark-mode-btn');
+    const darkIcon = document.getElementById('dark-mode-icon');
+    const darkText = document.getElementById('dark-mode-text');
+    
+    if (!darkBtn) return;
+    
+    if (isDark) {
+        darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-indigo-600 text-white';
+        if (darkIcon) darkIcon.textContent = '☀️';
+        if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    } else {
+        darkBtn.className = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 bg-gray-300 text-gray-700';
+        if (darkIcon) darkIcon.textContent = '🌙';
+        if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+    }
+}
+
+// ম্যানুয়াল টগল ফাংশন (মেনু থেকে চাপলে)
+function toggleDarkMode() {
+    const isDark = !document.body.classList.contains('dark-mode');
+    
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        localStorage.setItem('dark_mode', 'true');
+        // ম্যানুয়ালি চালু করলে রাতের সেটিং ওভাররাইট করবে না
+    } else {
+        document.body.classList.remove('dark-mode');
+        localStorage.setItem('dark_mode', 'false');
+    }
+    
+    updateDarkModeButtonUI(isDark);
+    updateDarkModeButtonText();
+    
+    showToast(
+        isDark ? 
+        (currentLanguage === 'bn' ? 'ডার্ক মোড সক্রিয়' : 'Dark mode activated') : 
+        (currentLanguage === 'bn' ? 'লাইট মোড সক্রিয়' : 'Light mode activated'),
+        'success',
+        2000
+    );
+    
+    if (typeof renderTransactionChart === 'function' && currentTab === 'reports') {
+        setTimeout(() => renderTransactionChart(), 100);
+    }
+}
+  
+  // ============================================
 // ফিক্সড ফাংশন - কাস্টমার হিস্ট্রি ও পেমেন্ট বাটন ঠিক করার জন্য
 // ============================================
 
@@ -8817,6 +8945,9 @@ setTimeout(() => {
     }
     console.log("✅ কাস্টমার লিস্ট রি-রেন্ডার করা হয়েছে");
 }, 500);
+  
+  // init() ফাংশনের ভিতরে যোগ করুন (সবশেষে)
+checkAndAskDarkMode();
   
 init();
   
