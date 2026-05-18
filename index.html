@@ -1063,6 +1063,15 @@
   <p class="text-xs text-gray-500 mt-1">চোখের আরামের জন্য ডার্ক থিম</p>
 </div>
       
+      <!-- টার্গেট রিসেট বাটন -->
+<div class="mb-3 p-2 bg-yellow-50 rounded-lg">
+  <p class="text-sm font-medium text-yellow-800 mb-2">🎯 টার্গেট সেটিংস</p>
+  <button onclick="resetTargetFromSettings()" class="w-full text-left text-sm text-yellow-600 hover:bg-yellow-100 p-2 rounded-lg transition-colors flex items-center gap-2">
+    <span>🔄</span> টার্গেট রিসেট করুন (পুনরায় দেখান)
+  </button>
+  <p class="text-xs text-gray-500 mt-1">ক্রস বাটনে লুকানো টার্গেট আবার আনুন</p>
+</div>
+      
       <!-- লোকাল ব্যাকআপ সেটিংস -->
 <div class="mb-3 p-2 bg-green-50 rounded-lg">
   <p class="text-sm font-medium text-green-800 mb-2">💾 ব্যাকআপ সেটিংস</p>
@@ -1469,7 +1478,9 @@
     </div>
     
     <!-- টার্গেট ও প্রগ্রেস কন্টেইনার - Sawon 772 -->
-<div id="target-container" class="max-w-4xl mx-auto w-full px-4 py-2"></div>
+<div id="target-container" class="max-w-4xl mx-auto w-full px-4 py-2 relative">
+  <!-- ক্রস বাটন ও টার্গেট কন্টেন্ট এখানে ডায়নামিক্যালি দেখাবে -->
+</div>
     
     <!-- AI প্রেডিকশন উইজেট - Sawon 772 -->
 <div id="ai-widget-container" class="max-w-4xl mx-auto w-full px-4 py-1"></div>
@@ -8764,6 +8775,8 @@ if (typeof renderTransactionChart === 'function') {
   // ডার্ক মোড চেক করুন
 initDarkMode();
   
+  loadTargetVisibility(); // পেজ লোডে টার্গেট ভিসিবিলিটি চেক করবে
+  
   // 👇 এটাই মূল ফিক্স: অ্যাপ স্টার্টআপে ব্যাকআপ সেভ করুন
   if (localBackupEnabled) {
     setTimeout(() => {
@@ -8806,7 +8819,85 @@ setTimeout(() => {
 }, 500);
   
 init();
+  
+   // ============================================
+// টার্গেট সেকশন পার্মানেন্টলি হাইড/শো করার ফাংশন
+// ============================================
+
+function loadTargetVisibility() {
+  const isHidden = localStorage.getItem('target_section_hidden') === 'true';
+  if (isHidden) {
+    document.getElementById('target-container').innerHTML = '';
+    document.getElementById('target-container').classList.add('hidden');
+  } else {
+    document.getElementById('target-container').classList.remove('hidden');
+    // টার্গেট কন্টেন্ট দেখানো (আগের মতো)
+    updateTargetProgress();
+  }
+}
+
+// টার্গেট কন্টেন্ট রেন্ডার করার সময় ক্রস বাটন যোগ করা
+function updateTargetProgressWithCloseButton() {
+  const today = new Date().toISOString().split('T')[0];
+  const dailyTarget = parseInt(localStorage.getItem('daily_collection_target')) || 0;
+  const todayCollection = getTransactions().filter(t => t.type === 'payment' && t.date === today).reduce((sum, t) => sum + t.amount, 0);
+  const percentage = dailyTarget > 0 ? (todayCollection / dailyTarget) * 100 : 0;
+  const remaining = dailyTarget - todayCollection;
+
+  const targetContainer = document.getElementById('target-container');
+  if (targetContainer && dailyTarget > 0) {
+    targetContainer.innerHTML = `
+      <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 mb-3 relative">
+        <button onclick="permanentlyHideTarget()" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl leading-none z-10" title="টার্গেট সেকশন বন্ধ করুন">✕</button>
+        <div class="flex justify-between items-center">
+          <div><p class="text-xs text-gray-500">আজকের কালেকশন</p><p class="text-lg font-bold ${todayCollection >= dailyTarget ? 'text-green-600' : 'text-emerald-600'}">${formatCurrency(todayCollection)} / ${formatCurrency(dailyTarget)}</p></div>
+          <button onclick="setDailyTarget()" class="text-xs bg-emerald-600 text-white px-2 py-1 rounded">টার্গেট সেট</button>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2 mt-2"><div class="${todayCollection >= dailyTarget ? 'bg-green-500' : 'bg-emerald-500'} h-2 rounded-full transition-all" style="width: ${Math.min(100, percentage)}%"></div></div>
+        ${remaining > 0 ? `<p class="text-xs text-gray-400 mt-1">আরও ${formatCurrency(remaining)} টাকা প্রয়োজন</p>` : '<p class="text-xs text-green-600 mt-1">🎉 টার্গেট পূরণ হয়েছে!</p>'}
+      </div>
+    `;
+    targetContainer.classList.remove('hidden');
+  } else if (targetContainer && dailyTarget === 0) {
+    targetContainer.innerHTML = `
+      <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3 mb-3 relative">
+        <button onclick="permanentlyHideTarget()" class="absolute top-2 right-2 text-gray-400 hover:text-red-500 text-xl leading-none z-10">✕</button>
+        <div class="flex justify-between items-center">
+          <p class="text-sm text-gray-600">🎯 কোনো টার্গেট সেট করা নেই</p>
+          <button onclick="setDailyTarget()" class="text-xs bg-emerald-600 text-white px-2 py-1 rounded">টার্গেট সেট করুন</button>
+        </div>
+      </div>
+    `;
+    targetContainer.classList.remove('hidden');
+  }
+}
+
+// পার্মানেন্টলি টার্গেট লুকানো
+function permanentlyHideTarget() {
+  localStorage.setItem('target_section_hidden', 'true');
+  const container = document.getElementById('target-container');
+  container.innerHTML = '';
+  container.classList.add('hidden');
+  showToast(currentLanguage === 'bn' ? 'টার্গেট সেকশন বন্ধ করা হয়েছে। সেটিংস থেকে পুনরায় আনতে পারবেন।' : 'Target section closed. You can bring it back from settings.', 'info');
+}
+
+// সেটিংস থেকে টার্গেট রিসেট করা
+function resetTargetFromSettings() {
+  localStorage.removeItem('target_section_hidden');
+  const container = document.getElementById('target-container');
+  container.classList.remove('hidden');
+  updateTargetProgressWithCloseButton();
+  showToast(currentLanguage === 'bn' ? 'টার্গেট সেকশন পুনরায় দেখা যাচ্ছে' : 'Target section is visible again', 'success');
+  playSound('success');
+}
+
+// ওভাররাইড করা (আগের updateTargetProgress ফাংশন যদি থাকে তবে সেটা Replace হবে)
+window.updateTargetProgress = updateTargetProgressWithCloseButton;
+  
+  
   </script>
+  
+ 
   <!-- নামাজের সময়সূচির মডাল -->
 <div id="prayerScheduleModal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl max-w-sm w-full max-h-[80vh] overflow-y-auto p-5 shadow-2xl">
