@@ -2358,7 +2358,7 @@ let currentExpenseFilter = 'today';
         const balance = getCustomerBalance(customerId);
         const transactions = getTransactions()
           .filter(t => t.customer_id === customerId)
-          .slice(0, 2);
+          .slice(0, 5);
         
         const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=80`;
         
@@ -2618,142 +2618,149 @@ let currentExpenseFilter = 'today';
 // ফান্ড দাতা শেয়ার ফাংশন (PNG ইমেজ)
 // ============================================
 async function shareFundProviderCard(providerId) {
-  try {
-    showGlobalLoader("শেয়ার কার্ড তৈরি হচ্ছে...");
-    
-    const provider = getFundProviders().find(p => p.provider_id === providerId);
-    if (!provider) return;
-    
-    const shopName = defaultConfig.shop_name || 'বাকির খাতা';
-    const balance = getFundProviderBalance(providerId);
-    
-    // ফান্ড দাতার লেনদেন ইতিহাস (সর্বশেষ ২টি)
-    const transactions = getFunds()
-      .filter(t => t.provider_id === providerId)
-      .slice(0, 2);
-    
-    // প্রোফাইল ইমেজ (নামের প্রথম অক্ষর)
-    const firstLetter = provider.provider_name.charAt(0).toUpperCase();
-    
-    const balanceText = balance > 0 ? 
-      (currentLanguage === 'bn' ? 'পাওনা আছে' : 'Due') : 
-      balance < 0 ? 
-      (currentLanguage === 'bn' ? 'অতিরিক্ত পরিশোধ' : 'Excess Payment') : 
-      (currentLanguage === 'bn' ? 'শূন্য' : 'Zero');
-    
-    const balanceColor = balance > 0 ? '#dc2626' : balance < 0 ? '#d97706' : '#6b7280';
-    
-    const card = document.createElement('div');
-    card.style.width = '380px';
-    card.style.padding = '24px';
-    card.style.background = 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)';
-    card.style.borderRadius = '24px';
-    card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
-    card.style.position = 'absolute';
-    card.style.left = '-9999px';
-    card.style.top = '-9999px';
-    card.style.fontFamily = "'Hind Siliguri', sans-serif";
-    
-    card.innerHTML = `
-      <div style="text-align: center; margin-bottom: 16px;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
-          <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); display: flex; align-items: center; justify-content: center;">
-            <span style="font-size: 28px; font-weight: bold; color: white;">${firstLetter}</span>
-          </div>
-          <div style="text-align: left;">
-            <h2 style="font-size: 20px; font-weight: bold; color: #4c1d95; margin: 0;">${provider.provider_name}</h2>
-            <p style="color: #7e22ce; font-size: 14px; margin: 4px 0;">${shopName}</p>
-            ${provider.mobile ? `<p style="color: #6b7280; font-size: 12px; margin: 2px 0;">📞 ${provider.mobile}</p>` : ''}
-          </div>
-        </div>
-      </div>
-      
-      <div style="background: white; border-radius: 16px; padding: 16px; margin: 16px 0;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
-            <p style="font-size: 28px; font-weight: bold; color: ${balanceColor}; margin: 4px 0;">${formatCurrency(balance)}</p>
-            <p style="font-size: 12px; color: #6b7280; margin: 0;">${balanceText}</p>
-          </div>
-          ${provider.address ? `<p style="font-size: 12px; color: #6b7280; max-width: 120px;">📍 ${provider.address.substring(0, 30)}</p>` : ''}
-        </div>
-      </div>
-      
-      ${transactions.length > 0 ? `
-        <div style="background: white; border-radius: 16px; padding: 16px;">
-          <p style="font-size: 16px; font-weight: 600; color: #374151; margin: 0 0 12px 0;">📝 ${currentLanguage === 'bn' ? 'সর্বশেষ লেনদেন' : 'Latest Transactions'}</p>
-          ${transactions.map((t, index) => {
-            const typeText = t.type === 'fund-receive' ? 
-              (currentLanguage === 'bn' ? '💰 ফান্ড নিয়েছেন' : '💰 Fund Received') : 
-              (currentLanguage === 'bn' ? '💸 ফান্ড দিয়েছেন' : '💸 Fund Paid');
-            const amountColor = t.type === 'fund-receive' ? '#9333ea' : '#4f46e5';
-            const sign = t.type === 'fund-receive' ? '+' : '-';
-            return `
-              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; ${index < transactions.length - 1 ? 'border-bottom: 1px solid #e5e7eb;' : ''}">
-                <div>
-                  <p style="font-size: 14px; font-weight: 500; color: #374151; margin: 0;">${typeText}</p>
-                  <p style="font-size: 12px; color: #6b7280; margin: 2px 0 0 0;">${formatDate(t.date)}</p>
-                  ${t.note ? `<p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">📌 ${t.note.substring(0, 20)}</p>` : ''}
-                </div>
-                <p style="font-size: 16px; font-weight: bold; color: ${amountColor}; margin: 0;">${sign}${formatCurrency(t.amount)}</p>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      ` : `
-        <div style="background: white; border-radius: 16px; padding: 20px; text-align: center;">
-          <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>
-        </div>
-      `}
-      
-      <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 12px;">
-        <span>📱 বাকির খাতা অ্যাপ থেকে শেয়ার করা হয়েছে</span>
-      </div>
-    `;
-    
-    document.body.appendChild(card);
-    
-    const canvas = await html2canvas(card, {
-      scale: 2,
-      backgroundColor: null,
-      logging: false,
-      allowTaint: true,
-      useCORS: true
-    });
-    
-    document.body.removeChild(card);
-    
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        showToast('ছবি তৈরি ব্যর্থ হয়েছে', 'error');
-        return;
-      }
-      
-      const file = new File([blob], `bakir-khata-fund-${provider.provider_name}.png`, { type: 'image/png' });
-      
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: `${provider.provider_name} - ফান্ড তথ্য`,
-            text: 'বাকির খাতা থেকে শেয়ার করা হয়েছে',
-            files: [file]
-          });
-          showToast('শেয়ার করা হয়েছে!', 'success');
-        } catch (err) {
-          console.error('Share failed:', err);
-          downloadFundImage(canvas, provider.provider_name);
+    try {
+        showGlobalLoader("শেয়ার কার্ড তৈরি হচ্ছে...");
+        
+        const provider = getFundProviders().find(p => p.provider_id === providerId);
+        if (!provider) return;
+        
+        const shopName = defaultConfig.shop_name || 'বাকির খাতা';
+        const balance = getFundProviderBalance(providerId);
+        
+        // ফান্ড দাতার লেনদেন ইতিহাস (সর্বশেষ ৪টি)
+        const transactions = getFunds()
+            .filter(t => t.provider_id === providerId)
+            .slice(0, 5);  // ← 2 থেকে 5 করা হয়েছে
+        
+        // প্রোফাইল ইমেজ (নামের প্রথম অক্ষর)
+        const firstLetter = provider.provider_name.charAt(0).toUpperCase();
+        
+        // ব্যালেন্স অনুযায়ী সঠিক টেক্সট
+        let balanceText = '';
+        let balanceColor = '';
+        
+        if (balance > 0) {
+            balanceText = 'অগ্রিম ফান্ড আছে';
+            balanceColor = '#10b981';
+        } else if (balance < 0) {
+            balanceText = 'বাকি আছে';
+            balanceColor = '#ef4444';
+        } else {
+            balanceText = 'শূন্য';
+            balanceColor = '#6b7280';
         }
-      } else {
-        downloadFundImage(canvas, provider.provider_name);
-      }
-    }, 'image/png');
-    
-  } catch (error) {
-    console.error('Share error:', error);
-    showToast('শেয়ার ব্যর্থ হয়েছে', 'error');
-  } finally {
-    hideGlobalLoader();
-  }
+        
+        const card = document.createElement('div');
+        card.style.width = '380px';
+        card.style.padding = '24px';
+        card.style.background = 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)';
+        card.style.borderRadius = '24px';
+        card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
+        card.style.position = 'absolute';
+        card.style.left = '-9999px';
+        card.style.top = '-9999px';
+        card.style.fontFamily = "'Hind Siliguri', sans-serif";
+        
+        card.innerHTML = `
+            <div style="text-align: center; margin-bottom: 16px;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 28px; font-weight: bold; color: white;">${firstLetter}</span>
+                    </div>
+                    <div style="text-align: left;">
+                        <h2 style="font-size: 20px; font-weight: bold; color: #4c1d95; margin: 0;">${provider.provider_name}</h2>
+                        <p style="color: #7e22ce; font-size: 14px; margin: 4px 0;">${shopName}</p>
+                        ${provider.mobile ? `<p style="color: #6b7280; font-size: 12px; margin: 2px 0;">📞 ${provider.mobile}</p>` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: white; border-radius: 16px; padding: 16px; margin: 16px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
+                        <p style="font-size: 28px; font-weight: bold; color: ${balanceColor}; margin: 4px 0;">${formatCurrency(Math.abs(balance))}</p>
+                        <p style="font-size: 12px; color: ${balanceColor}; margin: 0; font-weight: 500;">${balanceText}</p>
+                    </div>
+                    ${provider.address ? `<p style="font-size: 12px; color: #6b7280; max-width: 120px;">📍 ${provider.address.substring(0, 30)}</p>` : ''}
+                </div>
+            </div>
+            
+            ${transactions.length > 0 ? `
+                <div style="background: white; border-radius: 16px; padding: 16px;">
+                    <p style="font-size: 16px; font-weight: 600; color: #374151; margin: 0 0 12px 0;">📝 ${currentLanguage === 'bn' ? 'সর্বশেষ লেনদেন' : 'Latest Transactions'}</p>
+                    ${transactions.map((t, index) => {
+                        const typeText = t.type === 'fund-receive' ? 
+                            (currentLanguage === 'bn' ? '💰 ফান্ড নিয়েছেন' : '💰 Fund Received') : 
+                            (currentLanguage === 'bn' ? '💸 ফান্ড দিয়েছেন' : '💸 Fund Paid');
+                        const amountColor = t.type === 'fund-receive' ? '#9333ea' : '#4f46e5';
+                        const sign = t.type === 'fund-receive' ? '+' : '-';
+                        return `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; ${index < transactions.length - 1 ? 'border-bottom: 1px solid #e5e7eb;' : ''}">
+                                <div>
+                                    <p style="font-size: 14px; font-weight: 500; color: #374151; margin: 0;">${typeText}</p>
+                                    <p style="font-size: 12px; color: #6b7280; margin: 2px 0 0 0;">${formatDate(t.date)}</p>
+                                    ${t.note ? `<p style="font-size: 11px; color: #9ca3af; margin: 2px 0 0 0;">📌 ${t.note.substring(0, 20)}</p>` : ''}
+                                </div>
+                                <p style="font-size: 16px; font-weight: bold; color: ${amountColor}; margin: 0;">${sign}${formatCurrency(t.amount)}</p>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            ` : `
+                <div style="background: white; border-radius: 16px; padding: 20px; text-align: center;">
+                    <p style="font-size: 14px; color: #6b7280; margin: 0;">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>
+                </div>
+            `}
+            
+            <div style="text-align: center; margin-top: 16px; color: #6b7280; font-size: 12px;">
+                <span>📱 বাকির খাতা অ্যাপ থেকে শেয়ার করা হয়েছে</span>
+            </div>
+        `;
+        
+        document.body.appendChild(card);
+        
+        const canvas = await html2canvas(card, {
+            scale: 2,
+            backgroundColor: null,
+            logging: false,
+            allowTaint: true,
+            useCORS: true
+        });
+        
+        document.body.removeChild(card);
+        
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                showToast('ছবি তৈরি ব্যর্থ হয়েছে', 'error');
+                return;
+            }
+            
+            const file = new File([blob], `bakir-khata-fund-${provider.provider_name}.png`, { type: 'image/png' });
+            
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: `${provider.provider_name} - ফান্ড তথ্য`,
+                        text: 'বাকির খাতা থেকে শেয়ার করা হয়েছে',
+                        files: [file]
+                    });
+                    showToast('শেয়ার করা হয়েছে!', 'success');
+                } catch (err) {
+                    console.error('Share failed:', err);
+                    downloadFundImage(canvas, provider.provider_name);
+                }
+            } else {
+                downloadFundImage(canvas, provider.provider_name);
+            }
+        }, 'image/png');
+        
+    } catch (error) {
+        console.error('Share error:', error);
+        showToast('শেয়ার ব্যর্থ হয়েছে', 'error');
+    } finally {
+        hideGlobalLoader();
+    }
 }
 
 function downloadFundImage(canvas, providerName) {
@@ -5143,58 +5150,77 @@ function isOverdue(dateStr) {
 }
 
     function renderFundProviders() {
-      const providers = getFundProviders();
-      const container = document.getElementById('fund-providers-list');
-      
-      if (providers.length === 0) {
+    const providers = getFundProviders();
+    const container = document.getElementById('fund-providers-list');
+    
+    if (providers.length === 0) {
         container.innerHTML = `<div class="text-center py-4 text-gray-500 bg-purple-50 rounded-lg">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই। নতুন দাতা যোগ করুন।' : 'No fund providers. Add new provider.'}</div>`;
         return;
-      }
+    }
 
-      container.innerHTML = providers.map(p => {
+    container.innerHTML = providers.map(p => {
         const balance = getFundProviderBalance(p.provider_id);
         const isConfirming = deleteConfirmId === p.__backendId;
         
-        return `
-          <div class="bg-white rounded-xl p-3 card-shadow fund-provider-card" data-id="${p.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2 cursor-pointer" onclick="viewFundProviderHistory('${p.provider_id}')">
-  <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-    ${p.provider_name.charAt(0)}
-  </div>
-  <div>
-    <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
-    <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
-  </div>
-</div>
-              <div class="text-right">
-                <p class="font-bold text-purple-600">${formatCurrency(balance)}</p>
-                <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'পাওনা' : 'Due'}</p>
-              </div>
-            </div>
-            ${isConfirming ? `
-              <div class="flex gap-2 mt-2 justify-end">
-                <button onclick="confirmDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-              </div>
-            ` : `
-              <div class="flex gap-2 mt-2 justify-end">
-            <button onclick="viewFundProviderHistory('${p.provider_id}')" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600" title="ইতিহাস দেখুন">📋</button>
-            <button onclick="shareFundProviderCard('${p.provider_id}')" class="share-icon-btn w-8 h-8 text-sm" title="শেয়ার করুন">
-  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-  </svg>
+        // ========== সঠিক লজিক ==========
+        let balanceColor = 'text-purple-600';
+        let balanceText = '';
+        let balanceBg = 'bg-purple-50';
         
-</button>
-                <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
-              </div>
-            `}
-          </div>
+        if (balance > 0) {
+            // ব্যালেন্স পজিটিভ = আপনি দাতার কাছ থেকে ফান্ড নিয়েছেন (আপনার কাছে আছে)
+            balanceColor = 'text-emerald-600';
+            balanceBg = 'bg-emerald-50';
+            balanceText = currentLanguage === 'bn' ? 'অগ্রিম ফান্ড আছে' : 'Advance Fund';
+        } else if (balance < 0) {
+            // ব্যালেন্স নেগেটিভ = আপনি দাতাকে বেশি পরিশোধ করেছেন (বাকি আছে)
+            balanceColor = 'text-red-600';
+            balanceBg = 'bg-red-50';
+            balanceText = currentLanguage === 'bn' ? 'বাকি আছে' : 'Due';
+        } else {
+            balanceColor = 'text-gray-600';
+            balanceBg = 'bg-gray-50';
+            balanceText = currentLanguage === 'bn' ? 'শূন্য' : 'Settled';
+        }
+        
+        return `
+            <div class="bg-white rounded-xl p-3 card-shadow fund-provider-card ${balanceBg}" data-id="${p.__backendId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="viewFundProviderHistory('${p.provider_id}')">
+                        <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                            ${p.provider_name.charAt(0)}
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">${p.provider_name}</h4>
+                            <p class="text-xs text-gray-500">${p.mobile || (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold ${balanceColor} text-lg">${formatCurrency(Math.abs(balance))}</p>
+                        <p class="text-xs ${balanceColor} font-medium">${balanceText}</p>
+                    </div>
+                </div>
+                ${isConfirming ? `
+                    <div class="flex gap-2 mt-2 justify-end">
+                        <button onclick="confirmDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                        <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                    </div>
+                ` : `
+                    <div class="flex gap-2 mt-2 justify-end">
+                        <button onclick="viewFundProviderHistory('${p.provider_id}')" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600" title="ইতিহাস দেখুন">📋</button>
+                        <button onclick="shareFundProviderCard('${p.provider_id}')" class="share-icon-btn w-8 h-8 text-sm" title="শেয়ার করুন">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                        </button>
+                        <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
+                        <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
+                    </div>
+                `}
+            </div>
         `;
-      }).join('');
-    }
-
+    }).join('');
+}
     function renderFunds() {
       let funds = getFunds();
       const container = document.getElementById('funds-list');
@@ -5747,64 +5773,82 @@ function changeChartPeriod(months) {
           setTimeout(() => showCustomerBalance(personId), 100);
         }
       } else if (type === 'fund-receive' || type === 'fund-payment') {
-        const providers = getFundProviders();
-        const title = type === 'fund-receive' ? 
-          (currentLanguage === 'bn' ? '💰 ফান্ড গ্রহণ' : '💰 Fund Receive') : 
-          (currentLanguage === 'bn' ? '💸 ফান্ড পরিশোধ' : '💸 Fund Payment');
-        const btnText = type === 'fund-receive' ? 
-          (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
-          (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
-        const btnClass = type === 'fund-receive' ? 'bg-purple-600' : 'bg-indigo-600';
-        
-        if (providers.length === 0) {
-          content.innerHTML = `
-            <div class="text-center py-6">
-              <p class="text-gray-600 mb-4">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই। প্রথমে ফান্ড দাতা যোগ করুন।' : 'No fund providers. Add a provider first.'}</p>
-              <button onclick="closeModal(); openModal('fund-provider')" class="px-4 py-2 bg-purple-600 text-white rounded-lg">${currentLanguage === 'bn' ? '+ ফান্ড দাতা যোগ করুন' : '+ Add Provider'}</button>
-            </div>
-          `;
-          overlay.classList.remove('hidden');
-          return;
-        }
-        
+    const providers = getFundProviders();
+    const title = type === 'fund-receive' ? 
+        (currentLanguage === 'bn' ? '💰 ফান্ড গ্রহণ' : '💰 Fund Receive') : 
+        (currentLanguage === 'bn' ? '💸 ফান্ড পরিশোধ' : '💸 Fund Payment');
+    const btnText = type === 'fund-receive' ? 
+        (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
+        (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
+    const btnClass = type === 'fund-receive' ? 'bg-purple-600' : 'bg-indigo-600';
+    
+    // ========== গুরুত্বপূর্ণ: personId থাকলে সেই প্রোভাইডার প্রি-সিলেক্ট হবে ==========
+    const preselectedProviderId = personId;  // personId হল প্রোভাইডার আইডি
+    
+    if (providers.length === 0) {
         content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">${title}</h2>
-          <form onsubmit="addFundTransaction(event, '${type}')">
+            <div class="text-center py-6">
+                <p class="text-gray-600 mb-4">${currentLanguage === 'bn' ? 'কোনো ফান্ড দাতা নেই। প্রথমে ফান্ড দাতা যোগ করুন।' : 'No fund providers. Add a provider first.'}</p>
+                <button onclick="closeModal(); openModal('fund-provider')" class="px-4 py-2 bg-purple-600 text-white rounded-lg">${currentLanguage === 'bn' ? '+ ফান্ড দাতা যোগ করুন' : '+ Add Provider'}</button>
+            </div>
+        `;
+        overlay.classList.remove('hidden');
+        return;
+    }
+    
+    content.innerHTML = `
+        <h2 class="text-xl font-bold text-gray-800 mb-4">${title}</h2>
+        <form onsubmit="addFundTransaction(event, '${type}')">
             <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ফান্ড দাতা *' : 'Provider *'}</label>
-                <select id="fund-provider" required onchange="showFundProviderBalance(this.value)"
-                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
-                  <option value="">${currentLanguage === 'bn' ? 'ফান্ড দাতা নির্বাচন করুন' : 'Select provider'}</option>
-                  ${providers.map(p => `<option value="${p.provider_id}" data-name="${p.provider_name}">${p.provider_name} ${p.mobile ? ' - ' + p.mobile : ''}</option>`).join('')}
-                </select>
-                <div id="provider-balance-info" class="balance-info hidden"></div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'টাকার পরিমাণ *' : 'Amount *'}</label>
-                <input type="number" id="fund-amount" required min="1"
-                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="০">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'তারিখ *' : 'Date *'}</label>
-                <input type="date" id="fund-date" required 
-                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  value="${new Date().toISOString().split('T')[0]}">
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'}</label>
-                <textarea id="fund-note" rows="2"
-                  class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
-                  placeholder="${currentLanguage === 'bn' ? 'বিশেষ তথ্য...' : 'Additional info...'}"></textarea>
-              </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'ফান্ড দাতা *' : 'Provider *'}</label>
+                    <select id="fund-provider" required onchange="showFundProviderBalance(this.value)"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none">
+                        <option value="">${currentLanguage === 'bn' ? 'ফান্ড দাতা নির্বাচন করুন' : 'Select provider'}</option>
+                        ${providers.map(p => `
+                            <option value="${p.provider_id}" data-name="${p.provider_name}" 
+                                ${preselectedProviderId === p.provider_id ? 'selected' : ''}>
+                                ${p.provider_name} ${p.mobile ? ' - ' + p.mobile : ''}
+                            </option>
+                        `).join('')}
+                    </select>
+                    <div id="provider-balance-info" class="balance-info hidden"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'টাকার পরিমাণ *' : 'Amount *'}</label>
+                    <input type="number" id="fund-amount" required min="1"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                        placeholder="০">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'তারিখ *' : 'Date *'}</label>
+                    <input type="date" id="fund-date" required 
+                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                        value="${new Date().toISOString().split('T')[0]}">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নোট' : 'Note'}</label>
+                    <textarea id="fund-note" rows="2"
+                        class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:outline-none"
+                        placeholder="${currentLanguage === 'bn' ? 'বিশেষ তথ্য...' : 'Additional info...'}"></textarea>
+                </div>
             </div>
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
-              <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium hover:opacity-90">${btnText}</button>
+                <button type="button" onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+                <button type="submit" id="submit-fund-btn" class="flex-1 py-3 rounded-xl ${btnClass} text-white font-medium hover:opacity-90">${btnText}</button>
             </div>
-          </form>
-        `;
+        </form>
+    `;
+    
+    // প্রি-সিলেক্টেড প্রোভাইডার থাকলে ব্যালেন্স দেখান
+    if (preselectedProviderId) {
+        setTimeout(() => {
+            const select = document.getElementById('fund-provider');
+            if (select && select.value) {
+                showFundProviderBalance(select.value);
+            }
+        }, 100);
+    }
       } else if (type === 'history') {
         const customer = getCustomers().find(c => c.customer_id === personId);
         if (!customer) return;
@@ -5889,67 +5933,72 @@ function changeChartPeriod(months) {
       }
       
       else if (type === 'fund-history') {
-  const provider = getFundProviders().find(p => p.provider_id === personId);
-  if (!provider) return;
-  
-  const balance = getFundProviderBalance(personId);
-  const transactions = getFunds().filter(t => t.provider_id === personId);
-  transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
-  
-  content.innerHTML = `
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold text-gray-800">💰 ${provider.provider_name}</h2>
-      <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
-    </div>
+    const provider = getFundProviders().find(p => p.provider_id === personId);
+    if (!provider) return;
     
-    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white mb-4">
-      <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
-      <p class="text-3xl font-bold">${formatCurrency(balance)}</p>
-      <p class="text-xs mt-1">${balance > 0 ? (currentLanguage === 'bn' ? 'পাওনা আছে' : 'Due') : (balance < 0 ? (currentLanguage === 'bn' ? 'অতিরিক্ত পরিশোধ' : 'Excess Payment') : (currentLanguage === 'bn' ? 'শূন্য' : 'Zero'))}</p>
-      ${provider.mobile ? `<p class="text-sm mt-2">📞 <a href="tel:${provider.mobile}" class="hover:underline">${provider.mobile}</a></p>` : ''}
-      ${provider.address ? `<p class="text-sm">📍 ${provider.address}</p>` : ''}
-    </div>
+    const balance = getFundProviderBalance(personId);
+    const transactions = getFunds().filter(t => t.provider_id === personId);
+    transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
     
-    <!-- 🆕 অ্যাকশন বাটন গ্রুপ - ঠিক কাস্টমারের মতো -->
-    <div class="relative mb-4">
-      <div class="action-btns-group">
-        <button onclick="closeModal(); openModal('fund-receive', '${personId}')" class="action-btn bg-purple-600 text-white hover:bg-purple-700">
-          <span>💰</span> ${currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Receive Fund'}
-        </button>
-        <button onclick="closeModal(); openModal('fund-payment', '${personId}')" class="action-btn bg-indigo-600 text-white hover:bg-indigo-700">
-          <span>💸</span> ${currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Pay Fund'}
-        </button>
-      </div>
-      <div class="absolute top-0 right-0">
-        <button onclick="shareFundProviderCard('${provider.provider_id}')" class="share-icon-btn w-10 h-10" title="শেয়ার করুন">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
+    // সঠিক লজিক
+    let gradientClass = '';
+    let balanceText = '';
     
-    <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
-    <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
-      ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">${currentLanguage === 'bn' ? 'কোনো লেনদেন নেই' : 'No transactions'}</p>` : 
-        transactions.map(t => `
-          <div class="flex items-center justify-between py-2 border-b">
-            <div>
-              <p class="text-sm font-medium ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
-                ${t.type === 'fund-receive' ? '💰 ' + (currentLanguage === 'bn' ? 'ফান্ড নিয়েছেন' : 'Fund Received') : '💸 ' + (currentLanguage === 'bn' ? 'ফান্ড দিয়েছেন' : 'Fund Paid')}
-              </p>
-              <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
-              ${t.note ? `<p class="text-xs text-gray-400">${t.note}</p>` : ''}
-            </div>
-            <p class="font-bold ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
-              ${t.type === 'fund-receive' ? '+' : '-'}${formatCurrency(t.amount)}
-            </p>
-          </div>
-        `).join('')
-      }
-    </div>
-    <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বন্ধ করুন' : 'Close'}</button>
-  `;
+    if (balance > 0) {
+        gradientClass = 'from-emerald-500 to-emerald-600';
+        balanceText = currentLanguage === 'bn' ? `অগ্রিম ফান্ড: ${formatCurrency(balance)}` : `Advance Fund: ${formatCurrency(balance)}`;
+    } else if (balance < 0) {
+        gradientClass = 'from-red-500 to-red-600';
+        balanceText = currentLanguage === 'bn' ? `বাকি: ${formatCurrency(Math.abs(balance))}` : `Due: ${formatCurrency(Math.abs(balance))}`;
+    } else {
+        gradientClass = 'from-gray-500 to-gray-600';
+        balanceText = currentLanguage === 'bn' ? 'ব্যালেন্স শূন্য' : 'Balance Zero';
+    }
+    
+    content.innerHTML = `
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-gray-800">💰 ${provider.provider_name}</h2>
+            <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+        </div>
+        
+        <div class="bg-gradient-to-r ${gradientClass} rounded-xl p-4 text-white mb-4">
+            <p class="text-sm opacity-80">${currentLanguage === 'bn' ? 'বর্তমান ব্যালেন্স' : 'Current Balance'}</p>
+            <p class="text-3xl font-bold">${formatCurrency(Math.abs(balance))}</p>
+            <p class="text-xs mt-1">${balanceText}</p>
+            ${provider.mobile ? `<p class="text-sm mt-2">📞 ${provider.mobile}</p>` : ''}
+            ${provider.address ? `<p class="text-sm">📍 ${provider.address}</p>` : ''}
+        </div>
+        
+        <div class="action-btns-group flex gap-3 mb-4">
+            <button onclick="closeModal(); openModal('fund-receive', '${personId}')" class="flex-1 bg-purple-600 text-white py-2 rounded-xl font-medium hover:bg-purple-700">
+                💰 ফান্ড গ্রহণ
+            </button>
+            <button onclick="closeModal(); openModal('fund-payment', '${personId}')" class="flex-1 bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700">
+                💸 ফান্ড পরিশোধ
+            </button>
+        </div>
+        
+        <h3 class="font-semibold text-gray-700 mb-2">📜 লেনদেনের ইতিহাস</h3>
+        <div class="max-h-64 overflow-y-auto space-y-2">
+            ${transactions.length === 0 ? `<p class="text-center text-gray-500 py-4">কোনো লেনদেন নেই</p>` : 
+                transactions.map(t => `
+                    <div class="flex items-center justify-between py-2 border-b">
+                        <div>
+                            <p class="text-sm font-medium ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
+                                ${t.type === 'fund-receive' ? '💰 ফান্ড নিয়েছেন' : '💸 ফান্ড দিয়েছেন'}
+                            </p>
+                            <p class="text-xs text-gray-500">${formatDate(t.date)}</p>
+                            ${t.note ? `<p class="text-xs text-gray-400">${t.note}</p>` : ''}
+                        </div>
+                        <p class="font-bold ${t.type === 'fund-receive' ? 'text-purple-600' : 'text-indigo-600'}">
+                            ${t.type === 'fund-receive' ? '+' : '-'}${formatCurrency(t.amount)}
+                        </p>
+                    </div>
+                `).join('')
+            }
+        </div>
+        <button onclick="closeModal()" class="w-full mt-4 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বন্ধ করুন</button>
+    `;
 }
       
       overlay.classList.remove('hidden');
@@ -5972,8 +6021,8 @@ function changeChartPeriod(months) {
     }
   
     function viewFundProviderHistory(providerId) {
-     openModal('fund-history', providerId);
-    }
+    openModal('fund-history', providerId);
+}
 
     // CRUD operations for Fund Providers
     async function addFundProvider(e) {
@@ -6200,43 +6249,89 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
 }
 
     async function addFundTransaction(e, type) {
-  e.preventDefault();
-  
-  const btn = document.getElementById('submit-fund-btn');
-  btn.disabled = true;
-  btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
+    e.preventDefault();
+    
+    const btn = document.getElementById('submit-fund-btn');
+    btn.disabled = true;
+    btn.textContent = currentLanguage === 'bn' ? 'সংরক্ষণ হচ্ছে...' : 'Saving...';
 
-  const select = document.getElementById('fund-provider');
-  const selectedOption = select.options[select.selectedIndex];
+    const select = document.getElementById('fund-provider');
+    const selectedOption = select.options[select.selectedIndex];
+    const providerId = select.value;
+    const amount = parseFloat(document.getElementById('fund-amount').value);
+    const date = document.getElementById('fund-date').value;
+    const note = document.getElementById('fund-note').value.trim();
+    
+    // বর্তমান ব্যালেন্স বের করুন
+    const currentBalance = getFundProviderBalance(providerId);
+    let newBalance = currentBalance;
+    let transactionType = type;
+    let transactionAmount = amount;
+    
+    // ========== নতুন লজিক: ব্যালেন্স ক্যালকুলেশন ==========
+    if (type === 'fund-receive') {
+        // ফান্ড গ্রহণ করলে ব্যালেন্স বাড়বে
+        newBalance = currentBalance + amount;
+    } 
+    else if (type === 'fund-payment') {
+        // ফান্ড পরিশোধ করলে ব্যালেন্স কমবে
+        newBalance = currentBalance - amount;
+    }
+    
+    // ব্যালেন্স নেগেটিভ হলে (অতিরিক্ত পরিশোধ) - সেটা গ্রহণযোগ্য
+    // আমরা শুধু লেনদেনটি সেভ করব, ব্যালেন্স নিজেই ক্যালকুলেট হবে
+    
+    const fundData = {
+        type: transactionType,
+        provider_id: providerId,
+        provider_name: selectedOption.dataset.name,
+        amount: transactionAmount,
+        date: date,
+        note: note,
+        created_at: new Date().toISOString(),
+        datetime: getCurrentDateTime(),
+        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    };
 
-  const fundData = {
-    type: type,
-    provider_id: select.value,
-    provider_name: selectedOption.dataset.name,
-    amount: parseFloat(document.getElementById('fund-amount').value),
-    date: document.getElementById('fund-date').value,
-    note: document.getElementById('fund-note').value.trim(),
-    created_at: new Date().toISOString(),
-    datetime: getCurrentDateTime(),
-    timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  };
-
-  const result = await saveData(fundData);
-  
-  if (result.isOk) {
-    showToast(type === 'fund-receive' ? 
-      (currentLanguage === 'bn' ? 'ফান্ড গ্রহণ করা হয়েছে!' : 'Fund received!') : 
-      (currentLanguage === 'bn' ? 'ফান্ড পরিশোধ করা হয়েছে!' : 'Fund paid!'), 'success');
-    playSound('cash');
-    closeModal();  // ← শুধু মডাল বন্ধ
-  } else {
-    showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
-    playSound('error');
-    btn.disabled = false;
-    btn.textContent = type === 'fund-receive' ? 
-      (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
-      (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
-  }
+    const result = await saveData(fundData);
+    
+    if (result.isOk) {
+        // ব্যালেন্স চেক করে মেসেজ কাস্টমাইজ করুন
+        const finalBalance = getFundProviderBalance(providerId);
+        let successMsg = '';
+        
+        if (type === 'fund-receive') {
+            successMsg = currentLanguage === 'bn' ? 
+                `ফান্ড গ্রহণ করা হয়েছে! এখন দাতার কাছে আপনার ${formatCurrency(finalBalance)} টাকা পাওনা।` : 
+                `Fund received! Now ${formatCurrency(finalBalance)} due to provider.`;
+        } else {
+            if (finalBalance > 0) {
+                successMsg = currentLanguage === 'bn' ? 
+                    `${formatCurrency(amount)} টাকা পরিশোধ করা হয়েছে। এখনো ${formatCurrency(finalBalance)} টাকা পাওনা আছে।` : 
+                    `Paid ${formatCurrency(amount)}. Still ${formatCurrency(finalBalance)} due.`;
+            } else if (finalBalance < 0) {
+                successMsg = currentLanguage === 'bn' ? 
+                    `${formatCurrency(amount)} টাকা পরিশোধ করা হয়েছে। অতিরিক্ত ${formatCurrency(Math.abs(finalBalance))} টাকা পরিশোধ করে ফেলেছেন! এটি এখন অগ্রিম হিসেবে থাকবে।` : 
+                    `Paid ${formatCurrency(amount)}. You have overpaid ${formatCurrency(Math.abs(finalBalance))}! This will show as advance.`;
+            } else {
+                successMsg = currentLanguage === 'bn' ? 
+                    `${formatCurrency(amount)} টাকা পরিশোধ করা হয়েছে। এখন ব্যালেন্স শূন্য।` : 
+                    `Paid ${formatCurrency(amount)}. Balance is now zero.`;
+            }
+        }
+        
+        showToast(successMsg, 'success');
+        playSound('cash');
+        closeModal();
+        renderCurrentView(); // ফান্ড তালিকা রিফ্রেশ করুন
+    } else {
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
+        playSound('error');
+        btn.disabled = false;
+        btn.textContent = type === 'fund-receive' ? 
+            (currentLanguage === 'bn' ? 'গ্রহণ করুন' : 'Receive') : 
+            (currentLanguage === 'bn' ? 'পরিশোধ করুন' : 'Pay');
+    }
 }
 
     // Delete functions
