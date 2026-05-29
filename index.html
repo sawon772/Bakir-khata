@@ -473,6 +473,63 @@
 .day-name-animate {
   animation: slideInFromRight 0.5s ease-out;
 }
+  /* ড্রপডাউন মেনু - সর্বদা নিচের দিকে খোলার জন্য */
+.dropdown-menu {
+    position: static;  /* relative থেকে static করা */
+    display: inline-block;
+}
+
+.three-dot-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: #4b5563;
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: auto;
+    bottom: auto;
+    background: white;
+    min-width: 150px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 100000;
+    overflow: hidden;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dropdown-item:hover {
+    background-color: #f3f4f6;
+}
+
+.dropdown-item.danger:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
     
     /* ============================================
    প্রফেশনাল ডার্ক মোড স্টাইল
@@ -4814,237 +4871,276 @@ function isOverdue(dateStr) {
       }).join('');
     }
 
-    function renderDueCustomers() {
-      const customers = getCustomers();
-      const container = document.getElementById('due-customers-list');
-      const noCustomers = document.getElementById('no-due-customers');
+  function renderDueCustomers() {
+    const customers = getCustomers();
+    const container = document.getElementById('due-customers-list');
+    const noCustomers = document.getElementById('no-due-customers');
 
-      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) > 0);
-      
-      if (searchQuery) {
+    let filtered = customers.filter(c => getCustomerBalance(c.customer_id) > 0);
+    
+    if (searchQuery) {
         filtered = filtered.filter(c => 
-          c.customer_name.toLowerCase().includes(searchQuery) ||
-          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+            c.customer_name.toLowerCase().includes(searchQuery) ||
+            (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
         );
-      }
+    }
 
-      if (filtered.length === 0) {
+    if (filtered.length === 0) {
         container.innerHTML = '';
         noCustomers.classList.remove('hidden');
         return;
-      }
+    }
 
-      noCustomers.classList.add('hidden');
-      container.innerHTML = filtered.map(c => {
+    noCustomers.classList.add('hidden');
+    
+    container.innerHTML = filtered.map(c => {
         const balance = getCustomerBalance(c.customer_id);
         const isConfirming = deleteConfirmId === c.__backendId;
         const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
+        const dropdownId = `dropdown-${c.__backendId}`;
         
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow due-customer-card" data-id="${c.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
-                <div class="relative">
-                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
-                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
-                    📷
-                  </button>
+            <div class="bg-white rounded-xl p-4 card-shadow due-customer-card mb-3" data-id="${c.__backendId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
+                        <div class="relative">
+                            <img src="${customerImage}" class="customer-image" alt="${c.customer_name}" 
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48'">
+                            <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                                📷
+                            </button>
+                        </div>
+                        <div class="flex-1">
+                            ${(() => {
+                                const overdue = isOverdue(c.next_payment_date);
+                                const overdueClass = overdue ? 'text-red-600 font-bold' : 'text-gray-800';
+                                const overdueBadge = overdue ? '<span class="overdue-badge ml-2" style="background:#fee2e2;color:#b91c1c;font-size:0.7rem;padding:2px 6px;border-radius:12px;">⏰ overdue</span>' : '';
+                                return `<h3 class="font-semibold ${overdueClass}">${c.customer_name}${overdueBadge}</h3>`;
+                            })()}
+                            <p class="text-sm text-gray-500">${c.mobile ? `<span class="flex items-center gap-1">📞 ${c.mobile}</span>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                            ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                            <p class="font-bold text-red-600">${formatCurrency(balance)}</p>
+                            <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'বাকি' : 'Due'}</p>
+                        </div>
+                        ${isConfirming ? `
+                            <div class="flex gap-1 justify-end">
+                                <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                            </div>
+                        ` : `
+                            <div class="dropdown-menu" style="position:static;display:inline-block;">
+                                <div class="three-dot-btn" onclick="toggleDropdown('${dropdownId}', event, '${c.customer_name.replace(/'/g, "\\'")}')" style="width:32px;height:32px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:bold;color:#4b5563;">
+                                    ⋮
+                                </div>
+                                <div id="${dropdownId}" class="dropdown-content" style="display:none;position:fixed;background:white;min-width:160px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+                                    <div class="dropdown-name-header" style="padding:10px 16px;background:#059669;color:white;font-weight:bold;font-size:13px;border-bottom:1px solid #047857;text-align:center;">
+                                        👤 ${c.customer_name}
+                                    </div>
+                                    <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        📤 শেয়ার করুন
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        💳 নগদ/বিকাশ
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        🤖 AI বিশ্লেষণ
+                                    </div>
+                                    <div class="dropdown-item warning" onclick="openEditCustomerModal('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        ✏️ এডিট
+                                    </div>
+                                    <div class="dropdown-item danger" onclick="initiateDeleteCustomer('${c.__backendId}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                        🗑️ ডিলিট
+                                    </div>
+                                </div>
+                            </div>
+                        `}
+                    </div>
                 </div>
-                <div class="flex-1">
-                  ${(() => {
-  const overdue = isOverdue(c.next_payment_date);
-  const overdueClass = overdue ? 'text-red-600 font-bold' : 'text-gray-800';
-  const overdueBadge = overdue ? '<span class="overdue-badge ml-2">⏰ overdue</span>' : '';
-  return `<h3 class="font-semibold ${overdueClass}">${c.customer_name}${overdueBadge}</h3>`;
-})()}
-                  <p class="text-sm text-gray-500">${c.mobile ? `<a href="tel:${c.mobile}" class="hover:text-emerald-600 flex items-center gap-1" onclick="event.stopPropagation()">📞 ${c.mobile}</a>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
-                </div>
-              </div>
-              <div class="text-right">
-                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
-                  <p class="font-bold text-red-600">${formatCurrency(balance)}</p>
-                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'বাকি' : 'Due'}</p>
-                </div>
-                ${isConfirming ? `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-                  </div>
-                ` : `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                      </svg>
-        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
-    💳
-</button>
-          																															<button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
-    🤖
-</button>
-                    </button>
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
-                  </div>
-                `}
-              </div>
             </div>
-          </div>
         `;
-      }).join('');
+    }).join('');
+}
+
+   function renderAdvanceCustomers() {
+    const customers = getCustomers();
+    const container = document.getElementById('advance-customers-list');
+    const noCustomers = document.getElementById('no-advance-customers');
+
+    let filtered = customers.filter(c => getCustomerBalance(c.customer_id) < 0);
+    
+    if (searchQuery) {
+        filtered = filtered.filter(c => 
+            c.customer_name.toLowerCase().includes(searchQuery) ||
+            (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+        );
     }
 
-    function renderAdvanceCustomers() {
-      const customers = getCustomers();
-      const container = document.getElementById('advance-customers-list');
-      const noCustomers = document.getElementById('no-advance-customers');
-
-      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) < 0);
-      
-      if (searchQuery) {
-        filtered = filtered.filter(c => 
-          c.customer_name.toLowerCase().includes(searchQuery) ||
-          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
-        );
-      }
-
-      if (filtered.length === 0) {
+    if (filtered.length === 0) {
         container.innerHTML = '';
         noCustomers.classList.remove('hidden');
         return;
-      }
+    }
 
-      noCustomers.classList.add('hidden');
-      container.innerHTML = filtered.map(c => {
+    noCustomers.classList.add('hidden');
+    
+    container.innerHTML = filtered.map(c => {
         const balance = Math.abs(getCustomerBalance(c.customer_id));
         const isConfirming = deleteConfirmId === c.__backendId;
         const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
+        const dropdownId = `dropdown-${c.__backendId}`;
         
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow advance-customer-card" data-id="${c.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
-                <div class="relative">
-                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
-                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
-                    📷
-                  </button>
+            <div class="bg-white rounded-xl p-4 card-shadow advance-customer-card mb-3" data-id="${c.__backendId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
+                        <div class="relative">
+                            <img src="${customerImage}" class="customer-image" alt="${c.customer_name}" 
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48'">
+                            <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                                📷
+                            </button>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                            <p class="text-sm text-gray-500">${c.mobile ? `<span class="flex items-center gap-1">📞 ${c.mobile}</span>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                            ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                            <p class="font-bold text-yellow-600">${formatCurrency(balance)}</p>
+                            <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance'}</p>
+                        </div>
+                        ${isConfirming ? `
+                            <div class="flex gap-1 justify-end">
+                                <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                            </div>
+                        ` : `
+                            <div class="dropdown-menu" style="position:static;display:inline-block;">
+                                <div class="three-dot-btn" onclick="toggleDropdown('${dropdownId}', event, '${c.customer_name.replace(/'/g, "\\'")}')" style="width:32px;height:32px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:bold;color:#4b5563;">
+                                    ⋮
+                                </div>
+                                <div id="${dropdownId}" class="dropdown-content" style="display:none;position:fixed;background:white;min-width:160px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+                                    <div class="dropdown-name-header" style="padding:10px 16px;background:#059669;color:white;font-weight:bold;font-size:13px;border-bottom:1px solid #047857;text-align:center;">
+                                        👤 ${c.customer_name}
+                                    </div>
+                                    <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        📤 শেয়ার করুন
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        💳 নগদ/বিকাশ
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        🤖 AI বিশ্লেষণ
+                                    </div>
+                                    <div class="dropdown-item warning" onclick="openEditCustomerModal('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        ✏️ এডিট
+                                    </div>
+                                    <div class="dropdown-item danger" onclick="initiateDeleteCustomer('${c.__backendId}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                        🗑️ ডিলিট
+                                    </div>
+                                </div>
+                            </div>
+                        `}
+                    </div>
                 </div>
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                  <p class="text-sm text-gray-500">${c.mobile ? `<a href="tel:${c.mobile}" class="hover:text-emerald-600 flex items-center gap-1" onclick="event.stopPropagation()">📞 ${c.mobile}</a>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
-                </div>
-              </div>
-              <div class="text-right">
-                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
-                  <p class="font-bold text-yellow-600">${formatCurrency(balance)}</p>
-                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'অগ্রিম' : 'Advance'}</p>
-                </div>
-                ${isConfirming ? `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-                  </div>
-                ` : `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                      </svg>
-        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
-    💳
-</button>
-        <button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
-    🤖
-</button>
-                    </button>
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
-                  </div>
-                `}
-              </div>
             </div>
-          </div>
         `;
-      }).join('');
+    }).join('');
+}
+
+ function renderNonDueCustomers() {
+    const customers = getCustomers();
+    const container = document.getElementById('non-due-customers-list');
+    const noCustomers = document.getElementById('no-non-due-customers');
+
+    let filtered = customers.filter(c => getCustomerBalance(c.customer_id) === 0);
+    
+    if (searchQuery) {
+        filtered = filtered.filter(c => 
+            c.customer_name.toLowerCase().includes(searchQuery) ||
+            (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
+        );
     }
 
-    function renderNonDueCustomers() {
-      const customers = getCustomers();
-      const container = document.getElementById('non-due-customers-list');
-      const noCustomers = document.getElementById('no-non-due-customers');
-
-      let filtered = customers.filter(c => getCustomerBalance(c.customer_id) === 0);
-      
-      if (searchQuery) {
-        filtered = filtered.filter(c => 
-          c.customer_name.toLowerCase().includes(searchQuery) ||
-          (c.mobile && c.mobile.toLowerCase().includes(searchQuery))
-        );
-      }
-
-      if (filtered.length === 0) {
+    if (filtered.length === 0) {
         container.innerHTML = '';
         noCustomers.classList.remove('hidden');
         return;
-      }
+    }
 
-      noCustomers.classList.add('hidden');
-      container.innerHTML = filtered.map(c => {
+    noCustomers.classList.add('hidden');
+    
+    container.innerHTML = filtered.map(c => {
         const isConfirming = deleteConfirmId === c.__backendId;
         const customerImage = c.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48`;
+        const dropdownId = `dropdown-${c.__backendId}`;
         
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow non-due-customer-card" data-id="${c.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
-                <div class="relative">
-                  <img src="${customerImage}" class="customer-image" alt="${c.customer_name}">
-                  <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
-                    📷
-                  </button>
+            <div class="bg-white rounded-xl p-4 card-shadow non-due-customer-card mb-3" data-id="${c.__backendId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="viewCustomerHistory('${c.customer_id}')">
+                        <div class="relative">
+                            <img src="${customerImage}" class="customer-image" alt="${c.customer_name}" 
+                                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(c.customer_name)}&background=059669&color=fff&size=48'">
+                            <button onclick="event.stopPropagation(); openImageUploadModal('customer', '${c.customer_id}')" class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-emerald-600">
+                                📷
+                            </button>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
+                            <p class="text-sm text-gray-500">${c.mobile ? `<span class="flex items-center gap-1">📞 ${c.mobile}</span>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
+                            ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
+                            <p class="font-bold text-gray-600">৳০</p>
+                            <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'শূন্য' : 'Zero'}</p>
+                        </div>
+                        ${isConfirming ? `
+                            <div class="flex gap-1 justify-end">
+                                <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                            </div>
+                        ` : `
+                            <div class="dropdown-menu" style="position:static;display:inline-block;">
+                                <div class="three-dot-btn" onclick="toggleDropdown('${dropdownId}', event, '${c.customer_name.replace(/'/g, "\\'")}')" style="width:32px;height:32px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;font-weight:bold;color:#4b5563;">
+                                    ⋮
+                                </div>
+                                <div id="${dropdownId}" class="dropdown-content" style="display:none;position:fixed;background:white;min-width:160px;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:99999;overflow:hidden;">
+                                    <div class="dropdown-name-header" style="padding:10px 16px;background:#059669;color:white;font-weight:bold;font-size:13px;border-bottom:1px solid #047857;text-align:center;">
+                                        👤 ${c.customer_name}
+                                    </div>
+                                    <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        📤 শেয়ার করুন
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        💳 নগদ/বিকাশ
+                                    </div>
+                                    <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        🤖 AI বিশ্লেষণ
+                                    </div>
+                                    <div class="dropdown-item warning" onclick="openEditCustomerModal('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+                                        ✏️ এডিট
+                                    </div>
+                                    <div class="dropdown-item danger" onclick="initiateDeleteCustomer('${c.__backendId}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                        🗑️ ডিলিট
+                                    </div>
+                                </div>
+                            </div>
+                        `}
+                    </div>
                 </div>
-                <div class="flex-1">
-                  <h3 class="font-semibold text-gray-800">${c.customer_name}</h3>
-                  <p class="text-sm text-gray-500">${c.mobile ? `<a href="tel:${c.mobile}" class="hover:text-emerald-600 flex items-center gap-1" onclick="event.stopPropagation()">📞 ${c.mobile}</a>` : (currentLanguage === 'bn' ? 'মোবাইল নেই' : 'No mobile')}</p>
-                  ${c.address ? `<p class="text-xs text-gray-400">${c.address.substring(0, 20)}${c.address.length > 20 ? '...' : ''}</p>` : ''}
-                </div>
-              </div>
-              <div class="text-right">
-                <div onclick="viewCustomerHistory('${c.customer_id}')" class="cursor-pointer mb-2">
-                  <p class="font-bold text-gray-600">৳০</p>
-                  <p class="text-xs text-gray-400">${currentLanguage === 'bn' ? 'শূন্য' : 'Zero'}</p>
-                </div>
-                ${isConfirming ? `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="confirmDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-                  </div>
-                ` : `
-                  <div class="flex gap-1 justify-end">
-                    <button onclick="shareCustomerCard('${c.customer_id}')" class="share-icon-btn w-8 h-8 text-sm" title="${t('share_customer')}">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                      </svg>
-        <button onclick="showCustomerActions('${c.customer_id}')" class="px-2 py-1 bg-pink-500 text-white text-xs rounded hover:bg-pink-600" title="মোবাইল ব্যাংকিং">
-    💳
-</button>
-        <button onclick="showCustomerAIAnalysis('${c.customer_id}')" class="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600" title="AI বিশ্লেষণ">
-    🤖
-</button>
-                    </button>
-                    <button onclick="openEditCustomerModal('${c.customer_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                    <button onclick="initiateDeleteCustomer('${c.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
-                  </div>
-                `}
-              </div>
             </div>
-          </div>
         `;
-      }).join('');
-    }
+    }).join('');
+}
 
     function renderFundProviders() {
       const providers = getFundProviders();
@@ -7659,6 +7755,121 @@ function openPaymentFromAdvice(customerId, suggestedAmount) {
     
     if (typeof playSound === 'function') playSound('cash');
 }
+  
+  
+// ============================================
+// ড্রপডাউন মেনু - সম্পূর্ণ ফাংশন (কপি করে পেস্ট করুন)
+// ============================================
+
+let activeDropdownId = null;
+let activeCustomerName = '';
+
+function toggleDropdown(dropdownId, event, customerName) {
+    event.stopPropagation();
+    event.preventDefault();
+    
+    const dropdown = document.getElementById(dropdownId);
+    
+    if (!dropdown) {
+        console.error("Dropdown not found:", dropdownId);
+        return;
+    }
+    
+    // যদি একই ড্রপডাউন খোলা থাকে, তাহলে বন্ধ করো
+    if (activeDropdownId === dropdownId) {
+        closeAllDropdowns();
+        return;
+    }
+    
+    // সব ড্রপডাউন বন্ধ করো
+    closeAllDropdowns();
+    
+    // নতুন ড্রপডাউন খোলো
+    const btn = event.currentTarget;
+    const btnRect = btn.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const dropdownHeight = 280;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+    dropdown.style.position = 'absolute';
+    
+    // নিচে জায়গা আছে কিনা চেক করে পজিশন নির্ধারণ
+    if (btnRect.bottom + dropdownHeight < viewportHeight) {
+        dropdown.style.top = (btnRect.top + scrollTop + 35) + 'px';
+        dropdown.style.bottom = 'auto';
+    } else {
+        dropdown.style.bottom = (viewportHeight - btnRect.top + scrollTop - 10) + 'px';
+        dropdown.style.top = 'auto';
+    }
+    
+    dropdown.style.right = (window.innerWidth - btnRect.right - 5) + 'px';
+    dropdown.style.left = 'auto';
+    dropdown.style.display = 'block';
+    
+    activeDropdownId = dropdownId;
+    activeCustomerName = customerName;
+    
+    // ড্রপডাউনের ভিতরে নাম আপডেট করুন
+    const nameHeader = dropdown.querySelector('.dropdown-name-header');
+    if (nameHeader) {
+        nameHeader.innerHTML = `👤 ${customerName}`;
+    }
+}
+
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-content').forEach(dropdown => {
+        dropdown.style.display = 'none';
+    });
+    activeDropdownId = null;
+    activeCustomerName = '';
+}
+
+// ডকুমেন্টে ক্লিক করলে মেনু বন্ধ হবে (বাইরের জায়গায় ক্লিক করলে)
+document.addEventListener('click', function(event) {
+    if (activeDropdownId !== null) {
+        const isDropdownButton = event.target.closest('.three-dot-btn');
+        const isDropdownContent = event.target.closest('.dropdown-content');
+        
+        if (!isDropdownButton && !isDropdownContent) {
+            event.stopPropagation();
+            event.preventDefault();
+            closeAllDropdowns();
+            return false;
+        }
+    }
+}, true);
+
+// ড্রপডাউন আইটেমে ক্লিক করলে কাজ করবে এবং মেনু বন্ধ হবে
+document.addEventListener('click', function(event) {
+    const dropdownItem = event.target.closest('.dropdown-item');
+    if (dropdownItem && activeDropdownId !== null) {
+        setTimeout(() => {
+            closeAllDropdowns();
+        }, 150);
+    }
+});
+
+// স্ক্রল করলে মেনু বন্ধ হবে
+window.addEventListener('scroll', function() {
+    if (activeDropdownId !== null) {
+        closeAllDropdowns();
+    }
+});
+
+// টাচ স্ক্রল করলেও বন্ধ হবে (মোবাইলের জন্য)
+window.addEventListener('touchmove', function() {
+    if (activeDropdownId !== null) {
+        closeAllDropdowns();
+    }
+});
+
+// উইন্ডো রিসাইজ করলে বন্ধ হবে
+window.addEventListener('resize', function() {
+    if (activeDropdownId !== null) {
+        closeAllDropdowns();
+    }
+});
+  
   
   // ============================================
 // 🤖 অ্যাডভান্সড এআই ফিচারস - স্মার্টার ভার্সন
