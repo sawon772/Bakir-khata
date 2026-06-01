@@ -531,6 +531,12 @@
     color: #dc2626;
 }
     
+    /* নোট এডিট বাটনের জন্য হোভার এফেক্ট */
+button[onclick*="openEditNoteModal"]:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+    
     /* ============================================
    প্রফেশনাল ডার্ক মোড স্টাইল
    ============================================ */
@@ -1669,31 +1675,45 @@
         </div>
         
         <!-- Transactions Tab - ডেট ফিল্টার যোগ করা হয়েছে -->
-        <div id="content-transactions" class="space-y-3 hidden">
-          <!-- নতুন ডেট ফিল্টার বাটন গ্রুপ -->
-          <div class="bg-white rounded-xl p-3 card-shadow mb-3">
-            <p class="text-sm font-medium text-gray-700 mb-2">📅 তারিখ অনুযায়ী ফিল্টার</p>
-            <div class="flex flex-wrap gap-2">
-              <button onclick="setDateFilter('today')" id="date-filter-today" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">আজ</button>
-              <button onclick="setDateFilter('week')" id="date-filter-week" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
-              <button onclick="setDateFilter('month')" id="date-filter-month" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
-              <button onclick="setDateFilter('year')" id="date-filter-year" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
-              <button onclick="setDateFilter('all')" id="date-filter-all" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">সব সময়</button>
-            </div>
-          </div>
-          
-          <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
-            <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white whitespace-nowrap" data-bn="সব" data-en="All">সব</button>
-            <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="বাকি" data-en="Due">বাকি</button>
-            <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
-            <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
-          </div>
-          <div id="transactions-list" class="space-y-2"></div>
-          <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
-            <p class="text-4xl mb-2">📝</p>
-            <p class="no-transactions-text" data-bn="কোনো লেনদেন নেই" data-en="No transactions">কোনো লেনদেন নেই</p>
-          </div>
+        <!-- Transactions Tab - ডেট ফিল্টার যোগ করা হয়েছে -->
+<div id="content-transactions" class="space-y-3 hidden">
+    <!-- নতুন ডেট ফিল্টার বাটন গ্রুপ -->
+    <div class="bg-white rounded-xl p-3 card-shadow mb-3">
+        <p class="text-sm font-medium text-gray-700 mb-2">📅 তারিখ অনুযায়ী ফিল্টার</p>
+        <div class="flex flex-wrap gap-2">
+            <button onclick="setDateFilter('today')" id="date-filter-today" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">আজ</button>
+            <button onclick="setDateFilter('week')" id="date-filter-week" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
+            <button onclick="setDateFilter('month')" id="date-filter-month" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
+            <button onclick="setDateFilter('year')" id="date-filter-year" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
+            <button onclick="setDateFilter('all')" id="date-filter-all" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">সব সময়</button>
         </div>
+    </div>
+    
+    <!-- ========== নতুন বাল্ক ডিলিট বাটন ========== -->
+    <div class="bg-red-50 rounded-xl p-3 mb-3 border border-red-200">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+            <div>
+                <p class="text-sm font-bold text-red-700">⚠️  ডাটা ডিলিট করুন</p>
+                <p class="text-xs text-red-600">লেনদেনের ডাটা মুছুন (ব্যালেন্স শুণ্য হয়ে যাবে)</p>
+            </div>
+            <button onclick="openBulkDeleteModal()" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-all flex items-center gap-2">
+                <span>🗑️</span> ইতিহাস ডিলিট
+            </button>
+        </div>
+    </div>
+    
+    <div class="flex gap-2 mb-3 overflow-x-auto pb-1">
+        <button onclick="filterTransactions('all')" id="filter-all" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white whitespace-nowrap" data-bn="সব" data-en="All">সব</button>
+        <button onclick="filterTransactions('due')" id="filter-due" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="বাকি" data-en="Due">বাকি</button>
+        <button onclick="filterTransactions('payment')" id="filter-payment" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="পরিশোধ" data-en="Payment">পরিশোধ</button>
+        <button onclick="filterTransactions('fund')" id="filter-fund" class="transaction-filter-btn px-4 py-2 rounded-lg text-sm font-medium bg-gray-200 text-gray-700 whitespace-nowrap" data-bn="ফান্ড" data-en="Fund">ফান্ড</button>
+    </div>
+    <div id="transactions-list" class="space-y-2"></div>
+    <div id="no-transactions" class="text-center py-10 text-gray-500 hidden">
+        <p class="text-4xl mb-2">📝</p>
+        <p class="no-transactions-text" data-bn="কোনো লেনদেন নেই" data-en="No transactions">কোনো লেনদেন নেই</p>
+    </div>
+</div>
         
         <!-- Reports Tab -->
         <div id="content-reports" class="space-y-4 hidden">
@@ -4799,84 +4819,87 @@ function isOverdue(dateStr) {
 
     // আপডেটেড renderTransactions ফাংশন - ডেট ফিল্টার সহ
     function renderTransactions() {
-      const transactions = getFilteredTransactionsForDisplay();
-      const container = document.getElementById('transactions-list');
-      const noTransactions = document.getElementById('no-transactions');
+    const transactions = getFilteredTransactionsForDisplay();
+    const container = document.getElementById('transactions-list');
+    const noTransactions = document.getElementById('no-transactions');
 
-      if (transactions.length === 0) {
+    if (transactions.length === 0) {
         container.innerHTML = '';
         noTransactions.classList.remove('hidden');
         return;
-      }
+    }
 
-      noTransactions.classList.add('hidden');
-      container.innerHTML = transactions.map(t => {
+    noTransactions.classList.add('hidden');
+    container.innerHTML = transactions.map(t => {
         let icon, color, bgColor, typeText, name, sign;
         
         if (t.type === 'due') {
-          icon = '📝';
-          color = 'text-red-600';
-          bgColor = 'bg-red-50';
-          typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
-          name = t.customer_name;
-          sign = '+';
+            icon = '📝';
+            color = 'text-red-600';
+            bgColor = 'bg-red-50';
+            typeText = currentLanguage === 'bn' ? 'বাকি' : 'Due';
+            name = t.customer_name;
+            sign = '+';
         } else if (t.type === 'payment') {
-          icon = '💰';
-          color = 'text-emerald-600';
-          bgColor = 'bg-emerald-50';
-          typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
-          name = t.customer_name;
-          sign = '-';
+            icon = '💰';
+            color = 'text-emerald-600';
+            bgColor = 'bg-emerald-50';
+            typeText = currentLanguage === 'bn' ? 'পরিশোধ' : 'Payment';
+            name = t.customer_name;
+            sign = '-';
         } else if (t.type === 'fund-receive') {
-          icon = '💰';
-          color = 'text-purple-600';
-          bgColor = 'bg-purple-50';
-          typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
-          name = t.provider_name;
-          sign = '+';
+            icon = '💰';
+            color = 'text-purple-600';
+            bgColor = 'bg-purple-50';
+            typeText = currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Fund Receive';
+            name = t.provider_name;
+            sign = '+';
         } else if (t.type === 'fund-payment') {
-          icon = '💸';
-          color = 'text-indigo-600';
-          bgColor = 'bg-indigo-50';
-          typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
-          name = t.provider_name;
-          sign = '-';
+            icon = '💸';
+            color = 'text-indigo-600';
+            bgColor = 'bg-indigo-50';
+            typeText = currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Fund Payment';
+            name = t.provider_name;
+            sign = '-';
         }
         
         const isConfirming = deleteConfirmId === t.__backendId;
         
         return `
-          <div class="bg-white rounded-xl p-4 card-shadow" data-id="${t.__backendId}">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center">
-                  ${icon}
+            <div class="bg-white rounded-xl p-4 card-shadow" data-id="${t.__backendId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center">
+                            ${icon}
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-800">${name}</h3>
+                            <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right flex items-center gap-2">
+                        <div>
+                            <p class="font-bold ${color}">${sign}${formatCurrency(t.amount)}</p>
+                            <p class="text-xs text-gray-400">${typeText}</p>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="openEditNoteModal('${t.__backendId}', '${typeText}', '${name.replace(/'/g, "\\'")}')" class="p-2 text-blue-500 hover:text-blue-700" title="${currentLanguage === 'bn' ? 'নোট এডিট করুন' : 'Edit Note'}">
+                                📝
+                            </button>
+                            ${isConfirming ? `
+                                <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
+                                <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
+                            ` : `
+                                <button onclick="initiateDeleteTransaction('${t.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
+                            `}
+                        </div>
+                    </div>
                 </div>
-                <div>
-                  <h3 class="font-semibold text-gray-800">${name}</h3>
-                  <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
-                </div>
-              </div>
-              <div class="text-right flex items-center gap-2">
-                <div>
-                  <p class="font-bold ${color}">${sign}${formatCurrency(t.amount)}</p>
-                  <p class="text-xs text-gray-400">${typeText}</p>
-                </div>
-                ${isConfirming ? `
-                  <div class="flex gap-1">
-                    <button onclick="confirmDeleteTransaction('${t.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded">${currentLanguage === 'bn' ? 'হ্যাঁ' : 'Yes'}</button>
-                    <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
-                  </div>
-                ` : `
-                  <button onclick="initiateDeleteTransaction('${t.__backendId}')" class="p-2 text-gray-400 hover:text-red-500">🗑️</button>
-                `}
-              </div>
+                ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : '<p class="mt-2 text-xs text-gray-400 italic">📝 কোন নোট নেই</p>'}
             </div>
-            ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : ''}
-          </div>
         `;
-      }).join('');
-    }
+    }).join('');
+}
 
   function renderDueCustomers() {
     const customers = getCustomers();
@@ -6575,6 +6598,280 @@ async function handleFileImport(event) {
     hideGlobalLoader();
     event.target.value = '';
   }
+}
+  
+  // ============================================
+// বাল্ক ডিলিট ফাংশন (শুধু ইতিহাস মুছে ফেলবে, ব্যালেন্স অপরিবর্তিত থাকবে)
+// ============================================
+
+function openBulkDeleteModal() {
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    // কাস্টমার লিস্ট বের করুন
+    const customers = getCustomers();
+    
+    content.innerHTML = `
+        <div class="max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
+                <h2 class="text-xl font-bold text-gray-800">🗑️ ডাটা ডিলিট</h2>
+                <button onclick="closeModal()" class="text-gray-400 text-2xl hover:text-gray-600">&times;</button>
+            </div>
+            
+            <div class="bg-yellow-50 rounded-xl p-3 mb-4 border-l-4 border-yellow-500">
+                <p class="text-sm text-yellow-800 font-bold">⚠️ সতর্কতা:</p>
+                <p class="text-xs text-yellow-700">এই অপশন ডাটা মুছে ফেলবে।</p>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- অপশন ১: কাস্টমার সিলেক্ট -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">👥 নির্দিষ্ট কাস্টমার</label>
+                    <select id="bulk-delete-customer" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+                        <option value="">সব কাস্টমার</option>
+                        ${customers.map(c => `<option value="${c.customer_id}">${c.customer_name} (${c.mobile || 'মোবাইল নেই'})</option>`).join('')}
+                    </select>
+                </div>
+                
+                <!-- অপশন ২: তারিখ রেঞ্জ -->
+                <div class="border-t pt-3">
+                    <p class="text-sm font-medium text-gray-700 mb-2">📅 তারিখ রেঞ্জ (ঐচ্ছিক)</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">শুরুর তারিখ</label>
+                            <input type="date" id="bulk-delete-start-date" class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">শেষের তারিখ</label>
+                            <input type="date" id="bulk-delete-end-date" class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- অপশন ৩: মাস সিলেক্ট -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">📆 নির্দিষ্ট মাস</label>
+                    <select id="bulk-delete-month" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+                        <option value="">সব সময়</option>
+                        ${getLast12MonthsOptions()}
+                    </select>
+                </div>
+                
+                <!-- অপশন ৪: টাইপ সিলেক্ট -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">🏷️ লেনদেনের ধরণ</label>
+                    <select id="bulk-delete-type" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none">
+                        <option value="all">সব ধরণ</option>
+                        <option value="due">শুধু বাকি এন্ট্রি</option>
+                        <option value="payment">শুধু পেমেন্ট এন্ট্রি</option>
+                        <option value="fund-receive">শুধু ফান্ড গ্রহণ</option>
+                        <option value="fund-payment">শুধু ফান্ড পরিশোধ</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+                <button onclick="confirmBulkDelete()" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700">
+                    🗑️ ডাটা ডিলিট করুন
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+// গত ১২ মাসের অপশন তৈরি
+function getLast12MonthsOptions() {
+    let options = '';
+    const today = new Date();
+    for (let i = 0; i < 12; i++) {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthName = date.toLocaleString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' });
+        const monthValue = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        options += `<option value="${monthValue}">${monthName}</option>`;
+    }
+    return options;
+}
+
+// বাল্ক ডিলিট কনফার্মেশন ও এক্সিকিউশন
+async function confirmBulkDelete() {
+    const customerId = document.getElementById('bulk-delete-customer').value;
+    const startDate = document.getElementById('bulk-delete-start-date').value;
+    const endDate = document.getElementById('bulk-delete-end-date').value;
+    const monthValue = document.getElementById('bulk-delete-month').value;
+    const transactionType = document.getElementById('bulk-delete-type').value;
+    
+    // নিশ্চিতকরণ মেসেজ
+    let confirmMsg = '⚠️ সতর্কতা: এই অপারেশন কাস্টমারের ডাটা মুছে ফেলবে।\n\nলেনদেন ডিলিট করতে চান?\n\n';
+    
+    if (customerId) {
+        const customer = getCustomers().find(c => c.customer_id === customerId);
+        confirmMsg += `কাস্টমার: ${customer.customer_name}\n`;
+    }
+    if (startDate && endDate) {
+        confirmMsg += `তারিখ রেঞ্জ: ${startDate} থেকে ${endDate}\n`;
+    } else if (monthValue) {
+        const [year, month] = monthValue.split('-');
+        const monthName = new Date(year, month - 1).toLocaleString(currentLanguage === 'bn' ? 'bn-BD' : 'en-US', { month: 'long', year: 'numeric' });
+        confirmMsg += `মাস: ${monthName}\n`;
+    }
+    
+    if (!confirm(confirmMsg + '\n\nডিলিট করলে ডাটা ফিরানো যাবে না। নিশ্চিত?')) {
+        return;
+    }
+    
+    showGlobalLoader("ডাটা ডিলিট করা হচ্ছে...");
+    
+    try {
+        // ফিল্টার অনুযায়ী লেনদেন সিলেক্ট করুন
+        let transactionsToDelete = [...allData];
+        
+        // শুধু লেনদেন টাইপের ডাটা ফিল্টার
+        transactionsToDelete = transactionsToDelete.filter(t => 
+            t.type === 'due' || t.type === 'payment' || t.type === 'fund-receive' || t.type === 'fund-payment'
+        );
+        
+        // কাস্টমার ফিল্টার
+        if (customerId) {
+            transactionsToDelete = transactionsToDelete.filter(t => t.customer_id === customerId);
+        }
+        
+        // টাইপ ফিল্টার
+        if (transactionType !== 'all') {
+            transactionsToDelete = transactionsToDelete.filter(t => t.type === transactionType);
+        }
+        
+        // তারিখ রেঞ্জ ফিল্টার
+        if (startDate && endDate) {
+            transactionsToDelete = transactionsToDelete.filter(t => t.date >= startDate && t.date <= endDate);
+        }
+        // মাস ফিল্টার
+        else if (monthValue) {
+            const [year, month] = monthValue.split('-');
+            transactionsToDelete = transactionsToDelete.filter(t => {
+                const tDate = new Date(t.date);
+                return tDate.getFullYear() === parseInt(year) && (tDate.getMonth() + 1) === parseInt(month);
+            });
+        }
+        
+        if (transactionsToDelete.length === 0) {
+            showToast('কোনো লেনদেন পাওয়া যায়নি!', 'warning');
+            hideGlobalLoader();
+            closeModal();
+            return;
+        }
+        
+        // ডিলিট কনফার্মেশন
+        if (!confirm(`মোট ${transactionsToDelete.length} টি লেনদেন ডিলিট হবে।\n\nচালিয়ে যেতে চান?`)) {
+            hideGlobalLoader();
+            return;
+        }
+        
+        // প্রতিটি লেনদেন ডিলিট করুন
+        let deletedCount = 0;
+        for (const transaction of transactionsToDelete) {
+            await deleteData(transaction);
+            deletedCount++;
+        }
+        
+        showToast(`✅ ${deletedCount} টি লেনদেনের ইতিহাস মুছে ফেলা হয়েছে!`, 'success');
+        playSound('success');
+        closeModal();
+        renderCurrentView(); // ভিউ রিফ্রেশ
+        
+    } catch (error) {
+        console.error('Bulk delete error:', error);
+        showToast('ডিলিট করতে সমস্যা হয়েছে: ' + error.message, 'error');
+        playSound('error');
+    } finally {
+        hideGlobalLoader();
+    }
+}
+  
+  // নোট এডিট মডাল খোলার ফাংশন
+function openEditNoteModal(transactionId, transactionType, customerName) {
+    const transaction = allData.find(d => d.__backendId === transactionId);
+    if (!transaction) {
+        showToast('লেনদেন পাওয়া যায়নি!', 'error');
+        return;
+    }
+    
+    const currentNote = transaction.note || '';
+    
+    const modal = document.getElementById('modal-overlay');
+    const content = document.getElementById('modal-content');
+    
+    content.innerHTML = `
+        <div class="max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2">
+                <h2 class="text-xl font-bold text-gray-800">✏️ নোট এডিট করুন</h2>
+                <button onclick="closeModal()" class="text-gray-400 text-2xl hover:text-gray-600">&times;</button>
+            </div>
+            
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 mb-4">
+                <p class="text-sm text-gray-600">লেনদেনের তথ্য:</p>
+                <p class="font-bold text-gray-800">${transactionType} - ${customerName}</p>
+                <p class="text-sm text-gray-600">তারিখ: ${formatDate(transaction.date)} | পরিমাণ: ${formatCurrency(transaction.amount)}</p>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">📌 নোট (কারণ/বিবরণ)</label>
+                <textarea id="edit-note-text" rows="4" 
+                    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
+                    placeholder="যেমন: পণ্যের নাম, চেক নম্বর, দেনার কারণ ইত্যাদি...">${escapeHtml(currentNote)}</textarea>
+                <p class="text-xs text-gray-400 mt-1">⚠️ শুধুমাত্র নোট পরিবর্তন করা যাবে। টাকা বা তারিখ পরিবর্তন করা যাবে না।</p>
+            </div>
+            
+            <div class="flex gap-3 mt-4">
+                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">${currentLanguage === 'bn' ? 'বাতিল' : 'Cancel'}</button>
+                <button onclick="saveTransactionNote('${transactionId}')" class="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-medium hover:bg-emerald-700">
+                    💾 নোট সংরক্ষণ করুন
+                </button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+// নোট সেভ করার ফাংশন
+async function saveTransactionNote(transactionId) {
+    const transaction = allData.find(d => d.__backendId === transactionId);
+    if (!transaction) {
+        showToast('লেনদেন পাওয়া যায়নি!', 'error');
+        closeModal();
+        return;
+    }
+    
+    const newNote = document.getElementById('edit-note-text').value.trim();
+    
+    showGlobalLoader("নোট সংরক্ষণ করা হচ্ছে...");
+    
+    try {
+        transaction.note = newNote;
+        // আপডেট টাইমস্ট্যাম্প (ঐচ্ছিক)
+        transaction.note_updated_at = new Date().toISOString();
+        
+        const result = await updateData(transaction);
+        
+        if (result.isOk) {
+            showToast(currentLanguage === 'bn' ? '✅ নোট সংরক্ষণ করা হয়েছে!' : '✅ Note saved!', 'success');
+            playSound('success');
+            closeModal();
+            renderTransactions(); // লেনদেন লিস্ট রিফ্রেশ
+            renderCurrentView(); // ভিউ রিফ্রেশ
+        } else {
+            showToast(currentLanguage === 'bn' ? 'নোট সংরক্ষণ ব্যর্থ হয়েছে' : 'Failed to save note', 'error');
+            playSound('error');
+        }
+    } catch (error) {
+        console.error('Error saving note:', error);
+        showToast(currentLanguage === 'bn' ? 'ত্রুটি: ' + error.message : 'Error: ' + error.message, 'error');
+    } finally {
+        hideGlobalLoader();
+    }
 }
   
   // ============================================
