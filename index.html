@@ -1577,6 +1577,7 @@ button[onclick*="openEditNoteModal"]:hover {
         <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
         <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📝 লেনদেন" data-en="📝 Transactions">📝 লেনদেন</button>
         <button onclick="showTab('reports')" id="tab-reports" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📊 রিপোর্ট" data-en="📊 Reports">📊 রিপোর্ট</button>
+        <button onclick="showTab('account')" id="tab-account" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📊 হিসাব" data-en="📊 Account">📊 হিসাব</button>
       </div>
     </div>
     
@@ -1717,6 +1718,7 @@ button[onclick*="openEditNoteModal"]:hover {
         
         <!-- Reports Tab -->
         <div id="content-reports" class="space-y-4 hidden">
+         
           <div class="bg-white rounded-xl p-4 card-shadow">
             <h3 class="reports-summary-title font-bold text-lg text-gray-800 mb-3" data-bn="📈 সারাংশ" data-en="📈 Summary">📈 সারাংশ</h3>
             <!-- মাসিক লেনদেন চার্ট -->
@@ -1778,6 +1780,7 @@ button[onclick*="openEditNoteModal"]:hover {
             <h3 class="top-lenders-title font-bold text-lg text-gray-800 mb-3" data-bn="💰 সর্বোচ্চ ফান্ড দাতা" data-en="💰 Top Fund Providers">💰 সর্বোচ্চ ফান্ড দাতা</h3>
             <div id="top-lenders" class="space-y-2"></div>
           </div>
+          <!-- ইতিহাস দেখানোর সেকশন -->
           <button onclick="downloadPDFReport()" class="w-full btn-purple text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 mt-3">
   📄 PDF রিপোর্ট ডাউনলোড করুন
 </button>
@@ -1790,6 +1793,39 @@ button[onclick*="openEditNoteModal"]:hover {
         </div>
       </div>
     </div>
+
+<!-- 👇 এখানে account ট্যাব বসবে (রিপোর্টের পর) -->
+<div id="content-account" class="space-y-4 hidden">
+  <div class="bg-white rounded-xl p-4 card-shadow">
+    <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
+      <h3 class="font-bold text-lg text-gray-800">📊 দোকানের হিসাব মিলান</h3>
+      <button onclick="openCategoryManager()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">+ নতুন ক্যাটাগরি</button>
+    </div>
+
+    <div class="bg-red-50 p-3 rounded-xl mb-4 text-center">
+      <p class="text-xs text-red-600">ডিফল্ট মোট বাকি (পাওনা)</p>
+      <p id="total-due-balance" class="text-2xl font-bold text-red-700">৳০</p>
+    </div>
+
+    <div id="dynamic-category-inputs" class="space-y-2 mb-4"></div>
+
+    <div class="bg-gray-100 p-3 rounded-xl mt-3">
+      <div class="flex justify-between font-bold">
+        <span>📌 টোটাল হিসাব</span>
+        <span id="total-calculated-amount" class="text-emerald-700">৳০</span>
+      </div>
+    </div>
+
+    <div id="profit-loss-box" class="mt-3 p-3 rounded-xl text-center font-bold text-white hidden"></div>
+
+    <button onclick="saveAccountHistory()" class="w-full mt-4 btn-primary text-white py-2 rounded-xl font-medium">💾 হিসাব সংরক্ষণ করুন</button>
+    
+    <div class="mt-4 pt-4 border-t">
+      <h3 class="font-bold text-lg text-gray-800 mb-2">📜 হিসাব সংরক্ষণের ইতিহাস</h3>
+      <div id="account-history-list" class="max-h-64 overflow-y-auto space-y-2"></div>
+    </div>
+  </div>
+</div>
     
     
     <!-- Floating Action Buttons -->
@@ -1901,6 +1937,7 @@ button[onclick*="openEditNoteModal"]:hover {
     
     <!-- Toast Container -->
     <div id="toast-container" class="fixed top-20 right-4 z-50 space-y-2"></div>
+    
   </div>
 
   <script>
@@ -2278,6 +2315,10 @@ function updateDayName() {
     let currentImageUploadCustomerId = null;
     let verificationCode = null;
     let verificationExpiry = null;
+    // হিসাব সংরক্ষণের জন্য
+let accountCategories = [];   // [{ id, name }]
+let accountHistory = [];      // [{ date, categoriesData, totalCalculated, fundAtThatTime, profitLoss, previousProfitLossDiff }]
+let lastAccountSnapshot = null;
     // খরচের হিসাবের জন্য ভেরিয়েবল
 let expenses = [];
 let expenseCategories = ['খাবার', 'ভাড়া', 'বিল', 'কেনাকাটা', 'পরিবহন', 'চিকিৎসা', 'বিনোদন', 'অন্যান্য'];
@@ -4343,6 +4384,27 @@ function updateGoogleProfileImage(user) {
     function loadUserData(userId) {
   console.log('Loading data for user:', userId);
   const userRef = database.ref(`users/${userId}/data`);
+      
+      // ক্যাটাগরি লোড
+database.ref(`users/${userId}/account_categories`).on('value', (snap) => {
+  accountCategories = snap.val() || [];
+  renderCategoryInputs();
+});
+// হিসাব ইতিহাস লোড (অবজেক্ট থেকে অ্যারেতে কনভার্ট)
+database.ref(`users/${userId}/account_history`).on('value', (snap) => {
+  const data = snap.val();
+  if (data && typeof data === 'object') {
+    // অবজেক্ট থেকে অ্যারেতে কনভার্ট
+    accountHistory = Object.keys(data).map(key => ({
+      id: key,
+      ...data[key]
+    }));
+  } else {
+    accountHistory = [];
+  }
+  console.log("📜 হিসাব ইতিহাস লোড হয়েছে:", accountHistory.length);
+  renderHistorySummary();
+});
   
   userRef.on('value', (snapshot) => {
     const data = snapshot.val();
@@ -4375,6 +4437,8 @@ function updateGoogleProfileImage(user) {
   } else {
     allData = [];
   }
+      accountCategories = JSON.parse(localStorage.getItem('guest_account_categories') || '[]');
+accountHistory = JSON.parse(localStorage.getItem('guest_account_history') || '[]');
   renderCurrentView();
   
   // 👇 এই লাইনটি যোগ করুন - গেস্ট ডাটা লোড হওয়ার সাথে সাথে ব্যাকআপ নাও
@@ -4548,7 +4612,7 @@ function isOverdue(dateStr) {
     // Tab navigation
     function showTab(tab) {
       currentTab = tab;
-      ['customers', 'advance', 'non-due', 'funds', 'transactions', 'reports'].forEach(t => {
+      ['customers', 'advance', 'non-due', 'funds', 'transactions', 'reports', 'account'].forEach(t => {
         const element = document.getElementById(`content-${t}`);
         if (element) {
           element.classList.toggle('hidden', t !== tab);
@@ -6344,6 +6408,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
         }
         
         showToast(successMsg, 'success');
+      refreshAccountCalculation();
         playSound('cash');
         closeModal();
         renderCurrentView(); // ফান্ড তালিকা রিফ্রেশ করুন
@@ -6493,6 +6558,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
           loadGuestData();
         }
         showToast(currentLanguage === 'bn' ? 'ফান্ড লেনদেন মুছে ফেলা হয়েছে!' : 'Fund transaction deleted!', 'success');
+        refreshAccountCalculation();
         playSound('success');
       } else {
         showToast(currentLanguage === 'bn' ? 'মুছে ফেলা ব্যর্থ হয়েছে' : 'Delete failed', 'error');
@@ -6501,6 +6567,276 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
       deleteConfirmId = null;
     }
 
+  // ========== ক্যাটাগরি ম্যানেজমেন্ট ==========
+function openCategoryManager() {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  content.innerHTML = `
+    <h2 class="text-xl font-bold mb-4">📂 ক্যাটাগরি ব্যবস্থাপনা</h2>
+    <div id="category-list" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
+    <div class="flex gap-2">
+      <input type="text" id="new-cat-name" placeholder="নতুন ক্যাটাগরি (যেমন: বিকাশ, নগদ)" class="flex-1 px-3 py-2 border rounded-xl">
+      <button onclick="addNewCategory()" class="bg-emerald-600 text-white px-4 rounded-xl">যোগ</button>
+    </div>
+    <button onclick="closeModal()" class="w-full mt-4 py-2 bg-gray-200 rounded-xl">বন্ধ</button>
+  `;
+  renderCategoryListUI();
+  modal.classList.remove('hidden');
+}
+
+function renderCategoryListUI() {
+  const container = document.getElementById('category-list');
+  if (!container) return;
+  container.innerHTML = accountCategories.map((cat, idx) => `
+    <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
+      <span>📁 ${escapeHtml(cat.name)}</span>
+      <button onclick="deleteCategory(${idx})" class="text-red-500 text-sm">🗑️ ডিলিট</button>
+    </div>
+  `).join('');
+}
+
+function addNewCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if (!name) return;
+  accountCategories.push({ id: Date.now(), name });
+  saveCategoriesToBackend();
+  renderCategoryListUI();
+  renderCategoryInputs();
+  closeModal();
+  showToast('ক্যাটাগরি যোগ হয়েছে', 'success');
+}
+
+function deleteCategory(index) {
+  if (accountCategories.length <= 1) {
+    showToast('শেষ ক্যাটাগরি ডিলিট করা যাবে না', 'warning');
+    return;
+  }
+  accountCategories.splice(index, 1);
+  saveCategoriesToBackend();
+  renderCategoryListUI();
+  renderCategoryInputs();
+  showToast('ক্যাটাগরি ডিলিট হয়েছে', 'success');
+}
+
+function saveCategoriesToBackend() {
+  if (!isGuest && currentUser) {
+    database.ref(`users/${currentUser.uid}/account_categories`).set(accountCategories);
+  } else {
+    localStorage.setItem('guest_account_categories', JSON.stringify(accountCategories));
+  }
+}
+
+// ক্যাটাগরি ইনপুট ফিল্ড রেন্ডার
+function renderCategoryInputs() {
+  const container = document.getElementById('dynamic-category-inputs');
+  if (!container) return;
+  if (accountCategories.length === 0) {
+    accountCategories = [{ id: 1, name: 'বাকি' }];
+    saveCategoriesToBackend();
+  }
+  container.innerHTML = accountCategories.map(cat => `
+    <div class="flex items-center gap-2">
+      <label class="w-28 text-sm font-medium">${cat.name}</label>
+      <input type="number" class="category-amount flex-1 px-3 py-2 border rounded-xl" data-cat-id="${cat.id}" data-cat-name="${cat.name}" placeholder="টাকার পরিমাণ" value="0">
+    </div>
+  `).join('');
+  attachCategoryInputEvents();
+}
+
+function attachCategoryInputEvents() {
+  document.querySelectorAll('.category-amount').forEach(input => {
+    input.removeEventListener('input', calculateTotalAndProfit);
+    input.addEventListener('input', calculateTotalAndProfit);
+  });
+  calculateTotalAndProfit();
+}
+
+// টোটাল ও লাভ/লস ক্যালকুলেশন
+function calculateTotalAndProfit() {
+  let total = 0;
+  document.querySelectorAll('.category-amount').forEach(input => {
+    let val = parseFloat(input.value) || 0;
+    total += val;
+  });
+  document.getElementById('total-calculated-amount').innerText = formatCurrency(total);
+  
+  const totalFund = getTotalFundBalance();
+  const profitLoss = total - totalFund;
+  const profitLossBox = document.getElementById('profit-loss-box');
+  profitLossBox.classList.remove('hidden');
+  
+  let prevDiff = null;
+  if (lastAccountSnapshot) {
+    prevDiff = lastAccountSnapshot.profitLoss;
+  } else if (accountHistory.length > 0) {
+    prevDiff = accountHistory[accountHistory.length-1].profitLoss;
+  }
+  
+  let diffHtml = '';
+  if (prevDiff !== null) {
+    let diffVal = profitLoss - prevDiff;
+    let diffText = (diffVal >= 0 ? `+${formatCurrency(diffVal)}` : formatCurrency(diffVal));
+    let diffColor = diffVal >= 0 ? 'text-green-200' : 'text-red-200';
+    diffHtml = `<span class="block text-xs ${diffColor} mt-1">(আগের তুলনায় ${diffText})</span>`;
+  }
+  
+  if (profitLoss >= 0) {
+    profitLossBox.className = 'mt-3 p-3 rounded-xl text-center font-bold text-white bg-green-600';
+    profitLossBox.innerHTML = `✅ লাভ: ${formatCurrency(profitLoss)}${diffHtml}`;
+  } else {
+    profitLossBox.className = 'mt-3 p-3 rounded-xl text-center font-bold text-white bg-red-600';
+    profitLossBox.innerHTML = `❌ লস: ${formatCurrency(Math.abs(profitLoss))}${diffHtml}`;
+  }
+}
+
+// হিসাব সংরক্ষণ
+async function saveAccountHistory() {
+  const categoriesData = {};
+  document.querySelectorAll('.category-amount').forEach(input => {
+    const catName = input.dataset.catName;
+    categoriesData[catName] = parseFloat(input.value) || 0;
+  });
+  
+  const totalCalculated = parseFloat(document.getElementById('total-calculated-amount').innerText.replace(/[^0-9.-]/g, '')) || 0;
+  const fundAtThatTime = getTotalFundBalance();
+  const profitLoss = totalCalculated - fundAtThatTime;
+  
+  const snapshot = {
+    date: new Date().toISOString(),
+    categoriesData,
+    totalCalculated,
+    fundAtThatTime,
+    profitLoss,
+    timestamp: Date.now()
+  };
+  
+  showGlobalLoader("হিসাব সংরক্ষণ করা হচ্ছে...");
+  
+  try {
+    if (!isGuest && currentUser) {
+      // Firebase এ সেভ
+      const newRef = database.ref(`users/${currentUser.uid}/account_history`).push();
+      await newRef.set(snapshot);
+      console.log("✅ Firebase এ সেভ হয়েছে");
+      
+      // নিশ্চিত করুন accountHistory অ্যারে
+      if (!Array.isArray(accountHistory)) {
+        accountHistory = [];
+      }
+      accountHistory.push(snapshot);
+      
+    } else {
+      // গেস্ট মোড
+      if (!Array.isArray(accountHistory)) {
+        accountHistory = [];
+      }
+      accountHistory.push(snapshot);
+      localStorage.setItem('guest_account_history', JSON.stringify(accountHistory));
+      console.log("✅ গেস্ট মোডে সেভ হয়েছে");
+    }
+    
+    lastAccountSnapshot = snapshot;
+    showToast("হিসাব সংরক্ষিত হয়েছে! ✅", "success");
+    playSound('success');
+    
+    // ইতিহাস রি-রেন্ডার
+    renderHistorySummary();
+    
+  } catch(e) {
+    console.error("Save error:", e);
+    showToast("সংরক্ষণ ব্যর্থ: " + e.message, "error");
+  } finally {
+    hideGlobalLoader();
+  }
+}
+// হিসাব ইতিহাস রেন্ডার (রিপোর্ট ট্যাবে দেখানোর জন্য)
+// হিসাব ইতিহাস রেন্ডার (ডিলিট বাটন সহ)
+function renderHistorySummary() {
+  const historyContainer = document.getElementById('account-history-list');
+  if (!historyContainer) return;
+  
+  if (!accountHistory.length) {
+    historyContainer.innerHTML = '<p class="text-gray-400 text-center py-2">কোনো হিসাব সংরক্ষিত নেই</p>';
+    return;
+  }
+  
+  const reversed = [...accountHistory].reverse();
+  historyContainer.innerHTML = reversed.map((h, idx) => `
+    <div class="history-card bg-white p-3 rounded-lg mb-2 flex justify-between items-center border-l-4 ${h.profitLoss >= 0 ? 'border-green-500' : 'border-red-500'}">
+      <div class="flex-1">
+        <p class="text-xs text-gray-500">${new Date(h.date).toLocaleString()}</p>
+        <p class="font-bold ${h.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">
+          ${h.profitLoss >= 0 ? 'লাভ' : 'লস'}: ${formatCurrency(Math.abs(h.profitLoss))}
+        </p>
+        <p class="text-xs text-gray-400">মোট: ${formatCurrency(h.totalCalculated)} | ফান্ড: ${formatCurrency(h.fundAtThatTime)}</p>
+      </div>
+      <button onclick="deleteAccountHistory('${h.id || idx}')" 
+        class="ml-2 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-all" 
+        title="হিসাব ডিলিট করুন">
+        🗑️
+      </button>
+    </div>
+  `).join('');
+}
+
+  // হিসাব ইতিহাস ডিলিট করার ফাংশন
+async function deleteAccountHistory(id) {
+  if (!confirm('এই হিসাবটি ডিলিট করতে চান? ডিলিট করলে ফিরানো যাবে না।')) {
+    return;
+  }
+  
+  showGlobalLoader("ডিলিট করা হচ্ছে...");
+  
+  try {
+    if (!isGuest && currentUser) {
+      // Firebase থেকে ডিলিট
+      // প্রথমে ফায়ারবেসে ডাটা কিভাবে সেভ হয়েছে সেটা চেক করতে হবে
+      // যদি id টি Firebase key হয়, তাহলে সরাসরি ডিলিট
+      const historyRef = database.ref(`users/${currentUser.uid}/account_history/${id}`);
+      await historyRef.remove();
+      console.log("✅ Firebase থেকে ডিলিট হয়েছে");
+      
+      // লোকাল অ্যারে থেকে রিমুভ
+      const index = accountHistory.findIndex(item => item.id === id);
+      if (index !== -1) {
+        accountHistory.splice(index, 1);
+      }
+      
+    } else {
+      // গেস্ট মোড
+      const index = accountHistory.findIndex((item, i) => i.toString() === id || item.id === id);
+      if (index !== -1) {
+        accountHistory.splice(index, 1);
+        localStorage.setItem('guest_account_history', JSON.stringify(accountHistory));
+      }
+    }
+    
+    showToast("হিসাব ডিলিট হয়েছে!", "success");
+    playSound('success');
+    
+    // ইতিহাস রি-রেন্ডার
+    renderHistorySummary();
+    
+  } catch(e) {
+    console.error("Delete error:", e);
+    showToast("ডিলিট ব্যর্থ: " + e.message, "error");
+  } finally {
+    hideGlobalLoader();
+  }
+}
+  
+// ফান্ডের মান পরিবর্তন হলে পুনরায় ক্যালকুলেট
+function refreshAccountCalculation() {
+  calculateTotalAndProfit();
+}
+
+// page load এ আগের হিসাব লোড
+function loadLastAccountSnapshot() {
+  if (accountHistory.length > 0) {
+    lastAccountSnapshot = accountHistory[accountHistory.length-1];
+  }
+}
+  
     // Export data
     function exportData() {
       const data = {
@@ -9594,6 +9930,10 @@ setTimeout(() => {
 }, 1000);
   
   resetAdvisorOnLoad();
+  
+  renderCategoryInputs();
+loadLastAccountSnapshot();
+renderHistorySummary();
   
   // AI ফিচার অটো-স্টার্ট
 setTimeout(() => {
