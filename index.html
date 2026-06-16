@@ -5061,6 +5061,14 @@ function updateBakiField() {
                     </div>
                 </div>
                 ${t.note ? `<p class="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">📌 ${t.note}</p>` : '<p class="mt-2 text-xs text-gray-400 italic">📝 কোন নোট নেই</p>'}
+      ${t.voice_note ? `
+  <div class="mt-2 p-2 bg-purple-50 rounded-lg border border-purple-200">
+    <p class="text-xs text-purple-600 font-medium mb-1">🎙️ ভয়েস নোট:</p>
+    <audio controls class="w-full h-10 rounded">
+      <source src="${t.voice_note}" type="audio/webm">
+    </audio>
+  </div>
+` : ''}
             </div>
         `;
     }).join('');
@@ -5948,6 +5956,23 @@ function changeChartPeriod(months) {
                 <textarea id="transaction-note" rows="2"
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'কি জিনিসের জন্য...' : 'What for...'}"></textarea>
+                <!-- 🎙️ ভয়েস রেকর্ড -->
+<div class="flex items-center gap-2 mt-2 flex-wrap">
+  <button type="button" onclick="toggleVoiceRecording()" 
+    id="voice-record-btn"
+    class="flex items-center gap-2 text-sm bg-purple-50 hover:bg-purple-100 text-purple-600 px-4 py-2 rounded-lg transition-all border border-purple-200">
+    <span id="voice-record-icon">🎙️</span> 
+    <span id="voice-record-text">ভয়েস রেকর্ড</span>
+  </button>
+  <span id="voice-record-status" class="text-xs text-gray-400 hidden">🔴 রেকর্ডিং...</span>
+  <span id="voice-record-timer" class="text-xs text-gray-400 hidden">০০:০০</span>
+</div>
+
+<!-- রেকর্ড করা ভয়েস প্লে করার জন্য -->
+<div id="voice-note-player" class="hidden w-full mt-2">
+  <audio id="voice-note-audio" controls class="w-full h-10"></audio>
+  <button type="button" onclick="removeVoiceNote()" class="text-xs text-red-500 mt-1">🗑️ ভয়েস নোট সরান</button>
+</div>
               </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -6408,7 +6433,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
   };
   
-  // বাকি এন্ট্রির সময় যদি নতুন ডিউ ডেট সেট করা হয়, তাহলে কাস্টমারের প্রোফাইল আপডেট করো
+  // বাকি এন্ট্রির সময় যদি নতুন ডিউ ডেট সেট করা হয়
   const newDueDate = document.getElementById('transaction-due-date')?.value;
   if (type === 'due' && newDueDate) {
     const customerIndex = allData.findIndex(d => d.customer_id === select.value && d.type === 'customer');
@@ -6418,21 +6443,86 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     }
   }
 
-  const result = await saveData(transactionData);
+  // ============================================
+  // 🎙️ ভয়েস রেকর্ড প্রসেসিং (FIXED)
+  // ============================================
   
-  if (result.isOk) {
-    showToast(type === 'due' ? 
-      (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
-      (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
-    playSound('cash');
-    closeModal();  // ← শুধু মডাল বন্ধ হবে, আর ডাটা রিলোড করা হবে না
+  // যদি ভয়েস রেকর্ড থাকে, তাহলে Base64 তে কনভার্ট করে সেভ করুন
+  if (recordedAudioBlob) {
+    try {
+      const base64Data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function() {
+          resolve(reader.result);
+        };
+        reader.onerror = function() {
+          reject(new Error('ফাইল রিড করতে সমস্যা'));
+        };
+        reader.readAsDataURL(recordedAudioBlob);
+      });
+      
+      transactionData.voice_note = base64Data;
+      console.log("✅ ভয়েস নোট Base64 তে কনভার্ট হয়েছে, সাইজ:", base64Data.length);
+      
+      // কনভার্ট শেষে সেভ করুন
+      const result = await saveData(transactionData);
+      
+      if (result.isOk) {
+        // ভয়েস নোট রিসেট করুন
+        recordedAudioBlob = null;
+        recordedAudioUrl = null;
+        const player = document.getElementById('voice-note-player');
+        if (player) player.classList.add('hidden');
+        
+        showToast(type === 'due' ? 
+          (currentLanguage === 'bn' ? '✅ বাকি যোগ হয়েছে! 🎙️ ভয়েস নোট সংরক্ষিত!' : '✅ Due added! 🎙️ Voice note saved!') : 
+          (currentLanguage === 'bn' ? '✅ পেমেন্ট যোগ হয়েছে! 🎙️ ভয়েস নোট সংরক্ষিত!' : '✅ Payment added! 🎙️ Voice note saved!'), 'success');
+        playSound('cash');
+        closeModal();
+      } else {
+        showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
+        playSound('error');
+        btn.disabled = false;
+        btn.textContent = type === 'due' ? 
+          (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
+          (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
+      }
+      
+    } catch (error) {
+      console.error('ভয়েস নোট কনভার্ট ব্যর্থ:', error);
+      showToast('ভয়েস নোট প্রসেস করতে সমস্যা, তবে লেনদেন সেভ হচ্ছে...', 'warning');
+      
+      // ভয়েস নোট ব্যর্থ হলেও লেনদেন সেভ করুন
+      const result = await saveData(transactionData);
+      if (result.isOk) {
+        recordedAudioBlob = null;
+        recordedAudioUrl = null;
+        const player = document.getElementById('voice-note-player');
+        if (player) player.classList.add('hidden');
+        showToast(type === 'due' ? 'বাকি যোগ হয়েছে!' : 'পেমেন্ট যোগ হয়েছে!', 'success');
+        playSound('cash');
+        closeModal();
+      }
+    }
+    
   } else {
-    showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
-    playSound('error');
-    btn.disabled = false;
-    btn.textContent = type === 'due' ? 
-      (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
-      (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
+    // কোনো ভয়েস রেকর্ড নেই, সরাসরি সেভ
+    const result = await saveData(transactionData);
+    
+    if (result.isOk) {
+      showToast(type === 'due' ? 
+        (currentLanguage === 'bn' ? 'বাকি যোগ হয়েছে!' : 'Due added!') : 
+        (currentLanguage === 'bn' ? 'পেমেন্ট যোগ হয়েছে!' : 'Payment added!'), 'success');
+      playSound('cash');
+      closeModal();
+    } else {
+      showToast(currentLanguage === 'bn' ? 'সংরক্ষণ ব্যর্থ হয়েছে' : 'Save failed', 'error');
+      playSound('error');
+      btn.disabled = false;
+      btn.textContent = type === 'due' ? 
+        (currentLanguage === 'bn' ? 'বাকি যোগ করুন' : 'Add Due') : 
+        (currentLanguage === 'bn' ? 'পেমেন্ট যোগ করুন' : 'Add Payment');
+    }
   }
 }
 
@@ -6668,6 +6758,155 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
       deleteConfirmId = null;
     }
 
+  // ============================================
+// 🎙️ সরাসরি ভয়েস রেকর্ড ফিচার
+// ============================================
+
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let voiceRecordTimer = null;
+let voiceSeconds = 0;
+let recordedAudioBlob = null;
+let recordedAudioUrl = null;
+
+function toggleVoiceRecording() {
+  if (isRecording) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+}
+
+async function startVoiceRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    mediaRecorder = new MediaRecorder(stream);
+    audioChunks = [];
+    
+    mediaRecorder.ondataavailable = event => {
+      audioChunks.push(event.data);
+    };
+    
+    mediaRecorder.onstop = function() {
+      recordedAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      recordedAudioUrl = URL.createObjectURL(recordedAudioBlob);
+      
+      // অডিও প্লেয়ার দেখান
+      const player = document.getElementById('voice-note-player');
+      const audio = document.getElementById('voice-note-audio');
+      if (player && audio) {
+        audio.src = recordedAudioUrl;
+        player.classList.remove('hidden');
+        audio.load();
+      }
+      
+      // নোট ফিল্ডে ভয়েস নোটের তথ্য যোগ করুন
+      const textarea = document.getElementById('transaction-note');
+      if (textarea) {
+        const voiceNoteText = `🎙️ ভয়েস নোট (${new Date().toLocaleTimeString()})`;
+        textarea.value = textarea.value ? textarea.value + '\n' + voiceNoteText : voiceNoteText;
+      }
+      
+      stream.getTracks().forEach(track => track.stop());
+      showToast('✅ ভয়েস রেকর্ড সংরক্ষিত হয়েছে!', 'success');
+      if (typeof playSound === 'function') playSound('success');
+    };
+    
+    mediaRecorder.start();
+    isRecording = true;
+    updateVoiceUI(true);
+    
+    // টাইমার
+    voiceSeconds = 0;
+    voiceRecordTimer = setInterval(() => {
+      voiceSeconds++;
+      const timerEl = document.getElementById('voice-record-timer');
+      if (timerEl) {
+        const mins = String(Math.floor(voiceSeconds / 60)).padStart(2, '0');
+        const secs = String(voiceSeconds % 60).padStart(2, '0');
+        timerEl.textContent = `${mins}:${secs}`;
+      }
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Microphone error:', error);
+    showToast('❌ মাইক্রোফোন অ্যাক্সেস দেওয়া হয়নি!', 'error');
+  }
+}
+
+function stopVoiceRecording() {
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+    
+    if (voiceRecordTimer) {
+      clearInterval(voiceRecordTimer);
+      voiceRecordTimer = null;
+    }
+    
+    updateVoiceUI(false);
+  }
+}
+
+function updateVoiceUI(isRecording) {
+  const icon = document.getElementById('voice-record-icon');
+  const text = document.getElementById('voice-record-text');
+  const status = document.getElementById('voice-record-status');
+  const timer = document.getElementById('voice-record-timer');
+  const btn = document.getElementById('voice-record-btn');
+  
+  if (isRecording) {
+    if (icon) icon.textContent = '⏹️';
+    if (text) text.textContent = 'স্টপ';
+    if (status) {
+      status.classList.remove('hidden');
+      status.textContent = '🔴 রেকর্ডিং...';
+    }
+    if (timer) timer.classList.remove('hidden');
+    if (btn) {
+      btn.classList.remove('bg-purple-50', 'text-purple-600', 'border-purple-200');
+      btn.classList.add('bg-red-50', 'text-red-600', 'border-red-200');
+    }
+  } else {
+    if (icon) icon.textContent = '🎙️';
+    if (text) text.textContent = 'ভয়েস রেকর্ড';
+    if (status) status.classList.add('hidden');
+    if (timer) {
+      timer.classList.add('hidden');
+      timer.textContent = '০০:০০';
+    }
+    if (btn) {
+      btn.classList.remove('bg-red-50', 'text-red-600', 'border-red-200');
+      btn.classList.add('bg-purple-50', 'text-purple-600', 'border-purple-200');
+    }
+  }
+}
+
+function removeVoiceNote() {
+  const player = document.getElementById('voice-note-player');
+  const audio = document.getElementById('voice-note-audio');
+  const textarea = document.getElementById('transaction-note');
+  
+  if (player) player.classList.add('hidden');
+  if (audio) {
+    audio.pause();
+    audio.src = '';
+  }
+  
+  recordedAudioBlob = null;
+  recordedAudioUrl = null;
+  
+  if (textarea) {
+    const lines = textarea.value.split('\n');
+    const filteredLines = lines.filter(line => !line.includes('🎙️ ভয়েস নোট'));
+    textarea.value = filteredLines.join('\n');
+  }
+  
+  showToast('🗑️ ভয়েস নোট সরানো হয়েছে', 'info');
+}
+  
   // ========== ক্যাটাগরি ম্যানেজমেন্ট ==========
 function openCategoryManager() {
   const modal = document.getElementById('modal-overlay');
