@@ -187,12 +187,60 @@
       padding-bottom: 0.5rem;
     }
     
-    /* কন্টেন্ট এরিয়া স্ক্রলেবল */
-    .scrollable-content {
-      height: calc(100vh - 280px);
-      overflow-y: auto;
-      padding-bottom: 80px;
-    }
+/* স্ক্রলেবল কন্টেন্ট - মোবাইল ফিক্স */
+.scrollable-content {
+  height: calc(100vh - 260px);
+  overflow-y: auto;
+  padding-bottom: 80px;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .scrollable-content {
+    height: calc(100vh - 220px);
+    padding-bottom: 70px;
+  }
+}
+    
+    /* মোবাইল ডিভাইসের জন্য বিশেষ */
+@media (max-width: 640px) {
+  /* ফন্ট ছোট করুন */
+  body {
+    font-size: 14px;
+  }
+  
+  /* কার্ডের প্যাডিং কমান */
+  .card-shadow {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  /* ইনপুট ফিল্ড বড় করুন (টাচ স্ক্রিনের জন্য) */
+  input, select, button, .category-amount {
+    font-size: 16px !important;
+  }
+  
+  /* ইতিহাস কার্ড */
+  .history-card {
+    margin-bottom: 8px;
+  }
+  
+  /* টোটাল দেখানোর বক্স */
+  #total-calculated-amount, #total-due-balance {
+    font-size: 1.25rem !important;
+  }
+  
+  /* সেভ বাটন */
+  .btn-primary {
+    padding: 10px !important;
+  }
+}
+
+/* ট্যাবলেট ও বড় স্ক্রিন */
+@media (min-width: 641px) and (max-width: 768px) {
+  .category-amount {
+    font-size: 15px;
+  }
+}
     
     /* মাইক বাটন অ্যানিমেশন */
     @keyframes pulse {
@@ -754,6 +802,20 @@ button[onclick*="openEditNoteModal"]:hover {
   border-color: #059669 !important;
 }
 
+    /* ইতিহাস বিস্তারিত অ্যানিমেশন */
+#history-detail-* {
+  transition: all 0.3s ease;
+}
+.history-card {
+  transition: all 0.2s ease;
+}
+.history-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.history-card .cursor-pointer {
+  transition: all 0.2s;
+}
+    
 /* টোস্ট মেসেজ */
 .dark-mode .toast.bg-emerald-500 {
   background: #059669 !important;
@@ -765,6 +827,23 @@ button[onclick*="openEditNoteModal"]:hover {
   background: #d97706 !important;
 }
 
+    /* মোবাইলের জন্য হিসাব পেইজ */
+@media (max-width: 640px) {
+  #dynamic-category-inputs .grid {
+    gap: 0.5rem;
+  }
+  #dynamic-category-inputs input {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+  .history-card {
+    padding: 0.75rem;
+  }
+  .history-card .text-xs {
+    font-size: 0.7rem;
+  }
+}
+    
 /* কাস্টমার কার্ডের বর্ডার */
 .dark-mode .due-customer-card {
   border-left-color: #f87171 !important;
@@ -801,7 +880,7 @@ button[onclick*="openEditNoteModal"]:hover {
     
   </style>
 </head>
-<body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50 overflow-hidden">
+<body class="h-full bg-gradient-to-br from-emerald-50 via-white to-teal-50">
   
   <!-- App Loader Element -->
   <div id="app-global-loader" class="app-loader-overlay hidden">
@@ -1794,39 +1873,47 @@ button[onclick*="openEditNoteModal"]:hover {
       </div>
     </div>
 
-<!-- 👇 এখানে account ট্যাব বসবে (রিপোর্টের পর) -->
+<!-- 👇 এখানে account ট্যাব বসবে (মোবাইল রেস্পন্সিভ) -->
 <div id="content-account" class="space-y-4 hidden">
-  <div class="bg-white rounded-xl p-4 card-shadow">
+  <div class="bg-white rounded-xl p-3 sm:p-4 card-shadow">
+    
+    <!-- হেডার - মোবাইলে ছোট -->
     <div class="flex justify-between items-center mb-3 flex-wrap gap-2">
-      <h3 class="font-bold text-lg text-gray-800">📊 দোকানের হিসাব মিলান</h3>
-      <button onclick="openCategoryManager()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full">+ নতুন ক্যাটাগরি</button>
+      <h3 class="font-bold text-base sm:text-lg text-gray-800">📊 দোকানের হিসাব মিলান</h3>
+      <button onclick="openCategoryManager()" class="text-[11px] sm:text-xs bg-emerald-100 text-emerald-700 px-2 py-1 sm:px-3 sm:py-1 rounded-full whitespace-nowrap">+ নতুন ক্যাটাগরি</button>
     </div>
 
-    <div class="bg-red-50 p-3 rounded-xl mb-4 text-center">
-      <p class="text-xs text-red-600">ডিফল্ট মোট বাকি (পাওনা)</p>
-      <p id="total-due-balance" class="text-2xl font-bold text-red-700">৳০</p>
+    <!-- ডিফল্ট মোট বাকির ফিল্ড -->
+    <div class="bg-red-50 p-2 sm:p-3 rounded-xl mb-3 text-center">
+      <p class="text-[10px] sm:text-xs text-red-600">ডিফল্ট মোট বাকি (পাওনা)</p>
+      <p id="total-due-balance" class="text-lg sm:text-2xl font-bold text-red-700">৳০</p>
     </div>
 
-    <div id="dynamic-category-inputs" class="space-y-2 mb-4"></div>
+    <!-- ক্যাটাগরি ভিত্তিক ইনপুট - মোবাইলে 1 কলাম -->
+    <div id="dynamic-category-inputs" class="space-y-2 mb-3"></div>
 
-    <div class="bg-gray-100 p-3 rounded-xl mt-3">
-      <div class="flex justify-between font-bold">
+    <!-- টোটাল দেখাবে -->
+    <div class="bg-gray-100 p-2 sm:p-3 rounded-xl mt-2">
+      <div class="flex justify-between font-bold text-sm sm:text-base">
         <span>📌 টোটাল হিসাব</span>
         <span id="total-calculated-amount" class="text-emerald-700">৳০</span>
       </div>
     </div>
 
-    <div id="profit-loss-box" class="mt-3 p-3 rounded-xl text-center font-bold text-white hidden"></div>
+    <!-- লাভ/লস দেখানো -->
+    <div id="profit-loss-box" class="mt-3 p-2 sm:p-3 rounded-xl text-center font-bold text-white hidden text-sm sm:text-base"></div>
 
-    <button onclick="saveAccountHistory()" class="w-full mt-4 btn-primary text-white py-2 rounded-xl font-medium">💾 হিসাব সংরক্ষণ করুন</button>
+    <!-- সেভ বাটন -->
+    <button onclick="saveAccountHistory()" class="w-full mt-4 btn-primary text-white py-2 sm:py-2.5 rounded-xl font-medium text-sm sm:text-base">💾 হিসাব সংরক্ষণ করুন</button>
     
-    <div class="mt-4 pt-4 border-t">
-      <h3 class="font-bold text-lg text-gray-800 mb-2">📜 হিসাব সংরক্ষণের ইতিহাস</h3>
-      <div id="account-history-list" class="max-h-64 overflow-y-auto space-y-2"></div>
+    <!-- ইতিহাস দেখানোর সেকশন -->
+    <div class="mt-4 pt-3 border-t">
+      <h3 class="font-bold text-sm sm:text-lg text-gray-800 mb-2">📜 হিসাব সংরক্ষণের ইতিহাস</h3>
+      <div id="account-history-list" class="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto"></div>
     </div>
+    
   </div>
 </div>
-    
     
     <!-- Floating Action Buttons -->
     <div class="fixed bottom-6 right-6 flex flex-col gap-2">
@@ -4864,22 +4951,36 @@ function isOverdue(dateStr) {
     }
 
     function updateStats() {
-      const customers = getCustomers();
-      const totalDue = getTotalDue();
-      const totalAdvance = getTotalAdvance();
-      const nonDueCount = customers.filter(c => getCustomerBalance(c.customer_id) === 0).length;
-      const totalFund = getTotalFundBalance();
+  const customers = getCustomers();
+  const totalDue = getTotalDue();
+  const totalAdvance = getTotalAdvance();
+  const nonDueCount = customers.filter(c => getCustomerBalance(c.customer_id) === 0).length;
+  const totalFund = getTotalFundBalance();
 
-      document.getElementById('total-customers').textContent = customers.length;
-      document.getElementById('total-due').textContent = formatCurrency(totalDue);
-      document.getElementById('total-advance').textContent = formatCurrency(totalAdvance);
-      document.getElementById('total-fund').textContent = formatCurrency(totalFund);
-      document.getElementById('total-non-due').textContent = nonDueCount;
-      
-      if (document.getElementById('total-advance-amount')) {
-        document.getElementById('total-advance-amount').textContent = (currentLanguage === 'bn' ? 'মোট অগ্রিম: ' : 'Total Advance: ') + formatCurrency(totalAdvance);
-      }
-    }
+  document.getElementById('total-customers').textContent = customers.length;
+  document.getElementById('total-due').textContent = formatCurrency(totalDue);
+  document.getElementById('total-advance').textContent = formatCurrency(totalAdvance);
+  document.getElementById('total-fund').textContent = formatCurrency(totalFund);
+  document.getElementById('total-non-due').textContent = nonDueCount;
+  
+  if (document.getElementById('total-advance-amount')) {
+    document.getElementById('total-advance-amount').textContent = (currentLanguage === 'bn' ? 'মোট অগ্রিম: ' : 'Total Advance: ') + formatCurrency(totalAdvance);
+  }
+  
+  // 👇 এই লাইনটি যোগ করুন - বাকি ফিল্ড আপডেট করার জন্য
+  updateBakiField();
+}
+
+// বাকি ফিল্ড আপডেট করার ফাংশন
+function updateBakiField() {
+  const totalDue = getTotalDue();
+  const bakiInput = document.querySelector('.category-amount[data-cat-name="বাকি"]');
+  if (bakiInput) {
+    bakiInput.value = totalDue;
+    // ক্যালকুলেশন রিফ্রেশ
+    calculateTotalAndProfit();
+  }
+}
 
     // আপডেটেড renderTransactions ফাংশন - ডেট ফিল্টার সহ
     function renderTransactions() {
@@ -6626,20 +6727,37 @@ function saveCategoriesToBackend() {
   }
 }
 
-// ক্যাটাগরি ইনপুট ফিল্ড রেন্ডার
+// ক্যাটাগরি ইনপুট ফিল্ড রেন্ডার (খালি ইনপুট)
+// ক্যাটাগরি ইনপুট ফিল্ড রেন্ডার (বাকি ফিল্ডে অটো টোটাল বাকি)
 function renderCategoryInputs() {
   const container = document.getElementById('dynamic-category-inputs');
   if (!container) return;
+  
   if (accountCategories.length === 0) {
     accountCategories = [{ id: 1, name: 'বাকি' }];
     saveCategoriesToBackend();
   }
-  container.innerHTML = accountCategories.map(cat => `
-    <div class="flex items-center gap-2">
-      <label class="w-28 text-sm font-medium">${cat.name}</label>
-      <input type="number" class="category-amount flex-1 px-3 py-2 border rounded-xl" data-cat-id="${cat.id}" data-cat-name="${cat.name}" placeholder="টাকার পরিমাণ" value="0">
+  
+  // টোটাল বাকি বের করুন
+  const totalDue = getTotalDue();
+  
+  container.innerHTML = accountCategories.map(cat => {
+    // শুধু "বাকি" ক্যাটাগরির জন্য totalDue দেখাবে
+    const isDefaultDue = cat.name === 'বাকি';
+    const defaultValue = isDefaultDue ? totalDue : '';
+    const readOnlyAttr = isDefaultDue ? 'readonly' : '';
+    const bgColor = isDefaultDue ? 'bg-gray-100' : 'bg-white';
+    
+    return `
+    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 ${bgColor} p-2 rounded-lg">
+      <label class="text-sm font-medium text-gray-700 sm:w-24">${cat.name}</label>
+      <input type="number" class="category-amount w-full sm:flex-1 px-3 py-2 border rounded-lg text-base sm:text-sm" 
+        data-cat-id="${cat.id}" data-cat-name="${cat.name}" 
+        placeholder="টাকার পরিমাণ" value="${defaultValue}" ${readOnlyAttr}>
+      ${isDefaultDue ? `<span class="text-xs text-gray-400 hidden sm:block">(অটো)</span>` : ''}
     </div>
-  `).join('');
+  `}).join('');
+  
   attachCategoryInputEvents();
 }
 
@@ -6749,34 +6867,143 @@ async function saveAccountHistory() {
     hideGlobalLoader();
   }
 }
-// হিসাব ইতিহাস রেন্ডার (রিপোর্ট ট্যাবে দেখানোর জন্য)
-// হিসাব ইতিহাস রেন্ডার (ডিলিট বাটন সহ)
+// হিসাব ইতিহাস রেন্ডার (সময়ের পার্থক্য ও লাভ/লসের তুলনা সহ)
 function renderHistorySummary() {
   const historyContainer = document.getElementById('account-history-list');
   if (!historyContainer) return;
   
   if (!accountHistory.length) {
-    historyContainer.innerHTML = '<p class="text-gray-400 text-center py-2">কোনো হিসাব সংরক্ষিত নেই</p>';
+    historyContainer.innerHTML = '<p class="text-gray-400 text-center py-2 text-sm">কোনো হিসাব সংরক্ষিত নেই</p>';
     return;
   }
   
-  const reversed = [...accountHistory].reverse();
-  historyContainer.innerHTML = reversed.map((h, idx) => `
-    <div class="history-card bg-white p-3 rounded-lg mb-2 flex justify-between items-center border-l-4 ${h.profitLoss >= 0 ? 'border-green-500' : 'border-red-500'}">
-      <div class="flex-1">
-        <p class="text-xs text-gray-500">${new Date(h.date).toLocaleString()}</p>
-        <p class="font-bold ${h.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">
-          ${h.profitLoss >= 0 ? 'লাভ' : 'লস'}: ${formatCurrency(Math.abs(h.profitLoss))}
-        </p>
-        <p class="text-xs text-gray-400">মোট: ${formatCurrency(h.totalCalculated)} | ফান্ড: ${formatCurrency(h.fundAtThatTime)}</p>
+  // সময় অনুযায়ী সাজানো (নতুন থেকে পুরোনো)
+  const sorted = [...accountHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  historyContainer.innerHTML = sorted.map((h, index) => {
+    const itemId = h.id || index;
+    const isLatest = index === 0; // সবচেয়ে নতুন হিসাব
+    
+    // ক্যাটাগরি ডাটা থেকে HTML তৈরি
+    let categoriesHtml = '';
+    if (h.categoriesData) {
+      categoriesHtml = Object.entries(h.categoriesData)
+        .map(([key, value]) => `<span class="inline-block bg-gray-100 px-2 py-0.5 rounded text-xs mr-1">${key}: ${formatCurrency(value)}</span>`)
+        .join('');
+    }
+    
+    // ========== সময়ের পার্থক্য ক্যালকুলেশন ==========
+    let timeDiffHtml = '';
+    let profitDiffHtml = '';
+    
+    if (!isLatest) {
+      // আগের হিসাব (index 1)
+      const previous = sorted[index + 1];
+      if (previous) {
+        // সময়ের পার্থক্য
+        const currentDate = new Date(h.date);
+        const previousDate = new Date(previous.date);
+        const diffMs = currentDate - previousDate;
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const diffWeeks = Math.floor(diffDays / 7);
+        
+        let timeText = '';
+        if (diffWeeks > 0) {
+          timeText = `${diffWeeks} সপ্তাহ`;
+          if (diffDays % 7 > 0) timeText += ` ${diffDays % 7} দিন`;
+        } else if (diffDays > 0) {
+          timeText = `${diffDays} দিন`;
+          if (diffHours % 24 > 0) timeText += ` ${diffHours % 24} ঘন্টা`;
+        } else if (diffHours > 0) {
+          timeText = `${diffHours} ঘন্টা`;
+          if (diffMinutes % 60 > 0) timeText += ` ${diffMinutes % 60} মিনিট`;
+        } else if (diffMinutes > 0) {
+          timeText = `${diffMinutes} মিনিট`;
+        } else {
+          timeText = 'কয়েক সেকেন্ড';
+        }
+        
+        // লাভ/লসের পার্থক্য
+        const profitDiff = h.profitLoss - previous.profitLoss;
+        const profitDiffAbs = Math.abs(profitDiff);
+        const isProfit = profitDiff > 0;
+        
+        let profitDiffText = '';
+        if (profitDiff > 0) {
+          profitDiffText = `<span class="text-green-600 font-bold">+${formatCurrency(profitDiffAbs)}</span> বেশি লাভ`;
+        } else if (profitDiff < 0) {
+          profitDiffText = `<span class="text-red-600 font-bold">-${formatCurrency(profitDiffAbs)}</span> বেশি লস`;
+        } else {
+          profitDiffText = `<span class="text-gray-500">কোনো পরিবর্তন নেই</span>`;
+        }
+        
+        timeDiffHtml = `
+          <div class="flex flex-wrap items-center gap-1 mt-1 text-xs">
+            <span class="text-blue-600">⏱️ ${timeText} পর:</span>
+            <span>${profitDiffText}</span>
+          </div>
+        `;
+      }
+    } else {
+      // নতুন হিসাবের জন্য "সর্বশেষ হিসাব" ব্যাজ
+      timeDiffHtml = `
+        <div class="flex items-center gap-1 mt-1">
+          <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">🟢 সর্বশেষ হিসাব</span>
+        </div>
+      `;
+    }
+    
+    return `
+    <div class="history-card bg-white p-3 rounded-lg mb-2 border-l-4 ${h.profitLoss >= 0 ? 'border-green-500' : 'border-red-500'} shadow-sm">
+      <div onclick="toggleHistoryDetail('${itemId}')" class="cursor-pointer">
+        <div class="flex justify-between items-start">
+          <div class="flex-1">
+            <p class="text-xs text-gray-400">${new Date(h.date).toLocaleString()}</p>
+            <p class="font-bold text-sm sm:text-base ${h.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">
+              ${h.profitLoss >= 0 ? '✅ লাভ' : '❌ লস'}: ${formatCurrency(Math.abs(h.profitLoss))}
+            </p>
+            <p class="text-xs text-gray-400">মোট: ${formatCurrency(h.totalCalculated)} | ফান্ড: ${formatCurrency(h.fundAtThatTime)}</p>
+            
+            <!-- ⏱️ সময়ের পার্থক্য ও লাভ/লসের তুলনা -->
+            ${timeDiffHtml}
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-blue-500 hidden sm:inline">বিস্তারিত ▼</span>
+            <button onclick="event.stopPropagation(); deleteAccountHistory('${itemId}')" 
+              class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all flex items-center gap-1">
+              🗑️
+            </button>
+          </div>
+        </div>
+        <!-- বিস্তারিত অংশ -->
+        <div id="history-detail-${itemId}" class="hidden mt-2 pt-2 border-t border-gray-100">
+          <p class="text-xs text-gray-600 font-medium mb-1">📊 ক্যাটাগরি ভিত্তিক হিসাব:</p>
+          <div class="flex flex-wrap gap-1">
+            ${categoriesHtml || '<span class="text-xs text-gray-400">কোনো ক্যাটাগরি ডাটা নেই</span>'}
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-1 text-xs text-gray-500">
+            <div>📌 মোট হিসাব: <span class="font-bold text-emerald-600">${formatCurrency(h.totalCalculated)}</span></div>
+            <div>💰 ফান্ড: <span class="font-bold text-purple-600">${formatCurrency(h.fundAtThatTime)}</span></div>
+            <div class="col-span-2">${h.profitLoss >= 0 ? '✅ লাভ' : '❌ লস'}: <span class="font-bold ${h.profitLoss >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(Math.abs(h.profitLoss))}</span></div>
+          </div>
+        </div>
       </div>
-      <button onclick="deleteAccountHistory('${h.id || idx}')" 
-        class="ml-2 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-all" 
-        title="হিসাব ডিলিট করুন">
-        🗑️
-      </button>
     </div>
-  `).join('');
+  `}).join('');
+}
+
+function toggleHistoryDetail(id) {
+  const detailEl = document.getElementById(`history-detail-${id}`);
+  if (detailEl) {
+    detailEl.classList.toggle('hidden');
+    const card = detailEl.closest('.history-card');
+    const toggleIcon = card?.querySelector('.text-blue-500');
+    if (toggleIcon) {
+      toggleIcon.textContent = detailEl.classList.contains('hidden') ? 'বিস্তারিত ▼' : 'বিস্তারিত ▲';
+    }
+  }
 }
 
   // হিসাব ইতিহাস ডিলিট করার ফাংশন
