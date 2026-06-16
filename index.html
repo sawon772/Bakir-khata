@@ -4490,9 +4490,13 @@ database.ref(`users/${userId}/account_history`).on('value', (snap) => {
     accountHistory = [];
   }
   console.log("📜 হিসাব ইতিহাস লোড হয়েছে:", accountHistory.length);
+  
+  // 👇 এই লাইন যোগ করুন
+  loadLastAccountSnapshot();
+  
   renderHistorySummary();
 });
-  
+      
   userRef.on('value', (snapshot) => {
     const data = snapshot.val();
     console.log('Data loaded:', data);
@@ -4524,11 +4528,14 @@ database.ref(`users/${userId}/account_history`).on('value', (snap) => {
   } else {
     allData = [];
   }
-      accountCategories = JSON.parse(localStorage.getItem('guest_account_categories') || '[]');
-accountHistory = JSON.parse(localStorage.getItem('guest_account_history') || '[]');
+  accountCategories = JSON.parse(localStorage.getItem('guest_account_categories') || '[]');
+  accountHistory = JSON.parse(localStorage.getItem('guest_account_history') || '[]');
+  
+  // 👇 এই লাইন যোগ করুন
+  loadLastAccountSnapshot();
+  
   renderCurrentView();
   
-  // 👇 এই লাইনটি যোগ করুন - গেস্ট ডাটা লোড হওয়ার সাথে সাথে ব্যাকআপ নাও
   if (localBackupEnabled) {
     setTimeout(() => {
       saveToLocalBackup();
@@ -10398,7 +10405,7 @@ setTimeout(() => {
   resetAdvisorOnLoad();
   
   renderCategoryInputs();
-loadLastAccountSnapshot();
+loadLastAccountSnapshot();  // 👈 এই লাইন যোগ করুন
 renderHistorySummary();
   
   // AI ফিচার অটো-স্টার্ট
