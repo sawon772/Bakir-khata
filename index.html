@@ -4970,6 +4970,12 @@ function isOverdue(dateStr) {
   document.getElementById('total-fund').textContent = formatCurrency(totalFund);
   document.getElementById('total-non-due').textContent = nonDueCount;
   
+  // 👇 এই লাইনটি যোগ করুন - ডিফল্ট মোট বাকি (পাওনা) আপডেটের জন্য
+  const totalDueBalanceEl = document.getElementById('total-due-balance');
+  if (totalDueBalanceEl) {
+    totalDueBalanceEl.textContent = formatCurrency(totalDue);
+  }
+  
   if (document.getElementById('total-advance-amount')) {
     document.getElementById('total-advance-amount').textContent = (currentLanguage === 'bn' ? 'মোট অগ্রিম: ' : 'Total Advance: ') + formatCurrency(totalAdvance);
   }
@@ -7114,6 +7120,9 @@ async function saveAccountHistory() {
   }
 }
 // হিসাব ইতিহাস রেন্ডার (সময়ের পার্থক্য ও লাভ/লসের তুলনা সহ)
+// ============================================
+// হিসাব ইতিহাস রেন্ডার (সময়ের পার্থক্য ও লাভ/লসের তুলনা সহ) - ফিক্সড
+// ============================================
 function renderHistorySummary() {
   const historyContainer = document.getElementById('account-history-list');
   if (!historyContainer) return;
@@ -7128,9 +7137,8 @@ function renderHistorySummary() {
   
   historyContainer.innerHTML = sorted.map((h, index) => {
     const itemId = h.id || index;
-    const isLatest = index === 0; // সবচেয়ে নতুন হিসাব
     
-    // ক্যাটাগরি ডাটা থেকে HTML তৈরি
+    // ========== ক্যাটাগরি ডাটা থেকে HTML তৈরি ==========
     let categoriesHtml = '';
     if (h.categoriesData) {
       categoriesHtml = Object.entries(h.categoriesData)
@@ -7138,69 +7146,68 @@ function renderHistorySummary() {
         .join('');
     }
     
-    // ========== সময়ের পার্থক্য ক্যালকুলেশন ==========
+    // ========== সময়ের পার্থক্য ও লাভ/লসের তুলনা ==========
     let timeDiffHtml = '';
-    let profitDiffHtml = '';
     
-    if (!isLatest) {
-      // আগের হিসাব (index 1)
-      const previous = sorted[index + 1];
-      if (previous) {
-        // সময়ের পার্থক্য
-        const currentDate = new Date(h.date);
-        const previousDate = new Date(previous.date);
-        const diffMs = currentDate - previousDate;
-        const diffMinutes = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-        const diffWeeks = Math.floor(diffDays / 7);
-        
-        let timeText = '';
-        if (diffWeeks > 0) {
-          timeText = `${diffWeeks} সপ্তাহ`;
-          if (diffDays % 7 > 0) timeText += ` ${diffDays % 7} দিন`;
-        } else if (diffDays > 0) {
-          timeText = `${diffDays} দিন`;
-          if (diffHours % 24 > 0) timeText += ` ${diffHours % 24} ঘন্টা`;
-        } else if (diffHours > 0) {
-          timeText = `${diffHours} ঘন্টা`;
-          if (diffMinutes % 60 > 0) timeText += ` ${diffMinutes % 60} মিনিট`;
-        } else if (diffMinutes > 0) {
-          timeText = `${diffMinutes} মিনিট`;
-        } else {
-          timeText = 'কয়েক সেকেন্ড';
-        }
-        
-        // লাভ/লসের পার্থক্য
-        const profitDiff = h.profitLoss - previous.profitLoss;
-        const profitDiffAbs = Math.abs(profitDiff);
-        const isProfit = profitDiff > 0;
-        
-        let profitDiffText = '';
-        if (profitDiff > 0) {
-          profitDiffText = `<span class="text-green-600 font-bold">+${formatCurrency(profitDiffAbs)}</span> বেশি লাভ`;
-        } else if (profitDiff < 0) {
-          profitDiffText = `<span class="text-red-600 font-bold">-${formatCurrency(profitDiffAbs)}</span> বেশি লস`;
-        } else {
-          profitDiffText = `<span class="text-gray-500">কোনো পরিবর্তন নেই</span>`;
-        }
-        
-        timeDiffHtml = `
-          <div class="flex flex-wrap items-center gap-1 mt-1 text-xs">
-            <span class="text-blue-600">⏱️ ${timeText} পর:</span>
-            <span>${profitDiffText}</span>
-          </div>
-        `;
+    // আগের হিসাব খুঁজে বের করা (index + 1)
+    const previous = sorted[index + 1];
+    const hasPrevious = !!previous; // true/false
+    
+    if (hasPrevious) {
+      // সময়ের পার্থক্য ক্যালকুলেশন
+      const currentDate = new Date(h.date);
+      const previousDate = new Date(previous.date);
+      const diffMs = currentDate - previousDate;
+      const diffMinutes = Math.floor(diffMs / (1000 * 60));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffWeeks = Math.floor(diffDays / 7);
+      
+      let timeText = '';
+      if (diffWeeks > 0) {
+        timeText = `${diffWeeks} সপ্তাহ`;
+        if (diffDays % 7 > 0) timeText += ` ${diffDays % 7} দিন`;
+      } else if (diffDays > 0) {
+        timeText = `${diffDays} দিন`;
+        if (diffHours % 24 > 0) timeText += ` ${diffHours % 24} ঘন্টা`;
+      } else if (diffHours > 0) {
+        timeText = `${diffHours} ঘন্টা`;
+        if (diffMinutes % 60 > 0) timeText += ` ${diffMinutes % 60} মিনিট`;
+      } else if (diffMinutes > 0) {
+        timeText = `${diffMinutes} মিনিট`;
+      } else {
+        timeText = 'কয়েক সেকেন্ড';
       }
+      
+      // লাভ/লসের পার্থক্য
+      const profitDiff = h.profitLoss - previous.profitLoss;
+      const profitDiffAbs = Math.abs(profitDiff);
+      
+      let profitDiffText = '';
+      if (profitDiff > 0) {
+        profitDiffText = `<span class="text-green-600 font-bold">+${formatCurrency(profitDiffAbs)}</span> বেশি লাভ`;
+      } else if (profitDiff < 0) {
+        profitDiffText = `<span class="text-red-600 font-bold">-${formatCurrency(profitDiffAbs)}</span> বেশি লস`;
+      } else {
+        profitDiffText = `<span class="text-gray-500">কোনো পরিবর্তন নেই</span>`;
+      }
+      
+      timeDiffHtml = `
+        <div class="flex flex-wrap items-center gap-1 mt-1 text-xs">
+          <span class="text-blue-600">⏱️ ${timeText} পর:</span>
+          <span>${profitDiffText}</span>
+        </div>
+      `;
     } else {
-      // নতুন হিসাবের জন্য "সর্বশেষ হিসাব" ব্যাজ
+      // সবচেয়ে পুরোনো হিসাব (কারো সাথে তুলনা নেই)
       timeDiffHtml = `
         <div class="flex items-center gap-1 mt-1">
-          <span class="bg-emerald-100 text-emerald-700 text-[10px] px-2 py-0.5 rounded-full">🟢 সর্বশেষ হিসাব</span>
+          <span class="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full">📌 প্রাথমিক হিসাব</span>
         </div>
       `;
     }
     
+    // ========== কার্ড HTML ==========
     return `
     <div class="history-card bg-white p-3 rounded-lg mb-2 border-l-4 ${h.profitLoss >= 0 ? 'border-green-500' : 'border-red-500'} shadow-sm">
       <div onclick="toggleHistoryDetail('${itemId}')" class="cursor-pointer">
@@ -7263,8 +7270,6 @@ async function deleteAccountHistory(id) {
   try {
     if (!isGuest && currentUser) {
       // Firebase থেকে ডিলিট
-      // প্রথমে ফায়ারবেসে ডাটা কিভাবে সেভ হয়েছে সেটা চেক করতে হবে
-      // যদি id টি Firebase key হয়, তাহলে সরাসরি ডিলিট
       const historyRef = database.ref(`users/${currentUser.uid}/account_history/${id}`);
       await historyRef.remove();
       console.log("✅ Firebase থেকে ডিলিট হয়েছে");
@@ -7287,7 +7292,8 @@ async function deleteAccountHistory(id) {
     showToast("হিসাব ডিলিট হয়েছে!", "success");
     playSound('success');
     
-    // ইতিহাস রি-রেন্ডার
+    // 👇 এই ২ লাইন গুরুত্বপূর্ণ - তুলনা রি-ক্যালকুলেট
+    loadLastAccountSnapshot();
     renderHistorySummary();
     
   } catch(e) {
@@ -10532,4 +10538,4 @@ window.updateTargetProgress = updateTargetProgressWithCloseButton;
   </div>
 </div>
 </body>
-</html>
+</html> 
