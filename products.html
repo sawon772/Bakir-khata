@@ -57,7 +57,6 @@
             --glass-border: rgba(255,255,255,0.05);
         }
 
-        /* Smooth theme transition */
         * {
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
@@ -78,51 +77,39 @@
         .bg-white, .bg-gray-50, .bg-gray-100, .bg-gray-200 {
             background-color: var(--bg-card) !important;
         }
-
         .text-gray-400, .text-gray-500, .text-gray-600, .text-gray-700, .text-gray-800, .text-gray-900 {
             color: var(--text-secondary) !important;
         }
-
         .border-gray-100, .border-gray-200, .border-gray-300 {
             border-color: var(--border-color) !important;
         }
-
         .shadow-sm, .shadow-lg, .shadow-2xl {
             box-shadow: 0 1px 3px var(--shadow-color) !important;
         }
 
-        /* Fix text colors in dark mode */
         [data-theme="dark"] .text-gray-800,
         [data-theme="dark"] .text-gray-900 {
             color: var(--text-primary) !important;
         }
-
         [data-theme="dark"] .text-gray-500,
         [data-theme="dark"] .text-gray-600,
         [data-theme="dark"] .text-gray-700 {
             color: var(--text-secondary) !important;
         }
-
         [data-theme="dark"] .text-gray-400 {
             color: var(--text-muted) !important;
         }
-
         [data-theme="dark"] .bg-white,
         [data-theme="dark"] .bg-gray-50 {
             background-color: var(--bg-card) !important;
         }
-
         [data-theme="dark"] .bg-gray-100 {
             background-color: var(--bg-input) !important;
         }
-
         [data-theme="dark"] .border {
             border-color: var(--border-color) !important;
         }
 
-        /* ============================================
-           ORIGINAL STYLES
-           ============================================ */
         .tab-active {
             border-bottom: 2px solid #0d9488;
             color: #0d9488;
@@ -132,14 +119,8 @@
             animation: fadeIn 0.25s ease;
         }
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .product-img {
             width: 36px;
@@ -160,14 +141,8 @@
             animation: slideIn 0.3s ease;
         }
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         .btn-sm {
             padding: 4px 12px;
@@ -182,15 +157,9 @@
             background: linear-gradient(135deg, #78350f, #92400e);
             border: 1px solid #f59e0b;
         }
-        .profit-positive {
-            color: #16a34a;
-        }
-        .profit-negative {
-            color: #dc2626;
-        }
-        .history-item {
-            border-left: 3px solid #0d9488;
-        }
+        .profit-positive { color: #16a34a; }
+        .profit-negative { color: #dc2626; }
+        .history-item { border-left: 3px solid #0d9488; }
         .payment-badge {
             padding: 2px 8px;
             border-radius: 12px;
@@ -223,9 +192,7 @@
             font-weight: bold;
             color: var(--text-primary);
         }
-        .qty-btn:hover {
-            background: var(--bg-input);
-        }
+        .qty-btn:hover { background: var(--bg-input); }
         .qty-input {
             width: 50px;
             text-align: center;
@@ -248,7 +215,6 @@
             border: 1px solid #059669;
             color: #6ee7b7;
         }
-
         .stat-card {
             transition: all 0.2s ease;
             background: var(--bg-card);
@@ -262,17 +228,9 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .custom-scroll::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scroll::-webkit-scrollbar-track {
-            background: var(--bg-input);
-            border-radius: 10px;
-        }
-        .custom-scroll::-webkit-scrollbar-thumb {
-            background: #0d9488;
-            border-radius: 10px;
-        }
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--bg-input); border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #0d9488; border-radius: 10px; }
         .hover-lift {
             transition: all 0.2s ease;
         }
@@ -327,15 +285,11 @@
         }
         .price-input-bulk:focus {
             border-color: #0d9488;
-            ring: 2px solid #0d9488;
             outline: none;
+            ring: 2px solid #0d9488;
         }
-        .bulk-item {
-            transition: all 0.2s ease;
-        }
-        .bulk-item:hover {
-            background: var(--bg-input);
-        }
+        .bulk-item { transition: all 0.2s ease; }
+        .bulk-item:hover { background: var(--bg-input); }
 
         /* Detail Modal */
         #detail-modal {
@@ -350,9 +304,7 @@
             justify-content: center;
             padding: 16px;
         }
-        #detail-modal.active {
-            display: flex;
-        }
+        #detail-modal.active { display: flex; }
         .detail-card {
             max-width: 500px;
             width: 100%;
@@ -370,9 +322,7 @@
             padding: 10px 0;
             border-bottom: 1px solid var(--border-color);
         }
-        .detail-item:last-child {
-            border-bottom: none;
-        }
+        .detail-item:last-child { border-bottom: none; }
         .detail-label {
             color: var(--text-muted);
             font-size: 13px;
@@ -383,12 +333,8 @@
             font-size: 14px;
             text-align: right;
         }
-        .detail-profit-positive {
-            color: #16a34a;
-        }
-        .detail-profit-negative {
-            color: #dc2626;
-        }
+        .detail-profit-positive { color: #16a34a; }
+        .detail-profit-negative { color: #dc2626; }
         .detail-image {
             width: 80px;
             height: 80px;
@@ -396,6 +342,156 @@
             border-radius: 12px;
             border: 2px solid var(--border-color);
         }
+
+        /* Invoice Styles */
+        .invoice-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .invoice-modal.active { display: flex; }
+        .invoice-content {
+            max-width: 400px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            position: relative;
+        }
+        .invoice-header {
+            text-align: center;
+            border-bottom: 2px dashed #0d9488;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+        .invoice-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0d9488;
+        }
+        .invoice-shop {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+        .invoice-row:last-child { border-bottom: none; }
+        .invoice-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0d9488;
+            padding-top: 8px;
+            border-top: 2px solid #0d9488;
+            margin-top: 8px;
+        }
+        .invoice-footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+        .invoice-print-btn {
+            width: 100%;
+            padding: 10px;
+            background: #0d9488;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background 0.2s;
+        }
+        .invoice-print-btn:hover { background: #0f766e; }
+        .invoice-close-btn {
+            position: absolute;
+            top: 8px;
+            right: 16px;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            background: none;
+            border: none;
+        }
+        .invoice-close-btn:hover { color: #ef4444; }
+        .invoice-items {
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 8px 0;
+        }
+
+        /* Category Management */
+        .category-tag {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin: 2px 4px;
+            background: #e2e8f0;
+            color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .category-tag:hover {
+            background: #0d9488;
+            color: white;
+            transform: scale(1.05);
+        }
+        [data-theme="dark"] .category-tag {
+            background: #334155;
+            color: #cbd5e1;
+        }
+        [data-theme="dark"] .category-tag:hover {
+            background: #0d9488;
+            color: white;
+        }
+        .category-input-wrapper {
+            position: relative;
+        }
+        .category-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+        .category-suggestions.active { display: block; }
+        .category-suggestion-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s;
+        }
+        .category-suggestion-item:hover {
+            background: #0d9488;
+            color: white;
+        }
+        .category-suggestion-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
@@ -413,6 +509,16 @@
         </div>
     </div>
 
+    <!-- ============================================ -->
+    <!-- INVOICE MODAL -->
+    <!-- ============================================ -->
+    <div id="invoice-modal" class="invoice-modal">
+        <div class="invoice-content">
+            <button onclick="closeInvoice()" class="invoice-close-btn">✕</button>
+            <div id="invoice-body"></div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="glass-effect shadow-sm px-4 py-2.5 flex items-center justify-between sticky top-0 z-10 border-b border-gray-200/50">
         <div class="flex items-center gap-3">
@@ -422,7 +528,7 @@
             <span class="text-xs text-gray-500" id="shop-name">বাকির খাতা</span>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="toggleTheme()" class="theme-toggle" id="theme-toggle-btn">
+            <button onclick="toggleTheme()" class="theme-toggle" id="theme-toggle-btn" style="cursor:pointer;padding:6px 10px;border-radius:20px;background:var(--bg-input);border:1px solid var(--border-color);color:var(--text-primary);font-size:14px;transition:all 0.3s ease;">
                 🌙
             </button>
             <button onclick="exportData()" class="btn-sm bg-blue-500 text-white hover:bg-blue-600 transition">💾</button>
@@ -453,12 +559,8 @@
                 <span id="today-sale-profit" class="text-sm font-bold text-blue-700">লাভ: ৳০</span>
             </div>
             <div class="flex gap-2 flex-wrap">
-                <button onclick="exportPDF()" class="btn-sm bg-red-500 text-white hover:bg-red-600 transition">
-                    📄 PDF
-                </button>
-                <button onclick="showTodayDetails()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">
-                    📋 বিস্তারিত
-                </button>
+                <button onclick="exportPDF()" class="btn-sm bg-red-500 text-white hover:bg-red-600 transition">📄 PDF</button>
+                <button onclick="showTodayDetails()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">📋 বিস্তারিত</button>
             </div>
         </div>
 
@@ -493,6 +595,7 @@
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="profit">💰 লাভ</button>
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="today-details">📊 আজকের বিস্তারিত</button>
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="customers">👥 গ্রাহক</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="categories">🏷️ ক্যাটাগরি</button>
         </nav>
 
         <!-- Products Tab -->
@@ -556,9 +659,21 @@
                         <input type="hidden" id="image-url" value="">
                         <div id="image-preview" class="hidden mt-1"><img id="product-image-display" class="product-img"></div>
                     </div>
-                    <div><label class="text-xs font-medium text-gray-600">নাম *</label><input id="f-name" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-600">নাম *</label>
+                        <input id="f-name" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-600">ক্যাটাগরি *</label>
+                        <div class="category-input-wrapper">
+                            <input id="f-category" type="text" required 
+                                oninput="showCategorySuggestions(this.value)"
+                                onfocus="showCategorySuggestions(this.value)"
+                                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                            <div id="category-suggestions" class="category-suggestions"></div>
+                        </div>
+                    </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-medium text-gray-600">ক্যাটাগরি *</label><input id="f-category" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></div>
                         <div><label class="text-xs font-medium text-gray-600">ইউনিট</label>
                             <select id="f-unit" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
                                 <option value="pcs">পিস</option><option value="kg">কেজি</option>
@@ -566,12 +681,18 @@
                                 <option value="gaj">গজ</option><option value="foot">ফুট</option>
                             </select>
                         </div>
+                        <div><label class="text-xs font-medium text-gray-600">স্টক</label>
+                            <input id="f-stock" type="number" min="0" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-medium text-gray-600">ক্রয় (৳)</label><input id="f-buy-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></div>
-                        <div><label class="text-xs font-medium text-gray-600">বিক্রয় (৳)</label><input id="f-sell-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></div>
+                        <div><label class="text-xs font-medium text-gray-600">ক্রয় (৳)</label>
+                            <input id="f-buy-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                        </div>
+                        <div><label class="text-xs font-medium text-gray-600">বিক্রয় (৳)</label>
+                            <input id="f-sell-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                        </div>
                     </div>
-                    <div><label class="text-xs font-medium text-gray-600">স্টক</label><input id="f-stock" type="number" min="0" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></div>
                     <div id="form-error" class="hidden text-red-600 text-xs text-center"></div>
                     <div class="flex gap-2">
                         <button type="submit" class="flex-1 gradient-bg text-white btn-sm font-medium hover:shadow-lg transition py-2 rounded-lg">💾 সংরক্ষণ</button>
@@ -633,7 +754,7 @@
 
         <!-- Reports Tab -->
         <section id="tab-reports" class="tab-content hidden fade-in">
-            <!-- Chart Section moved here -->
+            <!-- Chart Section -->
             <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
                 <div class="flex justify-between items-center mb-3">
                     <h3 class="font-semibold text-sm gradient-text">📈 সাপ্তাহিক বিক্রি</h3>
@@ -758,6 +879,22 @@
                 <p id="no-customers" class="text-center text-gray-400 py-6 hidden">কোনো গ্রাহক নেই</p>
             </div>
         </section>
+
+        <!-- Categories Tab - NEW -->
+        <section id="tab-categories" class="tab-content hidden fade-in">
+            <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
+                    <h3 class="font-semibold text-sm gradient-text">🏷️ ক্যাটাগরি ব্যবস্থাপনা</h3>
+                    <div class="flex gap-2">
+                        <input id="new-category-input" type="text" placeholder="নতুন ক্যাটাগরি..." 
+                            class="px-3 py-1 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                        <button onclick="addCategory()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">➕ যোগ</button>
+                    </div>
+                </div>
+                <div id="category-list" class="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg min-h-[60px]"></div>
+                <p id="no-categories" class="text-center text-gray-400 py-4 hidden">কোনো ক্যাটাগরি নেই</p>
+            </div>
+        </section>
     </main>
 
     <!-- Bulk Sell Modal -->
@@ -866,6 +1003,7 @@
         let currentUser = null;
         let selectedImageFile = null;
         let selectedProducts = new Map();
+        let categories = [];
 
         let historyFilter = 'today';
         let historyStartDate = '';
@@ -887,18 +1025,12 @@
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeButton(newTheme);
-            if (chartInstance) {
-                updateChart(currentChartPeriod);
-            }
+            if (chartInstance) { updateChart(currentChartPeriod); }
         }
 
         function updateThemeButton(theme) {
             const btn = document.getElementById('theme-toggle-btn');
-            if (theme === 'dark') {
-                btn.textContent = '☀️';
-            } else {
-                btn.textContent = '🌙';
-            }
+            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
 
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -918,6 +1050,7 @@
                 loadProducts();
                 loadSaleHistory();
                 loadCustomers();
+                loadCategories();
             } else {
                 currentUser = null;
                 document.getElementById('login-warning').classList.remove('hidden');
@@ -926,13 +1059,14 @@
                 const guest = localStorage.getItem('guest_products_data');
                 const guestHistory = localStorage.getItem('guest_sale_history');
                 const guestCustomers = localStorage.getItem('guest_data');
+                const guestCategories = localStorage.getItem('guest_categories');
                 if (guest) allProducts = JSON.parse(guest);
                 if (guestHistory) saleHistory = JSON.parse(guestHistory);
                 if (guestCustomers) {
-                    try {
-                        const parsed = JSON.parse(guestCustomers);
-                        allCustomers = parsed.filter(d => d.type === 'customer');
-                    } catch (e) {}
+                    try { allCustomers = JSON.parse(guestCustomers).filter(d => d.type === 'customer'); } catch (e) {}
+                }
+                if (guestCategories) {
+                    try { categories = JSON.parse(guestCategories); } catch (e) {}
                 }
                 renderAll();
                 renderHistory();
@@ -940,6 +1074,7 @@
                 updateTodaySummary();
                 updateCustomerSelect();
                 renderCustomers();
+                renderCategories();
             }
         });
 
@@ -953,6 +1088,7 @@
                 allProducts = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
                 renderAll();
                 checkLowStock();
+                updateCategoriesFromProducts();
             });
         }
 
@@ -995,6 +1131,161 @@
                 }
             }
         }
+
+        // ============================================
+        // CATEGORY MANAGEMENT
+        // ============================================
+        function loadCategories() {
+            if (currentUser) {
+                database.ref(`users/${currentUser.uid}/categories`).on('value', (snap) => {
+                    const data = snap.val();
+                    categories = data ? Object.values(data) : [];
+                    updateCategoriesFromProducts();
+                    renderCategories();
+                    updateCategorySuggestions();
+                });
+            } else {
+                const guest = localStorage.getItem('guest_categories');
+                if (guest) {
+                    try { categories = JSON.parse(guest); } catch (e) {}
+                }
+                updateCategoriesFromProducts();
+                renderCategories();
+                updateCategorySuggestions();
+            }
+        }
+
+        function updateCategoriesFromProducts() {
+            // Extract categories from products
+            const productCategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            
+            // Merge with existing categories
+            productCategories.forEach(cat => {
+                if (!categories.includes(cat)) {
+                    categories.push(cat);
+                }
+            });
+            
+            // Save categories
+            saveCategories();
+            renderCategories();
+            updateCategorySuggestions();
+            updateCategoryFilter();
+        }
+
+        async function saveCategories() {
+            if (currentUser) {
+                const catRef = database.ref(`users/${currentUser.uid}/categories`);
+                await catRef.set(categories);
+            } else {
+                localStorage.setItem('guest_categories', JSON.stringify(categories));
+            }
+        }
+
+        async function addCategory() {
+            const input = document.getElementById('new-category-input');
+            const cat = input.value.trim();
+            if (!cat) {
+                showToast('ক্যাটাগরি নাম দিন!', 'warning');
+                return;
+            }
+            if (categories.includes(cat)) {
+                showToast('এই ক্যাটাগরি ইতিমধ্যে আছে!', 'warning');
+                return;
+            }
+            categories.push(cat);
+            await saveCategories();
+            renderCategories();
+            updateCategorySuggestions();
+            updateCategoryFilter();
+            input.value = '';
+            showToast(`✅ "${cat}" ক্যাটাগরি যোগ করা হয়েছে`, 'success');
+        }
+
+        async function removeCategory(cat) {
+            if (!confirm(`"${cat}" ক্যাটাগরি মুছবেন?`)) return;
+            // Check if any product uses this category
+            const used = allProducts.some(p => p.category === cat);
+            if (used) {
+                showToast('এই ক্যাটাগরি ব্যবহারে আছে!', 'error');
+                return;
+            }
+            categories = categories.filter(c => c !== cat);
+            await saveCategories();
+            renderCategories();
+            updateCategorySuggestions();
+            updateCategoryFilter();
+            showToast(`✅ "${cat}" ক্যাটাগরি মুছে ফেলা হয়েছে`, 'success');
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('category-list');
+            const empty = document.getElementById('no-categories');
+            
+            if (!categories.length) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            container.innerHTML = categories.map(cat => `
+                <span class="category-tag">
+                    ${cat}
+                    <button onclick="removeCategory('${cat}')" class="ml-1 text-red-500 hover:text-red-700 transition" style="font-size:14px;">✕</button>
+                </span>
+            `).join('');
+        }
+
+        function updateCategorySuggestions() {
+            const suggestions = document.getElementById('category-suggestions');
+            if (!suggestions) return;
+            
+            // Clear and hide if no categories
+            if (!categories.length) {
+                suggestions.classList.remove('active');
+                suggestions.innerHTML = '';
+                return;
+            }
+        }
+
+        function showCategorySuggestions(value) {
+            const suggestions = document.getElementById('category-suggestions');
+            if (!suggestions) return;
+            
+            const val = value.toLowerCase().trim();
+            if (!val) {
+                suggestions.classList.remove('active');
+                suggestions.innerHTML = '';
+                return;
+            }
+            
+            const matches = categories.filter(cat => cat.toLowerCase().includes(val));
+            if (!matches.length) {
+                suggestions.classList.remove('active');
+                suggestions.innerHTML = '';
+                return;
+            }
+            
+            suggestions.innerHTML = matches.map(cat => `
+                <div class="category-suggestion-item" onclick="selectCategory('${cat}')">${cat}</div>
+            `).join('');
+            suggestions.classList.add('active');
+        }
+
+        function selectCategory(cat) {
+            document.getElementById('f-category').value = cat;
+            document.getElementById('category-suggestions').classList.remove('active');
+        }
+
+        // Close suggestions on outside click
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.category-input-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                const suggestions = document.getElementById('category-suggestions');
+                if (suggestions) suggestions.classList.remove('active');
+            }
+        });
 
         // ============================================
         // RENDER CUSTOMERS
@@ -1094,7 +1385,6 @@
             currentChartPeriod = period;
             const ctx = document.getElementById('sales-chart').getContext('2d');
             
-            // Update button styles
             document.querySelectorAll('.chart-period-btn').forEach(btn => {
                 btn.classList.remove('bg-teal-600', 'text-white');
                 btn.classList.add('bg-gray-200', 'text-gray-700');
@@ -1144,9 +1434,7 @@
             const textColor = isDark ? '#cbd5e1' : '#4a5568';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
 
-            if (chartInstance) {
-                chartInstance.destroy();
-            }
+            if (chartInstance) { chartInstance.destroy(); }
 
             chartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -1166,10 +1454,7 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            labels: {
-                                color: textColor,
-                                font: { size: 12 }
-                            }
+                            labels: { color: textColor, font: { size: 12 } }
                         }
                     },
                     scales: {
@@ -1180,9 +1465,7 @@
                                 font: { size: 10 },
                                 callback: function(value) { return '৳' + value.toLocaleString(); }
                             },
-                            grid: {
-                                color: gridColor
-                            }
+                            grid: { color: gridColor }
                         },
                         x: {
                             ticks: {
@@ -1191,9 +1474,7 @@
                                 maxRotation: 45,
                                 autoSkip: true
                             },
-                            grid: {
-                                color: gridColor
-                            }
+                            grid: { color: gridColor }
                         }
                     }
                 }
@@ -1424,12 +1705,6 @@
                     <span class="detail-label">🔄 শেষ আপডেট</span>
                     <span class="detail-value">${product.last_updated ? new Date(product.last_updated).toLocaleString('bn-BD') : '-'}</span>
                 </div>
-                ${product.status ? `
-                <div class="detail-item">
-                    <span class="detail-label">📌 স্ট্যাটাস</span>
-                    <span class="detail-value">${product.status === 'active' ? '✅ সক্রিয়' : '⛔ নিষ্ক্রিয়'}</span>
-                </div>
-                ` : ''}
             `;
 
             document.getElementById('detail-modal').classList.add('active');
@@ -1439,11 +1714,162 @@
             document.getElementById('detail-modal').classList.remove('active');
         }
 
-        // Close modal on outside click
         document.getElementById('detail-modal')?.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeDetailModal();
+            if (e.target === this) { closeDetailModal(); }
+        });
+
+        // ============================================
+        // INVOICE FUNCTIONS
+        // ============================================
+        function showInvoice(saleData) {
+            const modal = document.getElementById('invoice-modal');
+            const body = document.getElementById('invoice-body');
+            
+            const date = new Date().toLocaleDateString('bn-BD', {
+                day: '2-digit', month: '2-digit', year: 'numeric'
+            });
+            const time = new Date().toLocaleTimeString('bn-BD', {
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            const items = Array.isArray(saleData) ? saleData : [saleData];
+            const totalAmount = items.reduce((sum, item) => sum + item.final_price, 0);
+            const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+
+            // Get shop name
+            const shopName = document.getElementById('shop-name').textContent || 'বাকির খাতা';
+
+            body.innerHTML = `
+                <div class="invoice-header">
+                    <div class="invoice-title">🧾 বিক্রয় রশিদ</div>
+                    <div class="invoice-shop">${shopName}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                        ${date} | ${time}
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                    <span>রশিদ নং: #${String(Date.now()).slice(-6)}</span>
+                    <span>আইটেম: ${totalItems}টি</span>
+                </div>
+
+                <div class="invoice-items">
+                    ${items.map(item => `
+                        <div class="invoice-row">
+                            <span>${item.product_name}</span>
+                            <span>${item.quantity} × ৳${item.unit_price.toLocaleString()} = ৳${item.final_price.toLocaleString()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                ${items.some(item => item.discount && item.discount > 0) ? `
+                    <div class="invoice-row" style="color: #dc2626;">
+                        <span>ডিসকাউন্ট</span>
+                        <span>- ৳${items.reduce((sum, item) => sum + (item.discount || 0), 0).toLocaleString()}</span>
+                    </div>
+                ` : ''}
+
+                <div class="invoice-total" style="display: flex; justify-content: space-between;">
+                    <span>মোট:</span>
+                    <span>৳${totalAmount.toLocaleString()}</span>
+                </div>
+
+                ${items[0].payment_type === 'due' ? `
+                    <div style="text-align: center; margin-top: 8px; padding: 8px; background: #fee2e2; border-radius: 8px; color: #991b1b; font-size: 13px; font-weight: 600;">
+                        ⚠️ বাকি: ৳${totalAmount.toLocaleString()}
+                    </div>
+                ` : `
+                    <div style="text-align: center; margin-top: 8px; padding: 8px; background: #dcfce7; border-radius: 8px; color: #166534; font-size: 13px; font-weight: 600;">
+                        ✅ পরিশোধ: ৳${totalAmount.toLocaleString()}
+                    </div>
+                `}
+
+                ${items[0].customer_name ? `
+                    <div style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                        👤 ${items[0].customer_name}
+                    </div>
+                ` : ''}
+
+                ${items[0].comment ? `
+                    <div style="text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 4px; font-style: italic;">
+                        💬 ${items[0].comment}
+                    </div>
+                ` : ''}
+
+                <div class="invoice-footer">
+                    ধন্যবাদ! আবার আসুন 🙏
+                    <br>${new Date().toLocaleString('bn-BD')}
+                </div>
+
+                <button onclick="printInvoice()" class="invoice-print-btn">
+                    🖨️ প্রিন্ট / ডাউনলোড
+                </button>
+            `;
+
+            modal.classList.add('active');
+            window._currentInvoice = { items, totalAmount, totalItems };
+        }
+
+        function closeInvoice() {
+            document.getElementById('invoice-modal').classList.remove('active');
+        }
+
+        function printInvoice() {
+            const content = document.getElementById('invoice-body');
+            const printWindow = window.open('', '_blank', 'width=400,height=600');
+            if (!printWindow) {
+                showToast('পপআপ ব্লকার চেক করুন!', 'error');
+                return;
             }
+            
+            const styles = document.querySelector('style').innerHTML;
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>রশিদ</title>
+                    <style>
+                        ${styles}
+                        body { 
+                            padding: 20px; 
+                            font-family: 'DM Sans', sans-serif;
+                            background: ${isDark ? '#1e293b' : 'white'};
+                            color: ${isDark ? '#f1f5f9' : '#1a202c'};
+                        }
+                        .invoice-content { 
+                            max-width: 400px; 
+                            margin: 0 auto;
+                            background: ${isDark ? '#1e293b' : 'white'};
+                            padding: 20px;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        }
+                        .invoice-print-btn, .invoice-close-btn { display: none; }
+                        .invoice-items { max-height: none; }
+                        @media print {
+                            body { padding: 10px; }
+                            .invoice-content { box-shadow: none; }
+                            .invoice-print-btn { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="invoice-content">
+                        ${content.innerHTML.replace(/<button onclick="printInvoice\(\)" class="invoice-print-btn">.*?<\/button>/, '')}
+                    </div>
+                    <script>
+                        setTimeout(() => { window.print(); }, 500);
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        document.getElementById('invoice-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) { closeInvoice(); }
         });
 
         // ============================================
@@ -1470,7 +1896,6 @@
                 const url = await uploadImage();
                 if (url) data.image = url;
             }
-            // 🔥 FIX: Properly update without __backendId
             const backendId = data.__backendId;
             const updateData = { ...data };
             delete updateData.__backendId;
@@ -1589,8 +2014,11 @@
         // ============================================
         function exportData() {
             if (!allProducts.length) { showToast('পণ্য নেই', 'warning'); return; }
-            const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), products: allProducts,
-                history: saleHistory
+            const blob = new Blob([JSON.stringify({ 
+                exported: new Date().toISOString(), 
+                products: allProducts,
+                history: saleHistory,
+                categories: categories
             }, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
@@ -1615,6 +2043,13 @@
                     for (const h of data.history) {
                         if (currentUser) await database.ref(`users/${currentUser.uid}/sale_history`).push().set(h);
                     }
+                }
+                if (data.categories) {
+                    categories = data.categories;
+                    await saveCategories();
+                    renderCategories();
+                    updateCategorySuggestions();
+                    updateCategoryFilter();
                 }
                 showToast(`✅ ইম্পোর্ট সম্পন্ন!`, 'success');
             } catch (err) { showToast('❌ ইম্পোর্ট ব্যর্থ', 'error'); }
@@ -1742,6 +2177,10 @@
             const sel = document.getElementById('filter-category');
             const cur = sel.value;
             const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
+            // Also add from categories array
+            categories.forEach(c => {
+                if (!cats.includes(c)) cats.push(c);
+            });
             sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' + cats.map(c =>
                 `<option value="${c}">${c}</option>`).join('');
             sel.value = cur;
@@ -2321,6 +2760,7 @@
 
             let soldCount = 0,
                 totalRevenue = 0;
+            const allSales = [];
 
             for (const [productId, data] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
@@ -2359,6 +2799,7 @@
                     created_at: new Date().toISOString()
                 };
                 await saveSaleHistory(saleData);
+                allSales.push(saleData);
 
                 if (paymentType === 'due' && customerId) {
                     const transactionData = {
@@ -2385,6 +2826,11 @@
 
                 soldCount += data.qty;
                 totalRevenue += Math.round(finalPricePerProduct);
+            }
+
+            // 🔥 Show invoice after all sales
+            if (allSales.length > 0) {
+                showInvoice(allSales);
             }
 
             selectedProducts.clear();
@@ -2438,14 +2884,25 @@
             const err = document.getElementById('form-error');
             err.classList.add('hidden');
 
+            const cat = document.getElementById('f-category').value.trim();
+            
+            // Add category if new
+            if (cat && !categories.includes(cat)) {
+                categories.push(cat);
+                await saveCategories();
+                renderCategories();
+                updateCategorySuggestions();
+                updateCategoryFilter();
+            }
+
             const data = {
                 name: document.getElementById('f-name').value.trim(),
-                category: document.getElementById('f-category').value.trim(),
+                category: cat,
                 unit: document.getElementById('f-unit').value,
                 buy_price: parseFloat(document.getElementById('f-buy-price').value) || 0,
                 sell_price: parseFloat(document.getElementById('f-sell-price').value) || 0,
                 stock: parseInt(document.getElementById('f-stock').value) || 0,
-                code: genCode(document.getElementById('f-category').value.trim()),
+                code: genCode(cat),
                 status: 'active',
                 total_bought: editingProduct ? (Number(editingProduct.total_bought) || 0) : 0,
                 total_sold: editingProduct ? (Number(editingProduct.total_sold) || 0) : 0,
@@ -2584,6 +3041,9 @@
             };
             await saveSaleHistory(saleData);
 
+            // 🔥 Show invoice
+            showInvoice([saleData]);
+
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
             e.target.reset();
             document.getElementById('sell-stock-info').textContent = '';
@@ -2671,6 +3131,7 @@
                 if (btn.dataset.tab === 'profit') renderProfit();
                 if (btn.dataset.tab === 'today-details') renderTodayDetails();
                 if (btn.dataset.tab === 'customers') renderCustomers();
+                if (btn.dataset.tab === 'categories') renderCategories();
             });
         });
 
