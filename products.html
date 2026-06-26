@@ -226,7 +226,7 @@
             </div>
         </section>
 
-        <!-- History Tab with Filter -->
+        <!-- History Tab with Filter + Return Button -->
         <section id="tab-history" class="tab-content hidden fade-in">
             <div class="bg-white rounded-lg p-4 shadow">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
@@ -386,7 +386,7 @@
         let deletingProduct = null;
         let currentUser = null;
         let selectedImageFile = null;
-        let selectedProducts = new Map(); // {productId: quantity}
+        let selectedProducts = new Map();
 
         // History filter state
         let historyFilter = 'today';
@@ -451,7 +451,10 @@
             if (!currentUser) return;
             database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
                 const data = snap.val();
-                saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
+                saleHistory = data ? Object.keys(data).map(key => ({ 
+                    ...data[key], 
+                    __backendId: key 
+                })) : [];
                 renderHistory();
                 renderProfit();
             });
@@ -515,8 +518,10 @@
 
         async function saveSaleHistory(saleData) {
             if (currentUser) {
-                await database.ref(`users/${currentUser.uid}/sale_history`).push().set(saleData);
+                const newRef = await database.ref(`users/${currentUser.uid}/sale_history`).push().set(saleData);
+                saleData.__backendId = newRef.key;
             } else {
+                saleData.__backendId = 'HIST_' + Date.now();
                 saleHistory.push(saleData);
                 localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
                 renderHistory();
@@ -781,7 +786,7 @@
         }
 
         // ============================================
-        // HISTORY FILTER
+        // HISTORY FILTER (রিটার্ন বাটন সহ)
         // ============================================
         document.querySelectorAll('.filter-btn-history').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -874,9 +879,98 @@
                     <div class="text-right">
                         <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
                         <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
+                        <!-- 🔥 রিটার্ন বাটন -->
+                        <button onclick="returnSale('${h.__backendId}')" 
+                            class="mt-1 btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
+                            ↩️ রিটার্ন
+                        </button>
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        // ============================================
+        // ↩️ RETURN SALE FUNCTION
+        // ============================================
+        async function returnSale(historyId) {
+            if (!currentUser) {
+                showToast('রিটার্ন করতে লগইন করুন!', 'error');
+                return;
+            }
+            
+            const historyItem = saleHistory.find(h => h.__backendId === historyId);
+            if (!historyItem) {
+                showToast('লেনদেন পাওয়া যায়নি!', 'error');
+                return;
+            }
+            
+            if (!confirm(`"${historyItem.product_name}" (${historyItem.quantity}টি) রিটার্ন করতে চান?`)) {
+                return;
+            }
+            
+            showToast('⏳ রিটার্ন প্রক্রিয়াকরণ...', 'info');
+            
+            try {
+                // 1️⃣ পণ্যের স্টক বাড়ান
+                const product = allProducts.find(p => p.__backendId === historyItem.product_id);
+                if (product) {
+                    const updated = {
+                        ...product,
+                        stock: (Number(product.stock) || 0) + historyItem.quantity,
+                        total_sold: Math.max(0, (Number(product.total_sold) || 0) - historyItem.quantity),
+                        last_updated: new Date().toISOString()
+                    };
+                    await updateProduct(updated);
+                    console.log('✅ স্টক বাড়ানো হয়েছে:', historyItem.quantity);
+                }
+                
+                // 2️⃣ ইতিহাস থেকে ডিলিট
+                if (currentUser) {
+                    await database.ref(`users/${currentUser.uid}/sale_history/${historyId}`).remove();
+                } else {
+                    const index = saleHistory.findIndex(h => h.__backendId === historyId);
+                    if (index > -1) {
+                        saleHistory.splice(index, 1);
+                        localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
+                    }
+                }
+                
+                // 3️⃣ যদি বাকি লেনদেন হয়, main page থেকে ডিলিট
+                if (historyItem.payment_type === 'due' && historyItem.customer_id) {
+                    const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
+                    const data = snapshot.val();
+                    if (data) {
+                        for (const [key, value] of Object.entries(data)) {
+                            if (value.type === 'due' && 
+                                value.customer_id === historyItem.customer_id && 
+                                value.amount === historyItem.final_price &&
+                                value.date === historyItem.date) {
+                                await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
+                                console.log('✅ main page থেকে বাকি লেনদেন ডিলিট:', key);
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // 4️⃣ লোকাল অ্যারে থেকে রিমুভ
+                const localIndex = saleHistory.findIndex(h => h.__backendId === historyId);
+                if (localIndex > -1) {
+                    saleHistory.splice(localIndex, 1);
+                }
+                
+                // 5️⃣ UI রিফ্রেশ
+                renderHistory();
+                renderProfit();
+                renderProducts();
+                updateStats();
+                
+                showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন! (${historyItem.quantity}টি)`, 'success');
+                
+            } catch (error) {
+                console.error('রিটার্ন ব্যর্থ:', error);
+                showToast('❌ রিটার্ন ব্যর্থ: ' + error.message, 'error');
+            }
         }
 
         // ============================================
@@ -1040,7 +1134,7 @@
         }
 
         // ============================================
-        // BULK SELL (Quantity +/- সহ)
+        // BULK SELL
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) {
@@ -1173,7 +1267,6 @@
             const customer = allCustomers.find(c => c.customer_id === customerId);
             let soldCount = 0, totalRevenue = 0;
             
-            // প্রতিটি পণ্যের জন্য আলাদা ক্যালকুলেশন
             for (const [productId, qty] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
                 if (!product || product.stock < qty) {
@@ -1181,11 +1274,10 @@
                     return;
                 }
                 
-                // প্রতি পিসের দাম (ডিসকাউন্ট সহ)
                 const unitPrice = product.sell_price || 0;
                 const totalPrice = unitPrice * qty;
                 
-                // স্টক আপডেট
+                // 1️⃣ পণ্যের স্টক আপডেট
                 const updated = {
                     ...product,
                     stock: product.stock - qty,
@@ -1194,7 +1286,7 @@
                 };
                 await updateProduct(updated);
                 
-                // বিক্রি ইতিহাস সেভ
+                // 2️⃣ বিক্রি ইতিহাস সেভ
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
@@ -1210,6 +1302,23 @@
                     created_at: new Date().toISOString()
                 };
                 await saveSaleHistory(saleData);
+                
+                // 3️⃣ 🔥 MAIN PAGE এ বাকি লেনদেন সেভ
+                if (paymentType === 'due' && customerId) {
+                    const transactionData = {
+                        type: 'due',
+                        customer_id: customerId,
+                        customer_name: customer ? customer.customer_name : 'অজানা',
+                        amount: totalPrice,
+                        date: new Date().toISOString().split('T')[0],
+                        note: `পণ্য বিক্রি: ${product.name} (${qty}টি)`,
+                        created_at: new Date().toISOString(),
+                        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                    };
+                    await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
+                    console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে');
+                }
+                
                 soldCount += qty;
                 totalRevenue += totalPrice;
             }
