@@ -4,51 +4,206 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>পণ্য ব্যবস্থাপনা</title>
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.tailwindcss.com/3.4.17">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js">
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js">
+    </script>
+
     <style>
-        body { font-family: 'DM Sans', sans-serif; background: #f5f7fa; }
-        .tab-active { border-bottom: 2px solid #0d9488; color: #0d9488; font-weight: 600; }
-        .fade-in { animation: fadeIn 0.25s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .product-img { width: 36px; height: 36px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; }
-        .selected-row { background: #d1fae5 !important; border-left: 3px solid #0d9488; }
-        .toast { animation: slideIn 0.3s ease; }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-        .btn-sm { padding: 4px 12px; font-size: 12px; border-radius: 6px; }
-        .login-banner { background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1px solid #f59e0b; }
-        .profit-positive { color: #16a34a; }
-        .profit-negative { color: #dc2626; }
-        .history-item { border-left: 3px solid #0d9488; }
-        .payment-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
-        .payment-cash { background: #dcfce7; color: #166534; }
-        .payment-due { background: #fee2e2; color: #991b1b; }
-        .qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-weight: bold; }
-        .qty-btn:hover { background: #f3f4f6; }
-        .qty-input { width: 50px; text-align: center; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 0; }
-        .comment-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 6px 10px; font-size: 12px; color: #166534; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #f0f4f8;
+        }
+        .tab-active {
+            border-bottom: 2px solid #0d9488;
+            color: #0d9488;
+            font-weight: 600;
+        }
+        .fade-in {
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .product-img {
+            width: 36px;
+            height: 36px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        .selected-row {
+            background: #d1fae5 !important;
+            border-left: 3px solid #0d9488;
+        }
+        .toast {
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .btn-sm {
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        .login-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 1px solid #f59e0b;
+        }
+        .profit-positive {
+            color: #16a34a;
+        }
+        .profit-negative {
+            color: #dc2626;
+        }
+        .history-item {
+            border-left: 3px solid #0d9488;
+        }
+        .payment-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .payment-cash {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .payment-due {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .qty-btn:hover {
+            background: #f3f4f6;
+        }
+        .qty-input {
+            width: 50px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 4px 0;
+        }
+        .comment-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #166534;
+        }
+
+        /* Unique Styles */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .stat-card {
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #0d9488, #14b8a6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #0d9488;
+            border-radius: 10px;
+        }
+        .hover-lift {
+            transition: all 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(13, 148, 136, 0.15);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #0f766e, #14b8a6);
+        }
+        .section-divider {
+            background: linear-gradient(to right, transparent, #0d9488, transparent);
+            height: 2px;
+            opacity: 0.3;
+        }
+        .badge-low-stock {
+            background: #fef2f2;
+            color: #dc2626;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .badge-out-stock {
+            background: #fef2f2;
+            color: #b91c1c;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
     </style>
 </head>
 <body>
 
     <!-- Header -->
-    <header class="bg-white shadow-sm px-4 py-2.5 flex items-center justify-between sticky top-0 z-10 border-b">
+    <header class="glass-effect shadow-sm px-4 py-2.5 flex items-center justify-between sticky top-0 z-10 border-b border-gray-200/50">
         <div class="flex items-center gap-3">
-            <button onclick="window.location.href='index.html'" 
-                class="text-gray-600 hover:text-teal-600 transition text-xl font-bold">←</button>
-            <h1 class="text-lg font-bold text-teal-700">📦 পণ্য</h1>
-            <span class="text-xs text-gray-400" id="shop-name">বাকির খাতা</span>
+            <button onclick="window.location.href='index.html'"
+            class="text-gray-600 hover:text-teal-600 transition text-xl font-bold">←</button>
+            <h1 class="text-lg font-bold gradient-text">📦 পণ্য</h1>
+            <span class="text-xs text-gray-500" id="shop-name">বাকির খাতা</span>
         </div>
         <div class="flex gap-2">
-            <button onclick="exportData()" class="btn-sm bg-blue-500 text-white hover:bg-blue-600">💾</button>
-            <button onclick="document.getElementById('import-input').click()" class="btn-sm bg-green-500 text-white hover:bg-green-600">📤</button>
+            <button onclick="exportData()" class="btn-sm bg-blue-500 text-white hover:bg-blue-600 transition">💾</button>
+            <button onclick="document.getElementById('import-input').click()" class="btn-sm bg-green-500 text-white hover:bg-green-600 transition">📤</button>
             <input type="file" id="import-input" accept=".json" class="hidden">
         </div>
     </header>
@@ -65,58 +220,70 @@
         </div>
 
         <!-- Stats -->
-        <div class="grid grid-cols-4 gap-2.5 mb-4">
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">📦 মোট পণ্য</p><h3 id="stat-total-value" class="text-xl font-bold">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">✅ স্টকে</p><h3 id="stat-stock-value" class="text-xl font-bold">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">⚠️ কম স্টক</p><h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">💰 মোট ক্রয় মূল্য</p><h3 id="stat-value-value" class="text-xl font-bold">৳0</h3></div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
+            <div class="stat-card bg-white rounded-xl p-3 shadow-sm border-l-4 border-teal-500">
+                <p class="text-[10px] text-gray-400">📦 মোট পণ্য</p>
+                <h3 id="stat-total-value" class="text-xl font-bold text-gray-800">0</h3>
+            </div>
+            <div class="stat-card bg-white rounded-xl p-3 shadow-sm border-l-4 border-blue-500">
+                <p class="text-[10px] text-gray-400">✅ স্টকে</p>
+                <h3 id="stat-stock-value" class="text-xl font-bold text-gray-800">0</h3>
+            </div>
+            <div class="stat-card bg-white rounded-xl p-3 shadow-sm border-l-4 border-red-500">
+                <p class="text-[10px] text-gray-400">⚠️ কম স্টক</p>
+                <h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3>
+            </div>
+            <div class="stat-card bg-white rounded-xl p-3 shadow-sm border-l-4 border-purple-500">
+                <p class="text-[10px] text-gray-400">💰 মোট ক্রয় মূল্য</p>
+                <h3 id="stat-value-value" class="text-xl font-bold text-gray-800">৳0</h3>
+            </div>
         </div>
 
         <!-- Tabs -->
-        <nav class="flex flex-wrap gap-1 border-b mb-4 text-sm overflow-x-auto">
-            <button class="tab-btn tab-active" data-tab="products">📋 পণ্য</button>
-            <button class="tab-btn" data-tab="add" id="add-tab-btn">➕ যোগ</button>
-            <button class="tab-btn" data-tab="buy-sell">🔄 কেনা/বেচা</button>
-            <button class="tab-btn" data-tab="stock-update">📦 স্টক</button>
-            <button class="tab-btn" data-tab="reports">📊 রিপোর্ট</button>
-            <button class="tab-btn" data-tab="history">📜 ইতিহাস</button>
-            <button class="tab-btn" data-tab="profit">💰 লাভ</button>
+        <nav class="flex flex-wrap gap-1 border-b mb-4 text-sm overflow-x-auto bg-white/50 rounded-t-lg p-1 backdrop-blur-sm">
+            <button class="tab-btn tab-active px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="products">📋 পণ্য</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="add" id="add-tab-btn">➕ যোগ</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="buy-sell">🔄 কেনা/বেচা</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="stock-update">📦 স্টক</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="reports">📊 রিপোর্ট</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="history">📜 ইতিহাস</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="profit">💰 লাভ</button>
         </nav>
 
         <!-- Products Tab -->
         <section id="tab-products" class="tab-content fade-in">
-            
+
             <!-- Bulk Sell Bar -->
-            <div id="bulk-sell-bar" class="hidden bg-teal-50 rounded-lg p-3 mb-3 flex items-center justify-between border border-teal-200">
+            <div id="bulk-sell-bar" class="hidden bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 mb-3 flex items-center justify-between border border-teal-200 shadow-sm">
                 <div>
                     <span class="text-sm font-medium text-teal-700">📦 <span id="selected-count">0</span>টি পণ্য সিলেক্ট করা হয়েছে</span>
                 </div>
-                <button onclick="openBulkSellModal()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700">💰 বিক্রি করুন</button>
+                <button onclick="openBulkSellModal()" class="btn-sm gradient-bg text-white hover:shadow-lg transition px-4 py-1.5">💰 বিক্রি করুন</button>
             </div>
 
             <div class="flex flex-wrap gap-2 mb-3">
-                <input id="search-input" type="text" placeholder="খুঁজুন..." class="flex-1 min-w-[120px] px-3 py-1.5 border rounded-lg text-sm">
-                <select id="filter-category" class="min-w-[100px] px-3 py-1.5 border rounded-lg text-sm">
-                    <option value="">সব</option>
+                <input id="search-input" type="text" placeholder="🔍 পণ্য খুঁজুন..." class="flex-1 min-w-[120px] px-4 py-2 border rounded-xl text-sm bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                <select id="filter-category" class="min-w-[100px] px-3 py-2 border rounded-xl text-sm bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                    <option value="">সব ক্যাটাগরি</option>
                 </select>
             </div>
 
-            <div class="bg-white rounded-lg shadow overflow-x-auto">
+            <div class="bg-white rounded-xl shadow-sm overflow-x-auto border border-gray-100">
                 <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50/80">
                         <tr>
-                            <th class="w-8 text-center"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="rounded"></th>
-                            <th class="text-center">ছবি</th>
-                            <th class="text-left">নাম</th>
-                            <th class="text-left hidden sm:table-cell">কোড</th>
-                            <th class="text-left hidden md:table-cell">ক্যাটাগরি</th>
-                            <th class="text-right hidden sm:table-cell">ক্রয়</th>
-                            <th class="text-right">বিক্রয়</th>
-                            <th class="text-right">স্টক</th>
-                            <th class="text-center">অ্যাকশন</th>
+                            <th class="w-8 text-center p-2"><input type="checkbox" id="select-all" onchange="toggleSelectAll()" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500"></th>
+                            <th class="text-center p-2">ছবি</th>
+                            <th class="text-left p-2 font-semibold text-gray-700">নাম</th>
+                            <th class="text-left p-2 font-semibold text-gray-700 hidden sm:table-cell">কোড</th>
+                            <th class="text-left p-2 font-semibold text-gray-700 hidden md:table-cell">ক্যাটাগরি</th>
+                            <th class="text-right p-2 font-semibold text-gray-700 hidden sm:table-cell">ক্রয়</th>
+                            <th class="text-right p-2 font-semibold text-gray-700">বিক্রয়</th>
+                            <th class="text-right p-2 font-semibold text-gray-700">স্টক</th>
+                            <th class="text-center p-2 font-semibold text-gray-700">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody id="product-tbody" class="divide-y"></tbody>
+                    <tbody id="product-tbody" class="divide-y divide-gray-100"></tbody>
                 </table>
             </div>
             <p id="empty-products" class="text-center text-gray-400 py-6 hidden">কোনো পণ্য নেই</p>
@@ -124,31 +291,31 @@
 
         <!-- Add Tab -->
         <section id="tab-add" class="tab-content hidden fade-in">
-            <div id="add-blocked" class="bg-white rounded-lg p-6 shadow max-w-md mx-auto text-center">
+            <div id="add-blocked" class="bg-white rounded-xl p-6 shadow-lg max-w-md mx-auto text-center border border-gray-100">
                 <div class="text-5xl mb-4">🔒</div>
                 <h3 class="text-lg font-bold text-gray-700">পণ্য যোগ করতে লগইন করুন</h3>
                 <p class="text-sm text-gray-500 mt-2">পণ্য যোগ/এডিট/ডিলিট করতে আপনার অ্যাকাউন্ট প্রয়োজন।</p>
-                <button onclick="window.location.href='index.html'" class="mt-4 btn-sm bg-teal-600 text-white hover:bg-teal-700 px-6 py-2 rounded-lg">লগইন</button>
+                <button onclick="window.location.href='index.html'" class="mt-4 gradient-bg text-white px-6 py-2 rounded-lg hover:shadow-lg transition">লগইন</button>
             </div>
-            <div id="add-form-container" class="hidden bg-white rounded-lg p-4 shadow max-w-md mx-auto">
-                <h2 id="form-title" class="text-md font-semibold mb-3">➕ নতুন পণ্য</h2>
+            <div id="add-form-container" class="hidden bg-white rounded-xl p-6 shadow-lg max-w-md mx-auto border border-gray-100">
+                <h2 id="form-title" class="text-md font-semibold mb-4 gradient-text">➕ নতুন পণ্য</h2>
                 <form id="product-form" class="space-y-3">
                     <div>
-                        <label class="text-xs font-medium">ছবি</label>
+                        <label class="text-xs font-medium text-gray-600">ছবি</label>
                         <div class="flex gap-1.5 mt-1">
-                            <button type="button" onclick="document.getElementById('image-input').click()" class="btn-sm bg-gray-200 hover:bg-gray-300">📷</button>
-                            <button type="button" onclick="openCamera()" class="btn-sm bg-gray-200 hover:bg-gray-300">📸</button>
-                            <button type="button" onclick="removeImage()" class="btn-sm bg-red-100 text-red-600 hover:bg-red-200">✕</button>
+                            <button type="button" onclick="document.getElementById('image-input').click()" class="btn-sm bg-gray-100 hover:bg-gray-200 transition">📷</button>
+                            <button type="button" onclick="openCamera()" class="btn-sm bg-gray-100 hover:bg-gray-200 transition">📸</button>
+                            <button type="button" onclick="removeImage()" class="btn-sm bg-red-100 text-red-600 hover:bg-red-200 transition">✕</button>
                         </div>
                         <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
                         <input type="hidden" id="image-url" value="">
                         <div id="image-preview" class="hidden mt-1"><img id="product-image-display" class="product-img"></div>
                     </div>
-                    <div><label class="text-xs font-medium">নাম *</label><input id="f-name" type="text" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
+                    <div><label class="text-xs font-medium text-gray-600">নাম *</label><input id="f-name" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-medium">ক্যাটাগরি *</label><input id="f-category" type="text" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
-                        <div><label class="text-xs font-medium">ইউনিট</label>
-                            <select id="f-unit" class="w-full px-3 py-1.5 border rounded-lg text-sm">
+                        <div><label class="text-xs font-medium text-gray-600">ক্যাটাগরি *</label><input id="f-category" type="text" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></div>
+                        <div><label class="text-xs font-medium text-gray-600">ইউনিট</label>
+                            <select id="f-unit" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                                 <option value="pcs">পিস</option><option value="kg">কেজি</option>
                                 <option value="liter">লিটার</option><option value="dozen">ডজন</option>
                                 <option value="gaj">গজ</option><option value="foot">ফুট</option>
@@ -156,14 +323,14 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-xs font-medium">ক্রয় (৳)</label><input id="f-buy-price" type="number" min="0" step="0.01" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
-                        <div><label class="text-xs font-medium">বিক্রয় (৳)</label><input id="f-sell-price" type="number" min="0" step="0.01" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
+                        <div><label class="text-xs font-medium text-gray-600">ক্রয় (৳)</label><input id="f-buy-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></div>
+                        <div><label class="text-xs font-medium text-gray-600">বিক্রয় (৳)</label><input id="f-sell-price" type="number" min="0" step="0.01" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></div>
                     </div>
-                    <div><label class="text-xs font-medium">স্টক</label><input id="f-stock" type="number" min="0" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></div>
+                    <div><label class="text-xs font-medium text-gray-600">স্টক</label><input id="f-stock" type="number" min="0" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></div>
                     <div id="form-error" class="hidden text-red-600 text-xs text-center"></div>
                     <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700">💾 সংরক্ষণ</button>
-                        <button type="button" class="flex-1 bg-gray-200 text-gray-700 btn-sm font-medium hover:bg-gray-300" onclick="resetForm()">বাতিল</button>
+                        <button type="submit" class="flex-1 gradient-bg text-white btn-sm font-medium hover:shadow-lg transition py-2 rounded-lg">💾 সংরক্ষণ</button>
+                        <button type="button" class="flex-1 bg-gray-100 text-gray-700 btn-sm font-medium hover:bg-gray-200 transition py-2 rounded-lg" onclick="resetForm()">বাতিল</button>
                     </div>
                 </form>
             </div>
@@ -172,26 +339,28 @@
         <!-- Buy/Sell Tab -->
         <section id="tab-buy-sell" class="tab-content hidden fade-in">
             <div class="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                <div class="bg-white rounded-lg p-4 shadow"><h3 class="font-semibold text-sm mb-2">🛒 ক্রয়</h3>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover-lift">
+                    <h3 class="font-semibold text-sm mb-3 gradient-text">🛒 ক্রয়</h3>
                     <form id="buy-form" class="space-y-2">
-                        <select id="buy-product" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></select>
+                        <select id="buy-product" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></select>
                         <div class="grid grid-cols-2 gap-2">
-                            <input id="buy-qty" type="number" min="1" placeholder="পরিমাণ" required class="px-3 py-1.5 border rounded-lg text-sm">
-                            <input id="buy-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-1.5 border rounded-lg text-sm">
+                            <input id="buy-qty" type="number" min="1" placeholder="পরিমাণ" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                            <input id="buy-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                         </div>
-                        <button type="submit" class="w-full bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700">✅ ক্রয়</button>
+                        <button type="submit" class="w-full gradient-bg text-white btn-sm font-medium hover:shadow-lg transition py-2 rounded-lg">✅ ক্রয়</button>
                     </form>
                     <div id="buy-msg" class="hidden text-center text-xs mt-1"></div>
                 </div>
-                <div class="bg-white rounded-lg p-4 shadow"><h3 class="font-semibold text-sm mb-2">💰 বিক্রয়</h3>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover-lift">
+                    <h3 class="font-semibold text-sm mb-3 gradient-text">💰 বিক্রয়</h3>
                     <form id="sell-form" class="space-y-2">
-                        <select id="sell-product" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></select>
+                        <select id="sell-product" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></select>
                         <div class="grid grid-cols-2 gap-2">
-                            <input id="sell-qty" type="number" min="1" placeholder="পরিমাণ" required class="px-3 py-1.5 border rounded-lg text-sm">
-                            <input id="sell-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-1.5 border rounded-lg text-sm">
+                            <input id="sell-qty" type="number" min="1" placeholder="পরিমাণ" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                            <input id="sell-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                         </div>
                         <div id="sell-stock-info" class="text-xs text-gray-400"></div>
-                        <button type="submit" class="w-full bg-emerald-600 text-white btn-sm font-medium hover:bg-emerald-700">✅ বিক্রি</button>
+                        <button type="submit" class="w-full bg-emerald-600 text-white btn-sm font-medium hover:bg-emerald-700 transition py-2 rounded-lg">✅ বিক্রি</button>
                     </form>
                     <div id="sell-msg" class="hidden text-center text-xs mt-1"></div>
                 </div>
@@ -200,18 +369,18 @@
 
         <!-- Stock Update Tab -->
         <section id="tab-stock-update" class="tab-content hidden fade-in">
-            <div class="bg-white rounded-lg p-4 shadow max-w-md mx-auto">
-                <h3 class="font-semibold text-sm mb-3">📦 স্টক আপডেট</h3>
+            <div class="bg-white rounded-xl p-6 shadow-lg max-w-md mx-auto border border-gray-100">
+                <h3 class="font-semibold text-sm mb-4 gradient-text">📦 স্টক আপডেট</h3>
                 <form id="stock-form" class="space-y-3">
-                    <select id="stock-product" required class="w-full px-3 py-1.5 border rounded-lg text-sm"></select>
+                    <select id="stock-product" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"></select>
                     <div id="stock-current" class="text-xs text-gray-500"></div>
                     <div class="grid grid-cols-2 gap-3">
-                        <select id="stock-action" class="w-full px-3 py-1.5 border rounded-lg text-sm">
+                        <select id="stock-action" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                             <option value="add">যোগ (+)</option><option value="subtract">বিয়োগ (-)</option><option value="set">নির্ধারণ (=)</option>
                         </select>
-                        <input id="stock-qty" type="number" min="0" placeholder="পরিমাণ" required class="px-3 py-1.5 border rounded-lg text-sm">
+                        <input id="stock-qty" type="number" min="0" placeholder="পরিমাণ" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                     </div>
-                    <button type="submit" class="w-full bg-purple-600 text-white btn-sm font-medium hover:bg-purple-700">📦 আপডেট</button>
+                    <button type="submit" class="w-full bg-purple-600 text-white btn-sm font-medium hover:bg-purple-700 transition py-2 rounded-lg">📦 আপডেট</button>
                 </form>
                 <div id="stock-msg" class="hidden text-center text-xs mt-1"></div>
             </div>
@@ -220,19 +389,32 @@
         <!-- Reports Tab -->
         <section id="tab-reports" class="tab-content hidden fade-in">
             <div class="grid md:grid-cols-2 gap-4">
-                <div class="bg-white rounded-lg p-4 shadow"><h4 class="font-semibold text-sm mb-2">📂 ক্যাটাগরি</h4><div id="report-category-body" class="space-y-1 text-sm"></div></div>
-                <div class="bg-white rounded-lg p-4 shadow"><h4 class="font-semibold text-sm mb-2">⚠️ কম স্টক</h4><div id="report-low-body" class="space-y-1 text-sm"></div><p id="no-low-stock" class="text-green-600 text-sm hidden">✅ সব ঠিক আছে</p></div>
-                <div class="bg-white rounded-lg p-4 shadow"><h4 class="font-semibold text-sm mb-2">📈 লাভ মার্জিন</h4><div id="report-profit-body" class="space-y-1 text-sm"></div></div>
-                <div class="bg-white rounded-lg p-4 shadow"><h4 class="font-semibold text-sm mb-2">📊 সারাংশ</h4><div id="report-summary-body" class="space-y-1 text-sm"></div></div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📂 ক্যাটাগরি</h4>
+                    <div id="report-category-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">⚠️ কম স্টক</h4>
+                    <div id="report-low-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                    <p id="no-low-stock" class="text-green-600 text-sm hidden">✅ সব ঠিক আছে</p>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📈 লাভ মার্জিন</h4>
+                    <div id="report-profit-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📊 সারাংশ</h4>
+                    <div id="report-summary-body" class="space-y-1 text-sm"></div>
+                </div>
             </div>
         </section>
 
         <!-- History Tab -->
         <section id="tab-history" class="tab-content hidden fade-in">
-            <div class="bg-white rounded-lg p-4 shadow">
+            <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
-                    <h3 class="font-semibold text-sm">📜 বিক্রি ইতিহাস</h3>
-                    <button onclick="clearHistory()" class="btn-sm bg-red-100 text-red-600 hover:bg-red-200">🗑️ সব মুছুন</button>
+                    <h3 class="font-semibold text-sm gradient-text">📜 বিক্রি ইতিহাস</h3>
+                    <button onclick="clearHistory()" class="btn-sm bg-red-100 text-red-600 hover:bg-red-200 transition">🗑️ সব মুছুন</button>
                 </div>
                 <div class="flex flex-wrap gap-2 mb-3 items-center">
                     <button class="filter-btn-history btn-sm bg-teal-600 text-white" data-filter="today">আজ</button>
@@ -241,21 +423,21 @@
                     <button class="filter-btn-history btn-sm bg-gray-200 text-gray-700" data-filter="year">বছর</button>
                     <button class="filter-btn-history btn-sm bg-gray-200 text-gray-700" data-filter="custom">কাস্টম</button>
                     <div id="custom-date-range" class="hidden flex items-center gap-2">
-                        <input type="date" id="history-start-date" class="px-2 py-1 border rounded text-sm">
+                        <input type="date" id="history-start-date" class="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                         <span class="text-xs">থেকে</span>
-                        <input type="date" id="history-end-date" class="px-2 py-1 border rounded text-sm">
-                        <button onclick="applyHistoryFilter()" class="btn-sm bg-blue-500 text-white">প্রয়োগ</button>
+                        <input type="date" id="history-end-date" class="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                        <button onclick="applyHistoryFilter()" class="btn-sm bg-blue-500 text-white hover:bg-blue-600 transition">প্রয়োগ</button>
                     </div>
                 </div>
-                <div id="history-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+                <div id="history-list" class="space-y-2 max-h-96 overflow-y-auto custom-scroll"></div>
                 <p id="no-history" class="text-center text-gray-400 py-6 hidden">কোনো বিক্রি ইতিহাস নেই</p>
             </div>
         </section>
 
         <!-- Profit Tab -->
         <section id="tab-profit" class="tab-content hidden fade-in">
-            <div class="bg-white rounded-lg p-4 shadow">
-                <h3 class="font-semibold text-sm mb-3">💰 পণ্য ভিত্তিক লাভ</h3>
+            <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                <h3 class="font-semibold text-sm mb-3 gradient-text">💰 পণ্য ভিত্তিক লাভ</h3>
                 <div class="flex flex-wrap gap-2 mb-3 items-center">
                     <button class="filter-btn-profit btn-sm bg-teal-600 text-white" data-filter="today">আজ</button>
                     <button class="filter-btn-profit btn-sm bg-gray-200 text-gray-700" data-filter="week">সপ্তাহ</button>
@@ -263,15 +445,15 @@
                     <button class="filter-btn-profit btn-sm bg-gray-200 text-gray-700" data-filter="year">বছর</button>
                     <button class="filter-btn-profit btn-sm bg-gray-200 text-gray-700" data-filter="custom">কাস্টম</button>
                     <div id="profit-custom-date-range" class="hidden flex items-center gap-2">
-                        <input type="date" id="profit-start-date" class="px-2 py-1 border rounded text-sm">
+                        <input type="date" id="profit-start-date" class="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                         <span class="text-xs">থেকে</span>
-                        <input type="date" id="profit-end-date" class="px-2 py-1 border rounded text-sm">
-                        <button onclick="applyProfitFilter()" class="btn-sm bg-blue-500 text-white">প্রয়োগ</button>
+                        <input type="date" id="profit-end-date" class="px-2 py-1 border rounded text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
+                        <button onclick="applyProfitFilter()" class="btn-sm bg-blue-500 text-white hover:bg-blue-600 transition">প্রয়োগ</button>
                     </div>
                 </div>
-                <div id="profit-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
-                <div id="total-profit-summary" class="mt-4 p-3 bg-teal-50 rounded-lg flex justify-between border border-teal-200">
-                    <span class="font-bold">মোট লাভ:</span>
+                <div id="profit-list" class="space-y-2 max-h-96 overflow-y-auto custom-scroll"></div>
+                <div id="total-profit-summary" class="mt-4 p-3 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg flex justify-between border border-teal-200">
+                    <span class="font-bold text-gray-700">মোট লাভ:</span>
                     <span id="total-profit-amount" class="font-bold text-teal-700">৳0</span>
                 </div>
                 <p id="no-profit" class="text-center text-gray-400 py-6 hidden">কোনো বিক্রি ডাটা নেই</p>
@@ -280,25 +462,25 @@
     </main>
 
     <!-- Bulk Sell Modal -->
-    <div id="bulk-sell-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl p-5 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-bold">💰 বাল্ক বিক্রি</h3>
-                <button onclick="closeBulkSellModal()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+    <div id="bulk-sell-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto custom-scroll border border-gray-100">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold gradient-text">💰 বাল্ক বিক্রি</h3>
+                <button onclick="closeBulkSellModal()" class="text-gray-400 hover:text-gray-600 transition text-xl">✕</button>
             </div>
             <p class="text-sm text-gray-600 mb-3"><span id="bulk-count">0</span>টি পণ্য সিলেক্ট করা হয়েছে</p>
-            
-            <div id="bulk-products-list" class="max-h-48 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50"></div>
+
+            <div id="bulk-products-list" class="max-h-48 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50 custom-scroll"></div>
 
             <div class="mb-3">
                 <label class="text-xs font-medium text-gray-600">📝 মন্তব্য (ঐচ্ছিক)</label>
-                <textarea id="bulk-comment" rows="2" 
-                    class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    placeholder="বিশেষ তথ্য, গ্রাহকের মন্তব্য..."></textarea>
+                <textarea id="bulk-comment" rows="2"
+                class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition"
+                placeholder="বিশেষ তথ্য, গ্রাহকের মন্তব্য..."></textarea>
             </div>
 
             <div class="mb-3">
-                <label class="text-xs font-medium">পেমেন্ট টাইপ</label>
+                <label class="text-xs font-medium text-gray-600">পেমেন্ট টাইপ</label>
                 <div class="flex gap-3 mt-1">
                     <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="cash" checked onchange="toggleCustomerSelect()"> নগদ</label>
                     <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="due" onchange="toggleCustomerSelect()"> বাকি</label>
@@ -306,33 +488,33 @@
             </div>
 
             <div id="customer-select-container" class="hidden mb-3">
-                <label class="text-xs font-medium">বাকি কাস্টমার নির্বাচন করুন</label>
-                <select id="due-customer-select" class="w-full px-3 py-1.5 border rounded-lg text-sm mt-1">
+                <label class="text-xs font-medium text-gray-600">বাকি কাস্টমার নির্বাচন করুন</label>
+                <select id="due-customer-select" class="w-full px-3 py-2 border rounded-lg text-sm mt-1 focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                     <option value="">-- কাস্টমার বাছাই --</option>
                 </select>
-                <button onclick="loadCustomersFromMain()" class="text-xs text-teal-600 hover:underline mt-1">🔄 কাস্টমার রিলোড</button>
+                <button onclick="loadCustomersFromMain()" class="text-xs text-teal-600 hover:underline mt-1 transition">🔄 কাস্টমার রিলোড</button>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div>
                     <label class="text-xs font-medium text-gray-600">মূল্য (৳)</label>
-                    <input id="bulk-original-price" type="number" readonly 
-                        class="w-full px-3 py-1.5 border rounded-lg text-sm bg-gray-100">
+                    <input id="bulk-original-price" type="number" readonly
+                    class="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-gray-600">ডিসকাউন্ট (৳)</label>
-                    <input id="bulk-discount" type="number" min="0" value="0" 
-                        oninput="calculateBulkTotal()"
-                        class="w-full px-3 py-1.5 border rounded-lg text-sm">
+                    <input id="bulk-discount" type="number" min="0" value="0"
+                    oninput="calculateBulkTotal()"
+                    class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition">
                 </div>
             </div>
 
-            <div class="bg-teal-50 rounded-lg p-3 flex justify-between items-center border border-teal-200 mb-3">
+            <div class="bg-gradient-to-r from-teal-50 to-emerald-50 rounded-xl p-3 flex justify-between items-center border border-teal-200 mb-4">
                 <span class="text-sm font-medium text-teal-700">মোট মূল্য:</span>
                 <span id="bulk-total-price" class="text-xl font-bold text-teal-700">৳০</span>
             </div>
 
-            <button onclick="confirmBulkSell()" class="w-full bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700 py-2.5 rounded-lg transition">
+            <button onclick="confirmBulkSell()" class="w-full gradient-bg text-white btn-sm font-medium hover:shadow-lg transition py-2.5 rounded-xl">
                 💰 বিক্রি করুন
             </button>
             <div id="bulk-msg" class="hidden text-center text-xs mt-2"></div>
@@ -340,13 +522,13 @@
     </div>
 
     <!-- Delete Modal -->
-    <div id="delete-modal" class="hidden fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-5 max-w-xs w-full shadow-lg">
-            <p class="font-semibold">পণ্য মুছবেন?</p>
+    <div id="delete-modal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-xs w-full shadow-2xl border border-gray-100">
+            <p class="font-semibold text-gray-800">পণ্য মুছবেন?</p>
             <p class="text-sm text-gray-500 mt-1">পুনরুদ্ধার করা যাবে না।</p>
             <div class="flex gap-2 justify-end mt-4">
-                <button id="delete-cancel" class="btn-sm border hover:bg-gray-50">বাতিল</button>
-                <button id="delete-confirm" class="btn-sm bg-red-600 text-white hover:bg-red-700">মুছুন</button>
+                <button id="delete-cancel" class="btn-sm border border-gray-200 hover:bg-gray-50 transition px-4 py-1.5 rounded-lg">বাতিল</button>
+                <button id="delete-confirm" class="btn-sm bg-red-600 text-white hover:bg-red-700 transition px-4 py-1.5 rounded-lg">মুছুন</button>
             </div>
         </div>
     </div>
@@ -420,7 +602,7 @@
                     try {
                         const parsed = JSON.parse(guestCustomers);
                         allCustomers = parsed.filter(d => d.type === 'customer');
-                    } catch(e) {}
+                    } catch (e) {}
                 }
                 renderAll();
                 renderHistory();
@@ -458,7 +640,8 @@
                     const data = snap.val();
                     if (data) {
                         allCustomers = Object.keys(data)
-                            .map(key => ({ ...data[key], __backendId: key, customer_id: data[key].customer_id || data[key].__backendId }))
+                            .map(key => ({ ...data[key], __backendId: key, customer_id: data[key].customer_id || data[
+                                    key].__backendId }))
                             .filter(d => d.type === 'customer');
                         updateCustomerSelect();
                     }
@@ -468,9 +651,10 @@
                 if (guestData) {
                     try {
                         const parsed = JSON.parse(guestData);
-                        allCustomers = parsed.filter(d => d.type === 'customer').map(c => ({ ...c, customer_id: c.customer_id || c.__backendId }));
+                        allCustomers = parsed.filter(d => d.type === 'customer').map(c => ({ ...c,
+                            customer_id: c.customer_id || c.__backendId }));
                         updateCustomerSelect();
-                    } catch(e) { console.error('গেস্ট ডাটা পড়তে সমস্যা:', e); }
+                    } catch (e) { console.error('গেস্ট ডাটা পড়তে সমস্যা:', e); }
                 }
             }
         }
@@ -524,7 +708,7 @@
         // ============================================
         function handleImageSelect(e) {
             const file = e.target.files[0];
-            if (!file || file.size > 5*1024*1024) { showToast('৫MB এর কম দিন', 'error'); return; }
+            if (!file || file.size > 5 * 1024 * 1024) { showToast('৫MB এর কম দিন', 'error'); return; }
             selectedImageFile = file;
             const reader = new FileReader();
             reader.onload = function(ev) {
@@ -555,10 +739,12 @@
             fd.append('upload_preset', 'bakir_khata_preset');
             fd.append('cloud_name', 'dtep7yhzl');
             try {
-                const res = await fetch('https://api.cloudinary.com/v1_1/dtep7yhzl/image/upload', { method: 'POST', body: fd });
+                const res = await fetch('https://api.cloudinary.com/v1_1/dtep7yhzl/image/upload', { method: 'POST',
+                    body: fd });
                 const data = await res.json();
-                if (data.secure_url) { document.getElementById('image-url').value = data.secure_url; return data.secure_url; }
-            } catch(e) { showToast('ছবি আপলোড ব্যর্থ', 'error'); return null; }
+                if (data.secure_url) { document.getElementById('image-url').value = data.secure_url; return data
+                        .secure_url; }
+            } catch (e) { showToast('ছবি আপলোড ব্যর্থ', 'error'); return null; }
         }
 
         // ============================================
@@ -598,7 +784,9 @@
         // ============================================
         function exportData() {
             if (!allProducts.length) { showToast('পণ্য নেই', 'warning'); return; }
-            const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), products: allProducts, history: saleHistory }, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), products: allProducts,
+                history: saleHistory
+            }, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `products_${new Date().toISOString().split('T')[0]}.json`;
@@ -624,7 +812,7 @@
                     }
                 }
                 showToast(`✅ ইম্পোর্ট সম্পন্ন!`, 'success');
-            } catch(err) { showToast('❌ ইম্পোর্ট ব্যর্থ', 'error'); }
+            } catch (err) { showToast('❌ ইম্পোর্ট ব্যর্থ', 'error'); }
         });
 
         // ============================================
@@ -664,7 +852,8 @@
             const cat = document.getElementById('filter-category').value;
 
             let filtered = allProducts.filter(p => {
-                const m1 = !search || (p.name || '').toLowerCase().includes(search) || (p.code || '').toLowerCase().includes(search);
+                const m1 = !search || (p.name || '').toLowerCase().includes(search) || (p.code || '').toLowerCase()
+                    .includes(search);
                 const m2 = !cat || p.category === cat;
                 return m1 && m2;
             });
@@ -673,32 +862,41 @@
 
             tbody.innerHTML = filtered.map(p => {
                 const stockClass = p.stock <= 5 ? 'text-red-600 font-semibold' : '';
-                const img = p.image ? `<img src="${p.image}" class="product-img">` : `<span class="text-lg">📦</span>`;
+                const img = p.image ? `<img src="${p.image}" class="product-img">` :
+                    `<span class="text-lg">📦</span>`;
                 const qty = selectedProducts.get(p.__backendId) || 0;
                 const isSelected = qty > 0;
                 const rowClass = isSelected ? 'selected-row' : '';
-                
+
+                // Stock status badge
+                let stockBadge = '';
+                if (p.stock === 0) {
+                    stockBadge = `<span class="badge-out-stock">শেষ</span>`;
+                } else if (p.stock <= 5) {
+                    stockBadge = `<span class="badge-low-stock">কম</span>`;
+                }
+
                 return `<tr class="hover:bg-gray-50 transition cursor-pointer ${rowClass}" onclick="toggleProductSelect('${p.__backendId}')">
-                    <td class="text-center">
-                        <input type="checkbox" ${isSelected ? 'checked' : ''} 
-                            onclick="event.stopPropagation(); toggleProductSelect('${p.__backendId}')" class="rounded">
-                    </td>
-                    <td class="text-center">${img}</td>
-                    <td class="font-medium">${p.name || ''}</td>
-                    <td class="hidden sm:table-cell text-gray-400 text-xs">${p.code || '-'}</td>
-                    <td class="hidden md:table-cell">${p.category || ''}</td>
-                    <td class="hidden sm:table-cell text-right">৳${(p.buy_price||0).toLocaleString('bn-BD')}</td>
-                    <td class="text-right">৳${(p.sell_price||0).toLocaleString('bn-BD')}</td>
-                    <td class="text-right ${stockClass}">${p.stock||0} ${p.unit||''}</td>
-                    <td class="text-center" onclick="event.stopPropagation();">
-                        ${currentUser ? `
-                        <button class="text-teal-600 hover:text-teal-800 mr-1" onclick="editProduct('${p.__backendId}')">✏️</button>
-                        <button class="text-red-500 hover:text-red-700" onclick="confirmDelete('${p.__backendId}')">🗑️</button>
-                        ` : `
-                        <span class="text-gray-300 text-xs">🔒</span>
-                        `}
-                    </td>
-                </tr>`;
+                        <td class="text-center p-2">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} 
+                                onclick="event.stopPropagation(); toggleProductSelect('${p.__backendId}')" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                        </td>
+                        <td class="text-center p-2">${img}</td>
+                        <td class="font-medium p-2">${p.name || ''}</td>
+                        <td class="hidden sm:table-cell text-gray-400 text-xs p-2">${p.code || '-'}</td>
+                        <td class="hidden md:table-cell p-2"><span class="bg-gray-100 px-2 py-0.5 rounded-full text-xs">${p.category || ''}</span></td>
+                        <td class="hidden sm:table-cell text-right p-2">৳${(p.buy_price||0).toLocaleString('bn-BD')}</td>
+                        <td class="text-right p-2 font-medium">৳${(p.sell_price||0).toLocaleString('bn-BD')}</td>
+                        <td class="text-right p-2 ${stockClass}">${p.stock||0} ${p.unit||''} ${stockBadge}</td>
+                        <td class="text-center p-2" onclick="event.stopPropagation();">
+                            ${currentUser ? `
+                            <button class="text-teal-600 hover:text-teal-800 mr-1 transition" onclick="editProduct('${p.__backendId}')">✏️</button>
+                            <button class="text-red-500 hover:text-red-700 transition" onclick="confirmDelete('${p.__backendId}')">🗑️</button>
+                            ` : `
+                            <span class="text-gray-300 text-xs">🔒</span>
+                            `}
+                        </td>
+                    </tr>`;
             }).join('');
 
             updateBulkSellBar();
@@ -706,9 +904,9 @@
 
         function updateStats() {
             const total = allProducts.length;
-            const stock = allProducts.reduce((s, p) => s + (Number(p.stock)||0), 0);
+            const stock = allProducts.reduce((s, p) => s + (Number(p.stock) || 0), 0);
             const low = allProducts.filter(p => p.stock > 0 && p.stock <= 5).length;
-            const val = allProducts.reduce((s, p) => s + (Number(p.buy_price)||0) * (Number(p.stock)||0), 0);
+            const val = allProducts.reduce((s, p) => s + (Number(p.buy_price) || 0) * (Number(p.stock) || 0), 0);
             document.getElementById('stat-total-value').textContent = total;
             document.getElementById('stat-stock-value').textContent = stock;
             document.getElementById('stat-low-value').textContent = low;
@@ -719,15 +917,18 @@
             const sel = document.getElementById('filter-category');
             const cur = sel.value;
             const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            sel.innerHTML = '<option value="">সব</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+            sel.innerHTML = '<option value="">সব ক্যাটাগরি</option>' + cats.map(c =>
+                `<option value="${c}">${c}</option>`).join('');
             sel.value = cur;
         }
 
         function updateSelects() {
-            const opts = '<option value="">-- বাছাই --</option>' + allProducts.map(p => `<option value="${p.__backendId}">${p.name} (${p.stock||0})</option>`).join('');
+            const opts = '<option value="">-- বাছাই --</option>' + allProducts.map(p =>
+                `<option value="${p.__backendId}">${p.name} (${p.stock||0})</option>`).join('');
             ['buy-product', 'sell-product', 'stock-product'].forEach(id => {
                 const sel = document.getElementById(id);
-                if (sel) { const cur = sel.value; sel.innerHTML = opts; if (allProducts.find(p => p.__backendId === cur)) sel.value = cur; }
+                if (sel) { const cur = sel.value;
+                    sel.innerHTML = opts; if (allProducts.find(p => p.__backendId === cur)) sel.value = cur; }
             });
         }
 
@@ -737,31 +938,31 @@
                 const c = p.category || 'অন্যান্য';
                 if (!cm[c]) cm[c] = { count: 0, val: 0 };
                 cm[c].count++;
-                cm[c].val += (Number(p.buy_price)||0) * (Number(p.stock)||0);
+                cm[c].val += (Number(p.buy_price) || 0) * (Number(p.stock) || 0);
             });
-            document.getElementById('report-category-body').innerHTML = Object.entries(cm).map(([c,d]) =>
-                `<div class="flex justify-between border-b py-1"><span>${c} (${d.count})</span><span class="font-medium">৳${d.val.toLocaleString('bn-BD')}</span></div>`
-            ).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
+            document.getElementById('report-category-body').innerHTML = Object.entries(cm).map(([c, d]) =>
+                    `<div class="flex justify-between border-b border-gray-100 py-1.5"><span class="text-gray-600">${c} (${d.count})</span><span class="font-medium text-gray-800">৳${d.val.toLocaleString('bn-BD')}</span></div>`
+                ).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
 
             const low = allProducts.filter(p => p.stock <= 5);
             document.getElementById('no-low-stock').classList.toggle('hidden', low.length > 0);
             document.getElementById('report-low-body').innerHTML = low.map(p =>
-                `<div class="flex justify-between border-b py-1"><span>${p.name}</span><span class="text-red-600 font-medium">${p.stock} ${p.unit||''}</span></div>`
-            ).join('') || '<p class="text-green-600 text-sm">✅ সব ঠিক আছে</p>';
+                    `<div class="flex justify-between border-b border-gray-100 py-1.5"><span class="text-gray-600">${p.name}</span><span class="text-red-600 font-medium">${p.stock} ${p.unit||''}</span></div>`
+                ).join('') || '<p class="text-green-600 text-sm">✅ সব ঠিক আছে</p>';
 
             const prof = allProducts.filter(p => p.sell_price > 0 && p.buy_price > 0);
             document.getElementById('report-profit-body').innerHTML = prof.slice(0, 8).map(p => {
-                const m = ((p.sell_price - p.buy_price) / p.buy_price * 100).toFixed(1);
-                return `<div class="flex justify-between border-b py-1"><span>${p.name}</span><span class="${Number(m)>=0?'text-green-600':'text-red-600'}">${m}%</span></div>`;
-            }).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
+                    const m = ((p.sell_price - p.buy_price) / p.buy_price * 100).toFixed(1);
+                    return `<div class="flex justify-between border-b border-gray-100 py-1.5"><span class="text-gray-600">${p.name}</span><span class="${Number(m)>=0?'text-green-600':'text-red-600'} font-medium">${m}%</span></div>`;
+                }).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
 
-            const bought = allProducts.reduce((s, p) => s + (Number(p.total_bought)||0), 0);
-            const sold = allProducts.reduce((s, p) => s + (Number(p.total_sold)||0), 0);
+            const bought = allProducts.reduce((s, p) => s + (Number(p.total_bought) || 0), 0);
+            const sold = allProducts.reduce((s, p) => s + (Number(p.total_sold) || 0), 0);
             document.getElementById('report-summary-body').innerHTML = `
-                <div class="flex justify-between border-b py-1"><span>মোট ক্রয়</span><span class="font-medium">${bought}</span></div>
-                <div class="flex justify-between border-b py-1"><span>মোট বিক্রয়</span><span class="font-medium">${sold}</span></div>
-                <div class="flex justify-between py-1"><span>মোট পণ্য</span><span class="font-medium">${allProducts.length}</span></div>
-            `;
+                    <div class="flex justify-between border-b border-gray-100 py-1.5"><span class="text-gray-600">মোট ক্রয়</span><span class="font-medium text-gray-800">${bought}</span></div>
+                    <div class="flex justify-between border-b border-gray-100 py-1.5"><span class="text-gray-600">মোট বিক্রয়</span><span class="font-medium text-gray-800">${sold}</span></div>
+                    <div class="flex justify-between py-1.5"><span class="text-gray-600">মোট পণ্য</span><span class="font-medium text-gray-800">${allProducts.length}</span></div>
+                `;
         }
 
         // ============================================
@@ -799,11 +1000,11 @@
         function renderHistory() {
             const container = document.getElementById('history-list');
             const empty = document.getElementById('no-history');
-            
+
             let filtered = [...saleHistory];
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
+
             if (historyFilter === 'today') {
                 filtered = filtered.filter(h => new Date(h.date) >= today);
             } else if (historyFilter === 'week') {
@@ -836,35 +1037,35 @@
             const sorted = filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             container.innerHTML = sorted.map(h => {
-                const paymentType = h.payment_type === 'due' ? 
-                    `<span class="payment-badge payment-due">বাকি</span>` : 
+                const paymentType = h.payment_type === 'due' ?
+                    `<span class="payment-badge payment-due">বাকি</span>` :
                     `<span class="payment-badge payment-cash">নগদ</span>`;
                 const customerName = h.customer_name ? `👤 ${h.customer_name}` : '';
                 const commentHtml = h.comment ? `<div class="comment-box mt-1">💬 ${h.comment}</div>` : '';
-                
-                return `<div class="history-item bg-gray-50 rounded-lg p-3 flex justify-between items-center">
-                    <div>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-medium">${h.product_name}</span>
-                            ${paymentType}
-                            ${customerName ? `<span class="text-xs text-gray-500">${customerName}</span>` : ''}
+
+                return `<div class="history-item bg-gray-50 rounded-lg p-3 flex justify-between items-center hover:shadow-sm transition">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-medium text-gray-800">${h.product_name}</span>
+                                ${paymentType}
+                                ${customerName ? `<span class="text-xs text-gray-500">${customerName}</span>` : ''}
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                📅 ${new Date(h.date).toLocaleDateString('bn-BD')} 
+                                🕐 ${h.time || ''}
+                                ${h.discount ? `| ডিসকাউন্ট: ৳${h.discount}` : ''}
+                            </div>
+                            ${commentHtml}
                         </div>
-                        <div class="text-xs text-gray-400 mt-1">
-                            📅 ${new Date(h.date).toLocaleDateString('bn-BD')} 
-                            🕐 ${h.time || ''}
-                            ${h.discount ? `| ডিসকাউন্ট: ৳${h.discount}` : ''}
+                        <div class="text-right ml-4">
+                            <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
+                            <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
+                            <button onclick="returnSale('${h.__backendId}')" 
+                                class="mt-1 btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
+                                ↩️ রিটার্ন
+                            </button>
                         </div>
-                        ${commentHtml}
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
-                        <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
-                        <button onclick="returnSale('${h.__backendId}')" 
-                            class="mt-1 btn-sm bg-orange-500 text-white hover:bg-orange-600 transition">
-                            ↩️ রিটার্ন
-                        </button>
-                    </div>
-                </div>`;
+                    </div>`;
             }).join('');
         }
 
@@ -876,19 +1077,19 @@
                 showToast('রিটার্ন করতে লগইন করুন!', 'error');
                 return;
             }
-            
+
             const historyItem = saleHistory.find(h => h.__backendId === historyId);
             if (!historyItem) {
                 showToast('লেনদেন পাওয়া যায়নি!', 'error');
                 return;
             }
-            
+
             if (!confirm(`"${historyItem.product_name}" (${historyItem.quantity}টি) রিটার্ন করতে চান?`)) {
                 return;
             }
-            
+
             showToast('⏳ রিটার্ন প্রক্রিয়াকরণ...', 'info');
-            
+
             try {
                 const product = allProducts.find(p => p.__backendId === historyItem.product_id);
                 if (product) {
@@ -900,7 +1101,7 @@
                     };
                     await updateProduct(updated);
                 }
-                
+
                 if (currentUser) {
                     await database.ref(`users/${currentUser.uid}/sale_history/${historyId}`).remove();
                 } else {
@@ -910,14 +1111,14 @@
                         localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
                     }
                 }
-                
+
                 if (historyItem.payment_type === 'due' && historyItem.customer_id) {
                     const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
                     const data = snapshot.val();
                     if (data) {
                         for (const [key, value] of Object.entries(data)) {
-                            if (value.type === 'due' && 
-                                value.customer_id === historyItem.customer_id && 
+                            if (value.type === 'due' &&
+                                value.customer_id === historyItem.customer_id &&
                                 value.amount === historyItem.final_price &&
                                 value.date === historyItem.date) {
                                 await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
@@ -926,19 +1127,19 @@
                         }
                     }
                 }
-                
+
                 const localIndex = saleHistory.findIndex(h => h.__backendId === historyId);
                 if (localIndex > -1) {
                     saleHistory.splice(localIndex, 1);
                 }
-                
+
                 renderHistory();
                 renderProfit();
                 renderProducts();
                 updateStats();
-                
+
                 showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
-                
+
             } catch (error) {
                 console.error('রিটার্ন ব্যর্থ:', error);
                 showToast('❌ রিটার্ন ব্যর্থ: ' + error.message, 'error');
@@ -981,11 +1182,11 @@
             const container = document.getElementById('profit-list');
             const empty = document.getElementById('no-profit');
             const totalProfitEl = document.getElementById('total-profit-amount');
-            
+
             let filtered = [...saleHistory];
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
+
             if (profitFilter === 'today') {
                 filtered = filtered.filter(h => new Date(h.date) >= today);
             } else if (profitFilter === 'week') {
@@ -1024,7 +1225,8 @@
                 const sellPrice = h.unit_price || 0;
                 const profit = (sellPrice - buyPrice) * h.quantity;
                 if (!profitMap[h.product_id]) {
-                    profitMap[h.product_id] = { name: h.product_name, totalSold: 0, totalRevenue: 0, totalProfit: 0, quantity: 0 };
+                    profitMap[h.product_id] = { name: h.product_name, totalSold: 0, totalRevenue: 0,
+                        totalProfit: 0, quantity: 0 };
                 }
                 profitMap[h.product_id].totalSold += h.quantity;
                 profitMap[h.product_id].totalRevenue += h.final_price;
@@ -1038,16 +1240,16 @@
 
             container.innerHTML = sorted.map(p => {
                 const profitClass = p.totalProfit >= 0 ? 'profit-positive' : 'profit-negative';
-                return `<div class="flex justify-between items-center border-b py-2">
-                    <div>
-                        <span class="font-medium">${p.name}</span>
-                        <span class="text-xs text-gray-400 ml-2">${p.quantity}টি বিক্রি</span>
-                    </div>
-                    <div class="text-right">
-                        <div class="font-bold ${profitClass}">৳${p.totalProfit.toLocaleString('bn-BD')}</div>
-                        <div class="text-xs text-gray-400">আয়: ৳${p.totalRevenue.toLocaleString()}</div>
-                    </div>
-                </div>`;
+                return `<div class="flex justify-between items-center border-b border-gray-100 py-2">
+                        <div>
+                            <span class="font-medium text-gray-800">${p.name}</span>
+                            <span class="text-xs text-gray-400 ml-2">${p.quantity}টি বিক্রি</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold ${profitClass}">৳${p.totalProfit.toLocaleString('bn-BD')}</div>
+                            <div class="text-xs text-gray-400">আয়: ৳${p.totalRevenue.toLocaleString()}</div>
+                        </div>
+                    </div>`;
             }).join('');
         }
 
@@ -1113,27 +1315,27 @@
         function renderBulkProductList() {
             const list = document.getElementById('bulk-products-list');
             const selected = allProducts.filter(p => selectedProducts.has(p.__backendId));
-            
+
             list.innerHTML = selected.map(p => {
                 const qty = selectedProducts.get(p.__backendId) || 1;
                 const maxStock = p.stock || 0;
                 return `
-                    <div class="flex items-center justify-between bg-white rounded-lg p-2 border">
-                        <div class="flex items-center gap-2 flex-1">
-                            ${p.image ? `<img src="${p.image}" class="w-8 h-8 rounded object-cover">` : `<span class="text-lg">📦</span>`}
-                            <span class="font-medium text-sm">${p.name}</span>
-                            <span class="text-xs text-gray-400">(স্টক: ${maxStock})</span>
+                        <div class="flex items-center justify-between bg-white rounded-lg p-2 border border-gray-100 shadow-sm">
+                            <div class="flex items-center gap-2 flex-1">
+                                ${p.image ? `<img src="${p.image}" class="w-8 h-8 rounded object-cover">` : `<span class="text-lg">📦</span>`}
+                                <span class="font-medium text-sm text-gray-800">${p.name}</span>
+                                <span class="text-xs text-gray-400">(স্টক: ${maxStock})</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button onclick="updateBulkQty('${p.__backendId}', -1)" class="qty-btn hover:bg-gray-100 transition">−</button>
+                                <input type="number" id="qty-${p.__backendId}" value="${qty}" min="1" max="${maxStock}"
+                                    class="qty-input text-sm" 
+                                    onchange="updateBulkQtyFromInput('${p.__backendId}')">
+                                <button onclick="updateBulkQty('${p.__backendId}', 1)" class="qty-btn hover:bg-gray-100 transition">+</button>
+                                <button onclick="removeFromBulk('${p.__backendId}')" class="text-red-500 hover:text-red-700 transition text-sm ml-1">✕</button>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="updateBulkQty('${p.__backendId}', -1)" class="qty-btn">−</button>
-                            <input type="number" id="qty-${p.__backendId}" value="${qty}" min="1" max="${maxStock}"
-                                class="qty-input text-sm" 
-                                onchange="updateBulkQtyFromInput('${p.__backendId}')">
-                            <button onclick="updateBulkQty('${p.__backendId}', 1)" class="qty-btn">+</button>
-                            <button onclick="removeFromBulk('${p.__backendId}')" class="text-red-500 hover:text-red-700 text-sm ml-1">✕</button>
-                        </div>
-                    </div>
-                `;
+                    `;
             }).join('');
         }
 
@@ -1204,7 +1406,7 @@
             const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
             const customerId = document.getElementById('due-customer-select').value;
             const comment = document.getElementById('bulk-comment').value.trim();
-            
+
             if (finalPrice <= 0) {
                 showMsg(document.getElementById('bulk-msg'), 'মূল্য ০ হতে পারে না!', 'red');
                 return;
@@ -1238,7 +1440,8 @@
                             const allData = allSnap.val();
                             if (allData) {
                                 for (const [key, value] of Object.entries(allData)) {
-                                    if (value.type === 'customer' && (value.customer_id === customerId || key === customerId)) {
+                                    if (value.type === 'customer' && (value.customer_id === customerId || key ===
+                                            customerId)) {
                                         customerName = value.customer_name || value.name || 'অজানা';
                                         break;
                                     }
@@ -1247,32 +1450,33 @@
                         }
                     }
                     console.log('✅ কাস্টমার পাওয়া গেছে:', customerName);
-                } catch(e) {
+                } catch (e) {
                     console.error('কাস্টমার খোঁজা ব্যর্থ:', e);
                 }
             }
 
-            let soldCount = 0, totalRevenue = 0;
-            
+            let soldCount = 0,
+                totalRevenue = 0;
+
             for (const [productId, qty] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
                 if (!product || product.stock < qty) {
                     showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
                     return;
                 }
-                
+
                 const unitPrice = product.sell_price || 0;
                 const totalPrice = unitPrice * qty;
-                
+
                 // 1️⃣ পণ্যের স্টক আপডেট
                 const updated = {
                     ...product,
                     stock: product.stock - qty,
-                    total_sold: (Number(product.total_sold)||0) + qty,
+                    total_sold: (Number(product.total_sold) || 0) + qty,
                     last_updated: new Date().toISOString()
                 };
                 await updateProduct(updated);
-                
+
                 // 2️⃣ বিক্রি ইতিহাস সেভ
                 const saleData = {
                     product_id: product.__backendId,
@@ -1290,7 +1494,7 @@
                     created_at: new Date().toISOString()
                 };
                 await saveSaleHistory(saleData);
-                
+
                 // 3️⃣ 🔥 MAIN PAGE এ বাকি লেনদেন সেভ
                 if (paymentType === 'due' && customerId) {
                     const transactionData = {
@@ -1299,21 +1503,23 @@
                         customer_name: customerName,
                         amount: totalPrice,
                         date: new Date().toISOString().split('T')[0],
-                        note: comment ? `পণ্য বিক্রি: ${product.name} (${qty}টি) - ${comment}` : `পণ্য বিক্রি: ${product.name} (${qty}টি)`,
+                        note: comment ? `পণ্য বিক্রি: ${product.name} (${qty}টি) - ${comment}` :
+                            `পণ্য বিক্রি: ${product.name} (${qty}টি)`,
                         created_at: new Date().toISOString(),
-                        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit',
+                            second: '2-digit' })
                     };
-                    
+
                     try {
                         await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
                         console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে:', transactionData);
-                    } catch(e) {
+                    } catch (e) {
                         console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
                         showMsg(document.getElementById('bulk-msg'), 'বাকি লেনদেন সেভ ব্যর্থ!', 'red');
                         return;
                     }
                 }
-                
+
                 soldCount += qty;
                 totalRevenue += totalPrice;
             }
@@ -1323,10 +1529,10 @@
             renderAll();
             renderHistory();
             renderProfit();
-            
+
             const msgEl = document.getElementById('bulk-msg');
-            showMsg(msgEl, 
-                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 
+            showMsg(msgEl,
+                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`,
                 'green'
             );
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
@@ -1359,7 +1565,7 @@
         document.getElementById('product-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
-            
+
             const err = document.getElementById('form-error');
             err.classList.add('hidden');
 
@@ -1372,8 +1578,8 @@
                 stock: parseInt(document.getElementById('f-stock').value) || 0,
                 code: genCode(document.getElementById('f-category').value.trim()),
                 status: 'active',
-                total_bought: editingProduct ? (Number(editingProduct.total_bought)||0) : 0,
-                total_sold: editingProduct ? (Number(editingProduct.total_sold)||0) : 0,
+                total_bought: editingProduct ? (Number(editingProduct.total_bought) || 0) : 0,
+                total_sold: editingProduct ? (Number(editingProduct.total_sold) || 0) : 0,
                 added_date: editingProduct ? editingProduct.added_date : new Date().toISOString(),
                 last_updated: new Date().toISOString()
             };
@@ -1459,7 +1665,8 @@
             const p = allProducts.find(x => x.__backendId === pid);
             if (!p || qty <= 0) { showMsg(msg, 'সঠিক তথ্য দিন', 'red'); return; }
 
-            const updated = { ...p, stock: (Number(p.stock)||0) + qty, buy_price: price, total_bought: (Number(p.total_bought)||0) + qty, last_updated: new Date().toISOString() };
+            const updated = { ...p, stock: (Number(p.stock) || 0) + qty, buy_price: price, total_bought: (Number(p
+                    .total_bought) || 0) + qty, last_updated: new Date().toISOString() };
             await updateProduct(updated);
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} কেনা হয়েছে`, 'green');
             e.target.reset();
@@ -1475,11 +1682,12 @@
             const price = parseFloat(document.getElementById('sell-price').value) || 0;
             const p = allProducts.find(x => x.__backendId === pid);
             if (!p || qty <= 0) { showMsg(msg, 'সঠিক তথ্য দিন', 'red'); return; }
-            if (qty > (Number(p.stock)||0)) { showMsg(msg, 'স্টক কম!', 'red'); return; }
+            if (qty > (Number(p.stock) || 0)) { showMsg(msg, 'স্টক কম!', 'red'); return; }
 
-            const updated = { ...p, stock: (Number(p.stock)||0) - qty, sell_price: price, total_sold: (Number(p.total_sold)||0) + qty, last_updated: new Date().toISOString() };
+            const updated = { ...p, stock: (Number(p.stock) || 0) - qty, sell_price: price, total_sold: (Number(p
+                    .total_sold) || 0) + qty, last_updated: new Date().toISOString() };
             await updateProduct(updated);
-            
+
             const saleData = {
                 product_id: p.__backendId,
                 product_name: p.name,
@@ -1496,7 +1704,7 @@
                 created_at: new Date().toISOString()
             };
             await saveSaleHistory(saleData);
-            
+
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে`, 'green');
             e.target.reset();
             document.getElementById('sell-stock-info').textContent = '';
