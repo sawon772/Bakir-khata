@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Chart.js for charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/umd/chart.min.js">
     </script>
     <!-- html2pdf for PDF export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js">
@@ -337,96 +337,79 @@
             background: var(--bg-input);
         }
 
-        /* Scanner overlay */
-        #scanner-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 1000;
+        /* Detail Modal */
+        #detail-modal {
             display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
+            padding: 16px;
         }
-        #scanner-overlay.active {
+        #detail-modal.active {
             display: flex;
         }
-        #scanner-box {
-            width: 300px;
-            height: 300px;
-            border: 3px solid #0d9488;
-            border-radius: 12px;
-            position: relative;
-            background: rgba(0,0,0,0.3);
-        }
-        #scanner-box::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background: #0d9488;
-            animation: scanLine 2s linear infinite;
-            box-shadow: 0 0 20px #0d9488;
-        }
-        @keyframes scanLine {
-            0% { top: 10%; }
-            50% { top: 90%; }
-            100% { top: 10%; }
-        }
-        #scanner-box .corner {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-color: #0d9488;
-            border-style: solid;
-            border-width: 0;
-        }
-        #scanner-box .corner.tl { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-radius: 4px 0 0 0; }
-        #scanner-box .corner.tr { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-radius: 0 4px 0 0; }
-        #scanner-box .corner.bl { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-radius: 0 0 0 4px; }
-        #scanner-box .corner.br { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-radius: 0 0 4px 0; }
-
-        /* Theme toggle */
-        .theme-toggle {
-            cursor: pointer;
-            padding: 6px 10px;
+        .detail-card {
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
             border-radius: 20px;
-            background: var(--bg-input);
+            padding: 24px;
+            background: var(--bg-card);
             border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .detail-value {
+            font-weight: 600;
             color: var(--text-primary);
             font-size: 14px;
-            transition: all 0.3s ease;
+            text-align: right;
         }
-        .theme-toggle:hover {
-            background: var(--border-color);
+        .detail-profit-positive {
+            color: #16a34a;
         }
-
-        /* Dark mode chart fix */
-        [data-theme="dark"] canvas {
-            filter: invert(0.87) hue-rotate(180deg);
+        .detail-profit-negative {
+            color: #dc2626;
+        }
+        .detail-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
         }
     </style>
 </head>
 <body>
 
-    <!-- Scanner Overlay -->
-    <div id="scanner-overlay">
-        <div class="relative">
-            <div id="scanner-box">
-                <div class="corner tl"></div>
-                <div class="corner tr"></div>
-                <div class="corner bl"></div>
-                <div class="corner br"></div>
-                <div class="absolute bottom-[-60px] left-0 right-0 text-center text-white text-sm">
-                    <p>বারকোড স্ক্যান করুন</p>
-                    <button onclick="closeScanner()" class="mt-2 px-4 py-1 bg-red-500 rounded-lg text-white hover:bg-red-600 transition">বাতিল</button>
-                </div>
+    <!-- ============================================ -->
+    <!-- DETAIL MODAL -->
+    <!-- ============================================ -->
+    <div id="detail-modal">
+        <div class="detail-card">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold gradient-text">📦 পণ্যের বিস্তারিত</h3>
+                <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition text-2xl">✕</button>
             </div>
-            <video id="scanner-video" class="hidden"></video>
+            <div id="detail-content"></div>
         </div>
     </div>
 
@@ -459,66 +442,43 @@
             <button onclick="window.location.href='index.html'" class="btn-sm bg-yellow-600 text-white hover:bg-yellow-700">লগইন</button>
         </div>
 
-        <!-- ============================================ -->
-        <!-- DASHBOARD SECTION - NEW -->
-        <!-- ============================================ -->
-        <div id="dashboard-section" class="mb-4">
-            <!-- Today's Sale Summary -->
-            <div id="today-sale-summary" class="today-sale-card rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-2">
-                <div class="flex items-center gap-4 flex-wrap">
-                    <span class="text-sm font-medium text-teal-800">📊 আজকের বিক্রি:</span>
-                    <span id="today-sale-count" class="text-sm font-bold text-teal-900">০টি</span>
-                    <span class="text-gray-400">|</span>
-                    <span id="today-sale-amount" class="text-sm font-bold text-emerald-700">৳০</span>
-                    <span class="text-gray-400">|</span>
-                    <span id="today-sale-profit" class="text-sm font-bold text-blue-700">লাভ: ৳০</span>
-                </div>
-                <div class="flex gap-2 flex-wrap">
-                    <button onclick="openScanner()" class="btn-sm bg-purple-600 text-white hover:bg-purple-700 transition">
-                        📷 স্ক্যান
-                    </button>
-                    <button onclick="exportPDF()" class="btn-sm bg-red-500 text-white hover:bg-red-600 transition">
-                        📄 PDF
-                    </button>
-                    <button onclick="showTodayDetails()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">
-                        📋 বিস্তারিত
-                    </button>
-                </div>
+        <!-- Today's Sale Summary -->
+        <div id="today-sale-summary" class="today-sale-card rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-4 flex-wrap">
+                <span class="text-sm font-medium text-teal-800">📊 আজকের বিক্রি:</span>
+                <span id="today-sale-count" class="text-sm font-bold text-teal-900">০টি</span>
+                <span class="text-gray-400">|</span>
+                <span id="today-sale-amount" class="text-sm font-bold text-emerald-700">৳০</span>
+                <span class="text-gray-400">|</span>
+                <span id="today-sale-profit" class="text-sm font-bold text-blue-700">লাভ: ৳০</span>
             </div>
-
-            <!-- Stats -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
-                <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-teal-500">
-                    <p class="text-[10px] text-gray-400">📦 মোট পণ্য</p>
-                    <h3 id="stat-total-value" class="text-xl font-bold text-gray-800">0</h3>
-                </div>
-                <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-blue-500">
-                    <p class="text-[10px] text-gray-400">✅ স্টকে</p>
-                    <h3 id="stat-stock-value" class="text-xl font-bold text-gray-800">0</h3>
-                </div>
-                <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-red-500">
-                    <p class="text-[10px] text-gray-400">⚠️ কম স্টক</p>
-                    <h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3>
-                </div>
-                <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-purple-500">
-                    <p class="text-[10px] text-gray-400">💰 মোট ক্রয় মূল্য</p>
-                    <h3 id="stat-value-value" class="text-xl font-bold text-gray-800">৳0</h3>
-                </div>
+            <div class="flex gap-2 flex-wrap">
+                <button onclick="exportPDF()" class="btn-sm bg-red-500 text-white hover:bg-red-600 transition">
+                    📄 PDF
+                </button>
+                <button onclick="showTodayDetails()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">
+                    📋 বিস্তারিত
+                </button>
             </div>
+        </div>
 
-            <!-- Chart Section -->
-            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-sm gradient-text">📈 সাপ্তাহিক বিক্রি</h3>
-                    <div class="flex gap-2">
-                        <button onclick="updateChart('week')" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">সপ্তাহ</button>
-                        <button onclick="updateChart('month')" class="btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition">মাস</button>
-                        <button onclick="updateChart('year')" class="btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition">বছর</button>
-                    </div>
-                </div>
-                <div class="h-64">
-                    <canvas id="sales-chart"></canvas>
-                </div>
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
+            <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-teal-500">
+                <p class="text-[10px] text-gray-400">📦 মোট পণ্য</p>
+                <h3 id="stat-total-value" class="text-xl font-bold text-gray-800">0</h3>
+            </div>
+            <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-blue-500">
+                <p class="text-[10px] text-gray-400">✅ স্টকে</p>
+                <h3 id="stat-stock-value" class="text-xl font-bold text-gray-800">0</h3>
+            </div>
+            <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-red-500">
+                <p class="text-[10px] text-gray-400">⚠️ কম স্টক</p>
+                <h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3>
+            </div>
+            <div class="stat-card rounded-xl p-3 shadow-sm border-l-4 border-purple-500">
+                <p class="text-[10px] text-gray-400">💰 মোট ক্রয় মূল্য</p>
+                <h3 id="stat-value-value" class="text-xl font-bold text-gray-800">৳0</h3>
             </div>
         </div>
 
@@ -673,6 +633,21 @@
 
         <!-- Reports Tab -->
         <section id="tab-reports" class="tab-content hidden fade-in">
+            <!-- Chart Section moved here -->
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold text-sm gradient-text">📈 সাপ্তাহিক বিক্রি</h3>
+                    <div class="flex gap-2">
+                        <button onclick="updateChart('week')" class="chart-period-btn btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">সপ্তাহ</button>
+                        <button onclick="updateChart('month')" class="chart-period-btn btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition">মাস</button>
+                        <button onclick="updateChart('year')" class="chart-period-btn btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300 transition">বছর</button>
+                    </div>
+                </div>
+                <div class="h-64">
+                    <canvas id="sales-chart"></canvas>
+                </div>
+            </div>
+
             <div class="grid md:grid-cols-2 gap-4">
                 <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                     <h4 class="font-semibold text-sm mb-3 gradient-text">📂 ক্যাটাগরি</h4>
@@ -759,7 +734,7 @@
             </div>
         </section>
 
-        <!-- Customers Tab - NEW -->
+        <!-- Customers Tab -->
         <section id="tab-customers" class="tab-content hidden fade-in">
             <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
@@ -912,8 +887,6 @@
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeButton(newTheme);
-            
-            // Re-render chart with new colors
             if (chartInstance) {
                 updateChart(currentChartPeriod);
             }
@@ -928,7 +901,6 @@
             }
         }
 
-        // Load saved theme
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeButton(savedTheme);
@@ -1031,7 +1003,6 @@
             const tbody = document.getElementById('customer-tbody');
             const empty = document.getElementById('no-customers');
             
-            // Filter unique customers from due transactions
             const customerMap = new Map();
             allCustomers.forEach(c => {
                 if (c.type === 'customer' || c.type === 'due') {
@@ -1083,7 +1054,6 @@
                 showToast('এই গ্রাহকের কোনো লেনদেন নেই', 'warning');
                 return;
             }
-            // Show in history tab with customer filter
             historyFilter = 'custom';
             historyStartDate = '';
             historyEndDate = '';
@@ -1124,13 +1094,22 @@
             currentChartPeriod = period;
             const ctx = document.getElementById('sales-chart').getContext('2d');
             
-            // Prepare data based on period
+            // Update button styles
+            document.querySelectorAll('.chart-period-btn').forEach(btn => {
+                btn.classList.remove('bg-teal-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            const activeBtn = document.querySelector(`.chart-period-btn[onclick="updateChart('${period}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-teal-600', 'text-white');
+                activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+            }
+            
             let labels = [];
             let data = [];
             let today = new Date();
             
             if (period === 'week') {
-                // Last 7 days
                 for (let i = 6; i >= 0; i--) {
                     const d = new Date(today);
                     d.setDate(today.getDate() - i);
@@ -1140,7 +1119,6 @@
                     data.push(daySales.reduce((sum, h) => sum + h.final_price, 0));
                 }
             } else if (period === 'month') {
-                // Last 30 days
                 for (let i = 29; i >= 0; i--) {
                     const d = new Date(today);
                     d.setDate(today.getDate() - i);
@@ -1150,11 +1128,9 @@
                     data.push(daySales.reduce((sum, h) => sum + h.final_price, 0));
                 }
             } else {
-                // Year - last 12 months
                 for (let i = 11; i >= 0; i--) {
                     const d = new Date(today);
                     d.setMonth(today.getMonth() - i);
-                    const monthStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
                     labels.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
                     const monthSales = saleHistory.filter(h => {
                         const hDate = new Date(h.date);
@@ -1225,67 +1201,6 @@
         }
 
         // ============================================
-        // BARCODE SCANNER
-        // ============================================
-        function openScanner() {
-            const overlay = document.getElementById('scanner-overlay');
-            overlay.classList.add('active');
-            
-            // Start camera
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                    .then(function(stream) {
-                        const video = document.getElementById('scanner-video');
-                        video.srcObject = stream;
-                        video.play();
-                        video.classList.remove('hidden');
-                        scanBarcode(video);
-                    })
-                    .catch(function(err) {
-                        showToast('ক্যামেরা অ্যাক্সেস ব্যর্থ', 'error');
-                        closeScanner();
-                    });
-            } else {
-                showToast('ক্যামেরা সাপোর্ট নেই', 'error');
-                closeScanner();
-            }
-        }
-
-        function scanBarcode(video) {
-            // Simulate barcode scanning for demo
-            // In production, use a library like QuaggaJS or ZXing
-            const demoProducts = allProducts.filter(p => p.code);
-            if (demoProducts.length > 0) {
-                setTimeout(() => {
-                    const randomProduct = demoProducts[Math.floor(Math.random() * demoProducts.length)];
-                    const searchInput = document.getElementById('search-input');
-                    if (searchInput) {
-                        searchInput.value = randomProduct.name || randomProduct.code;
-                        searchInput.dispatchEvent(new Event('input'));
-                        closeScanner();
-                        showToast(`✅ ${randomProduct.name} পাওয়া গেছে!`, 'success');
-                    }
-                }, 2000);
-            } else {
-                setTimeout(() => {
-                    closeScanner();
-                    showToast('কোনো পণ্য পাওয়া যায়নি', 'warning');
-                }, 2000);
-            }
-        }
-
-        function closeScanner() {
-            const overlay = document.getElementById('scanner-overlay');
-            overlay.classList.remove('active');
-            const video = document.getElementById('scanner-video');
-            if (video.srcObject) {
-                video.srcObject.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-            }
-            video.classList.add('hidden');
-        }
-
-        // ============================================
         // PDF EXPORT
         // ============================================
         function exportPDF() {
@@ -1300,7 +1215,6 @@
             const totalItems = todaySales.reduce((sum, h) => sum + h.quantity, 0);
             const totalAmount = todaySales.reduce((sum, h) => sum + h.final_price, 0);
 
-            // Create a hidden div for PDF content
             const pdfContent = document.createElement('div');
             pdfContent.style.cssText = 'padding: 20px; font-family: Arial, sans-serif; max-width: 800px; margin: auto;';
             pdfContent.innerHTML = `
@@ -1448,6 +1362,91 @@
         }
 
         // ============================================
+        // DETAIL MODAL
+        // ============================================
+        function showProductDetail(productId) {
+            const product = allProducts.find(p => p.__backendId === productId);
+            if (!product) {
+                showToast('পণ্য পাওয়া যায়নি!', 'error');
+                return;
+            }
+
+            const profit = product.sell_price - product.buy_price;
+            const profitPercent = product.buy_price > 0 ? ((product.sell_price - product.buy_price) / product.buy_price * 100).toFixed(1) : 0;
+            
+            const content = document.getElementById('detail-content');
+            content.innerHTML = `
+                <div class="flex flex-col items-center mb-4">
+                    ${product.image ? `<img src="${product.image}" class="detail-image">` : `<div class="detail-image flex items-center justify-center text-4xl bg-gray-100">📦</div>`}
+                    <h2 class="text-xl font-bold mt-3 gradient-text">${product.name}</h2>
+                    <span class="text-sm text-gray-400">${product.code || 'কোড নেই'}</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">📂 ক্যাটাগরি</span>
+                    <span class="detail-value">${product.category || '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">📏 ইউনিট</span>
+                    <span class="detail-value">${product.unit || 'পিস'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">💰 ক্রয় মূল্য</span>
+                    <span class="detail-value">৳${(product.buy_price || 0).toLocaleString('bn-BD')}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">💲 বিক্রয় মূল্য</span>
+                    <span class="detail-value">৳${(product.sell_price || 0).toLocaleString('bn-BD')}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">📦 স্টক</span>
+                    <span class="detail-value ${product.stock <= 5 ? 'text-red-600 font-bold' : ''}">${product.stock || 0} ${product.unit || ''}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">💰 লাভ (প্রতি পিস)</span>
+                    <span class="detail-value ${profit >= 0 ? 'detail-profit-positive' : 'detail-profit-negative'}">
+                        ৳${profit.toLocaleString('bn-BD')} (${profitPercent}%)
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">🔄 মোট ক্রয়</span>
+                    <span class="detail-value">${product.total_bought || 0} ${product.unit || ''}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">🔄 মোট বিক্রয়</span>
+                    <span class="detail-value">${product.total_sold || 0} ${product.unit || ''}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">📅 যোগ তারিখ</span>
+                    <span class="detail-value">${product.added_date ? new Date(product.added_date).toLocaleDateString('bn-BD') : '-'}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">🔄 শেষ আপডেট</span>
+                    <span class="detail-value">${product.last_updated ? new Date(product.last_updated).toLocaleString('bn-BD') : '-'}</span>
+                </div>
+                ${product.status ? `
+                <div class="detail-item">
+                    <span class="detail-label">📌 স্ট্যাটাস</span>
+                    <span class="detail-value">${product.status === 'active' ? '✅ সক্রিয়' : '⛔ নিষ্ক্রিয়'}</span>
+                </div>
+                ` : ''}
+            `;
+
+            document.getElementById('detail-modal').classList.add('active');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').classList.remove('active');
+        }
+
+        // Close modal on outside click
+        document.getElementById('detail-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeDetailModal();
+            }
+        });
+
+        // ============================================
         // SAVE FUNCTIONS
         // ============================================
         async function saveProduct(data) {
@@ -1471,9 +1470,11 @@
                 const url = await uploadImage();
                 if (url) data.image = url;
             }
+            // 🔥 FIX: Properly update without __backendId
             const backendId = data.__backendId;
-            delete data.__backendId;
-            await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(data);
+            const updateData = { ...data };
+            delete updateData.__backendId;
+            await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(updateData);
             selectedImageFile = null;
             showToast('✅ পণ্য আপডেট');
         }
@@ -1564,7 +1565,6 @@
             if (!select) return;
             const current = select.value;
             select.innerHTML = '<option value="">-- কাস্টমার বাছাই --</option>';
-            // Get unique customers
             const uniqueCustomers = new Map();
             allCustomers.forEach(c => {
                 const id = c.customer_id || c.__backendId;
@@ -1628,7 +1628,6 @@
             const out = allProducts.filter(p => p.stock === 0);
             if (out.length) {
                 showToast(`❌ ${out.length}টি স্টক শেষ!`, 'error', 5000);
-                // Auto notification
                 if (Notification.permission === 'granted') {
                     new Notification('স্টক শেষ!', {
                         body: `${out.length}টি পণ্যের স্টক শেষ হয়েছে।`,
@@ -1646,7 +1645,6 @@
             }
         }
 
-        // Request notification permission
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -1715,9 +1713,11 @@
                         <td class="text-right p-2 ${stockClass}">${p.stock||0} ${p.unit||''} ${stockBadge}</td>
                         <td class="text-center p-2" onclick="event.stopPropagation();">
                             ${currentUser ? `
+                            <button class="text-blue-600 hover:text-blue-800 mr-1 transition" onclick="showProductDetail('${p.__backendId}')">📄</button>
                             <button class="text-teal-600 hover:text-teal-800 mr-1 transition" onclick="editProduct('${p.__backendId}')">✏️</button>
                             <button class="text-red-500 hover:text-red-700 transition" onclick="confirmDelete('${p.__backendId}')">🗑️</button>
                             ` : `
+                            <button class="text-blue-600 hover:text-blue-800 mr-1 transition" onclick="showProductDetail('${p.__backendId}')">📄</button>
                             <span class="text-gray-300 text-xs">🔒</span>
                             `}
                         </td>
