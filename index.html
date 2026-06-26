@@ -4476,8 +4476,29 @@ function updateGoogleProfileImage(user) {
 
     // Load user data from Firebase
     function loadUserData(userId) {
-  console.log('Loading data for user:', userId);
-  const userRef = database.ref(`users/${userId}/data`);
+    console.log('Loading data for user:', userId);
+    const userRef = database.ref(`users/${userId}/data`);  // ✅ এই পাথে ডাটা লোড হচ্ছে?
+    
+    userRef.on('value', (snapshot) => {
+        const data = snapshot.val();
+        console.log('📦 ডাটা লোড হয়েছে:', data);  // 🔥 এই লাইন যোগ করে দেখুন
+        if (data) {
+            allData = Object.keys(data).map(key => ({
+                ...data[key],
+                __backendId: key
+            }));
+        } else {
+            allData = [];
+        }
+        renderCurrentView();
+        
+        if (localBackupEnabled) {
+            setTimeout(() => {
+                saveToLocalBackup();
+            }, 500);
+        }
+    });
+}
       
       // ক্যাটাগরি লোড
 database.ref(`users/${userId}/account_categories`).on('value', (snap) => {
