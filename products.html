@@ -703,12 +703,13 @@
             const totalItems = todaySales.reduce((sum, h) => sum + h.quantity, 0);
             const totalAmount = todaySales.reduce((sum, h) => sum + h.final_price, 0);
             
-            // Calculate profit for today
+            // Calculate profit for today with discount
             let totalProfit = 0;
             todaySales.forEach(h => {
                 const product = allProducts.find(p => p.__backendId === h.product_id);
                 if (product) {
                     const buyPrice = product.buy_price || 0;
+                    // Use final_price which already includes discount
                     const sellPricePerUnit = h.final_price / h.quantity;
                     totalProfit += (sellPricePerUnit - buyPrice) * h.quantity;
                 }
@@ -771,11 +772,17 @@
                                 ${h.discount ? `| ডিসকাউন্ট: ৳${h.discount}` : ''}
                                 ${h.comment ? `| 💬 ${h.comment}` : ''}
                             </div>
+                            <div class="text-xs mt-1">
+                                <span class="font-medium">ক্রয়: ৳${product ? (product.buy_price || 0) : 0}</span>
+                                <span class="mx-1">|</span>
+                                <span class="font-medium">বিক্রয়: ৳${h.unit_price}</span>
+                                <span class="mx-1">|</span>
+                                <span class="font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">লাভ: ৳${profit.toLocaleString()}</span>
+                            </div>
                         </div>
                         <div class="text-right ml-4">
                             <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
                             <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
-                            <div class="text-xs ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">লাভ: ৳${profit.toLocaleString()}</div>
                         </div>
                     </div>`;
             }).join('');
@@ -813,7 +820,6 @@
                 const url = await uploadImage();
                 if (url) data.image = url;
             }
-            // Remove __backendId from data before saving
             const backendId = data.__backendId;
             delete data.__backendId;
             await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(data);
@@ -1007,7 +1013,6 @@
                 const isSelected = qty > 0;
                 const rowClass = isSelected ? 'selected-row' : '';
 
-                // Stock status badge
                 let stockBadge = '';
                 if (p.stock === 0) {
                     stockBadge = `<span class="badge-out-stock">শেষ</span>`;
@@ -1363,6 +1368,7 @@
                 const product = allProducts.find(p => p.__backendId === h.product_id);
                 if (!product) return;
                 const buyPrice = product.buy_price || 0;
+                // 🔥 FIX: Use final_price which already includes discount
                 const sellPricePerUnit = h.final_price / h.quantity;
                 const profit = (sellPricePerUnit - buyPrice) * h.quantity;
                 
@@ -1567,7 +1573,6 @@
                 return;
             }
 
-            // 🔥 কাস্টমার খোঁজ - ডাটাবেস থেকে সরাসরি
             let customerName = 'অজানা';
             if (paymentType === 'due' && customerId) {
                 try {
@@ -1593,7 +1598,6 @@
                             }
                         }
                     }
-                    console.log('✅ কাস্টমার পাওয়া গেছে:', customerName);
                 } catch (e) {
                     console.error('কাস্টমার খোঁজা ব্যর্থ:', e);
                 }
@@ -1611,6 +1615,9 @@
 
                 const unitPrice = product.sell_price || 0;
                 const totalPrice = unitPrice * qty;
+                // 🔥 FIX: Apply discount proportionally per product
+                const discountedPrice = Math.max(0, totalPrice - (discountAmount * (totalPrice / calculateBulkTotal())));
+                const finalPricePerProduct = Math.round(discountedPrice);
 
                 // 1️⃣ পণ্যের স্টক আপডেট
                 const updated = {
@@ -1621,14 +1628,14 @@
                 };
                 await updateProduct(updated);
 
-                // 2️⃣ বিক্রি ইতিহাস সেভ
+                // 2️⃣ বিক্রি ইতিহাস সেভ - এখন final_price এ ডিসকাউন্ট কাউন্ট করা হবে
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
                     quantity: qty,
                     unit_price: unitPrice,
-                    final_price: totalPrice,
-                    discount: discountAmount,
+                    final_price: finalPricePerProduct, // 🔥 ডিসকাউন্ট সহ মূল্য
+                    discount: discountAmount * (totalPrice / calculateBulkTotal()), // пропорশনাল ডিসকাউন্ট
                     payment_type: paymentType,
                     customer_id: customerId || '',
                     customer_name: customerName,
@@ -1645,7 +1652,7 @@
                         type: 'due',
                         customer_id: customerId,
                         customer_name: customerName,
-                        amount: totalPrice,
+                        amount: finalPricePerProduct,
                         date: new Date().toISOString().split('T')[0],
                         note: comment ? `পণ্য বিক্রি: ${product.name} (${qty}টি) - ${comment}` :
                             `পণ্য বিক্রি: ${product.name} (${qty}টি)`,
@@ -1656,7 +1663,6 @@
 
                     try {
                         await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
-                        console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে:', transactionData);
                     } catch (e) {
                         console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
                         showMsg(document.getElementById('bulk-msg'), 'বাকি লেনদেন সেভ ব্যর্থ!', 'red');
@@ -1665,7 +1671,7 @@
                 }
 
                 soldCount += qty;
-                totalRevenue += totalPrice;
+                totalRevenue += finalPricePerProduct;
             }
 
             selectedProducts.clear();
