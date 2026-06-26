@@ -1653,13 +1653,6 @@ button[onclick*="openEditNoteModal"]:hover {
         <button onclick="showTab('customers')" id="tab-customers" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all tab-active whitespace-nowrap" data-bn="👥 বাকি" data-en="👥 Due">👥 বাকি</button>
         <button onclick="showTab('advance')" id="tab-advance" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="💰 অগ্রিম" data-en="💰 Advance">💰 অগ্রিম</button>
         <button onclick="showTab('non-due')" id="tab-non-due" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="✅ শূন্য" data-en="✅ Zero">✅ শূন্য</button>
-         <!-- 📦 পণ্য বাটন - নতুন যোগ করা -->
-    <button onclick="window.location.href='products.html'" 
-        id="tab-products" 
-        class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap hover:bg-emerald-50 hover:text-emerald-700" 
-        data-bn="📦 পণ্য" data-en="📦 Products">
-        📦 পণ্য
-    </button>
         <button onclick="showTab('funds')" id="tab-funds" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="💰 ফান্ড" data-en="💰 Fund">💰 ফান্ড</button>
         <button onclick="showTab('transactions')" id="tab-transactions" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📝 লেনদেন" data-en="📝 Transactions">📝 লেনদেন</button>
         <button onclick="showTab('reports')" id="tab-reports" class="tab-btn flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap" data-bn="📊 রিপোর্ট" data-en="📊 Reports">📊 রিপোর্ট</button>
@@ -4476,29 +4469,8 @@ function updateGoogleProfileImage(user) {
 
     // Load user data from Firebase
     function loadUserData(userId) {
-    console.log('Loading data for user:', userId);
-    const userRef = database.ref(`users/${userId}/data`);  // ✅ এই পাথে ডাটা লোড হচ্ছে?
-    
-    userRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        console.log('📦 ডাটা লোড হয়েছে:', data);  // 🔥 এই লাইন যোগ করে দেখুন
-        if (data) {
-            allData = Object.keys(data).map(key => ({
-                ...data[key],
-                __backendId: key
-            }));
-        } else {
-            allData = [];
-        }
-        renderCurrentView();
-        
-        if (localBackupEnabled) {
-            setTimeout(() => {
-                saveToLocalBackup();
-            }, 500);
-        }
-    });
-}
+  console.log('Loading data for user:', userId);
+  const userRef = database.ref(`users/${userId}/data`);
       
       // ক্যাটাগরি লোড
 database.ref(`users/${userId}/account_categories`).on('value', (snap) => {
