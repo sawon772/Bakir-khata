@@ -64,12 +64,12 @@
             <button onclick="window.location.href='index.html'" class="btn-sm bg-yellow-600 text-white hover:bg-yellow-700">লগইন</button>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats - ক্রয় মূল্য দেখাবে -->
         <div class="grid grid-cols-4 gap-2.5 mb-4">
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">মোট পণ্য</p><h3 id="stat-total-value" class="text-xl font-bold">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">স্টকে</p><h3 id="stat-stock-value" class="text-xl font-bold">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">কম স্টক</p><h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3></div>
-            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">মোট মূল্য</p><h3 id="stat-value-value" class="text-xl font-bold">৳0</h3></div>
+            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">📦 মোট পণ্য</p><h3 id="stat-total-value" class="text-xl font-bold">0</h3></div>
+            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">✅ স্টকে</p><h3 id="stat-stock-value" class="text-xl font-bold">0</h3></div>
+            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">⚠️ কম স্টক</p><h3 id="stat-low-value" class="text-xl font-bold text-red-600">0</h3></div>
+            <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">💰 মোট ক্রয় মূল্য</p><h3 id="stat-value-value" class="text-xl font-bold">৳0</h3></div>
         </div>
 
         <!-- Tabs -->
@@ -227,14 +227,13 @@
             </div>
         </section>
 
-        <!-- History Tab with Filter + Return Button -->
+        <!-- History Tab -->
         <section id="tab-history" class="tab-content hidden fade-in">
             <div class="bg-white rounded-lg p-4 shadow">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
                     <h3 class="font-semibold text-sm">📜 বিক্রি ইতিহাস</h3>
                     <button onclick="clearHistory()" class="btn-sm bg-red-100 text-red-600 hover:bg-red-200">🗑️ সব মুছুন</button>
                 </div>
-                <!-- Filter Buttons -->
                 <div class="flex flex-wrap gap-2 mb-3 items-center">
                     <button class="filter-btn-history btn-sm bg-teal-600 text-white" data-filter="today">আজ</button>
                     <button class="filter-btn-history btn-sm bg-gray-200 text-gray-700" data-filter="week">সপ্তাহ</button>
@@ -253,11 +252,10 @@
             </div>
         </section>
 
-        <!-- Profit Tab with Filter -->
+        <!-- Profit Tab -->
         <section id="tab-profit" class="tab-content hidden fade-in">
             <div class="bg-white rounded-lg p-4 shadow">
                 <h3 class="font-semibold text-sm mb-3">💰 পণ্য ভিত্তিক লাভ</h3>
-                <!-- Filter Buttons -->
                 <div class="flex flex-wrap gap-2 mb-3 items-center">
                     <button class="filter-btn-profit btn-sm bg-teal-600 text-white" data-filter="today">আজ</button>
                     <button class="filter-btn-profit btn-sm bg-gray-200 text-gray-700" data-filter="week">সপ্তাহ</button>
@@ -281,7 +279,7 @@
         </section>
     </main>
 
-    <!-- Bulk Sell Modal (Quantity +/- + Comment) -->
+    <!-- Bulk Sell Modal -->
     <div id="bulk-sell-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-xl p-5 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-3">
@@ -290,20 +288,15 @@
             </div>
             <p class="text-sm text-gray-600 mb-3"><span id="bulk-count">0</span>টি পণ্য সিলেক্ট করা হয়েছে</p>
             
-            <!-- সিলেক্টেড পণ্যের লিস্ট -->
-            <div id="bulk-products-list" class="max-h-48 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50">
-                <!-- ডায়নামিক্যালি লোড হবে -->
-            </div>
+            <div id="bulk-products-list" class="max-h-48 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50"></div>
 
-            <!-- 🔥 মন্তব্য সেকশন (নতুন) -->
             <div class="mb-3">
                 <label class="text-xs font-medium text-gray-600">📝 মন্তব্য (ঐচ্ছিক)</label>
                 <textarea id="bulk-comment" rows="2" 
                     class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
-                    placeholder="বিশেষ তথ্য, গ্রাহকের মন্তব্য, ইত্যাদি..."></textarea>
+                    placeholder="বিশেষ তথ্য, গ্রাহকের মন্তব্য..."></textarea>
             </div>
 
-            <!-- পেমেন্ট টাইপ -->
             <div class="mb-3">
                 <label class="text-xs font-medium">পেমেন্ট টাইপ</label>
                 <div class="flex gap-3 mt-1">
@@ -312,7 +305,6 @@
                 </div>
             </div>
 
-            <!-- বাকি কাস্টমার সিলেক্ট -->
             <div id="customer-select-container" class="hidden mb-3">
                 <label class="text-xs font-medium">বাকি কাস্টমার নির্বাচন করুন</label>
                 <select id="due-customer-select" class="w-full px-3 py-1.5 border rounded-lg text-sm mt-1">
@@ -321,7 +313,6 @@
                 <button onclick="loadCustomersFromMain()" class="text-xs text-teal-600 hover:underline mt-1">🔄 কাস্টমার রিলোড</button>
             </div>
 
-            <!-- ডিসকাউন্ট -->
             <div class="grid grid-cols-2 gap-3 mb-3">
                 <div>
                     <label class="text-xs font-medium text-gray-600">মূল্য (৳)</label>
@@ -336,13 +327,11 @@
                 </div>
             </div>
 
-            <!-- মোট মূল্য -->
             <div class="bg-teal-50 rounded-lg p-3 flex justify-between items-center border border-teal-200 mb-3">
                 <span class="text-sm font-medium text-teal-700">মোট মূল্য:</span>
                 <span id="bulk-total-price" class="text-xl font-bold text-teal-700">৳০</span>
             </div>
 
-            <!-- বিক্রি বাটন -->
             <button onclick="confirmBulkSell()" class="w-full bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700 py-2.5 rounded-lg transition">
                 💰 বিক্রি করুন
             </button>
@@ -397,12 +386,9 @@
         let selectedImageFile = null;
         let selectedProducts = new Map();
 
-        // History filter state
         let historyFilter = 'today';
         let historyStartDate = '';
         let historyEndDate = '';
-
-        // Profit filter state
         let profitFilter = 'today';
         let profitStartDate = '';
         let profitEndDate = '';
@@ -460,10 +446,7 @@
             if (!currentUser) return;
             database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
                 const data = snap.val();
-                saleHistory = data ? Object.keys(data).map(key => ({ 
-                    ...data[key], 
-                    __backendId: key 
-                })) : [];
+                saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
                 renderHistory();
                 renderProfit();
             });
@@ -475,11 +458,7 @@
                     const data = snap.val();
                     if (data) {
                         allCustomers = Object.keys(data)
-                            .map(key => ({ 
-                                ...data[key], 
-                                __backendId: key,
-                                customer_id: data[key].customer_id || data[key].__backendId 
-                            }))
+                            .map(key => ({ ...data[key], __backendId: key, customer_id: data[key].customer_id || data[key].__backendId }))
                             .filter(d => d.type === 'customer');
                         updateCustomerSelect();
                     }
@@ -489,16 +468,9 @@
                 if (guestData) {
                     try {
                         const parsed = JSON.parse(guestData);
-                        allCustomers = parsed
-                            .filter(d => d.type === 'customer')
-                            .map(c => ({
-                                ...c,
-                                customer_id: c.customer_id || c.__backendId
-                            }));
+                        allCustomers = parsed.filter(d => d.type === 'customer').map(c => ({ ...c, customer_id: c.customer_id || c.__backendId }));
                         updateCustomerSelect();
-                    } catch(e) {
-                        console.error('গেস্ট ডাটা পড়তে সমস্যা:', e);
-                    }
+                    } catch(e) { console.error('গেস্ট ডাটা পড়তে সমস্যা:', e); }
                 }
             }
         }
@@ -597,11 +569,8 @@
             const container = document.getElementById('customer-select-container');
             if (selected && selected.value === 'due') {
                 container.classList.remove('hidden');
-                if (allCustomers.length === 0) {
-                    loadCustomers();
-                } else {
-                    updateCustomerSelect();
-                }
+                if (allCustomers.length === 0) loadCustomers();
+                else updateCustomerSelect();
             } else {
                 container.classList.add('hidden');
             }
@@ -629,11 +598,7 @@
         // ============================================
         function exportData() {
             if (!allProducts.length) { showToast('পণ্য নেই', 'warning'); return; }
-            const blob = new Blob([JSON.stringify({ 
-                exported: new Date().toISOString(), 
-                products: allProducts,
-                history: saleHistory 
-            }, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), products: allProducts, history: saleHistory }, null, 2)], { type: 'application/json' });
             const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = `products_${new Date().toISOString().split('T')[0]}.json`;
@@ -739,11 +704,12 @@
             updateBulkSellBar();
         }
 
+        // 🔥 UPDATE: ক্রয় মূল্য দিয়ে স্ট্যাটস
         function updateStats() {
             const total = allProducts.length;
             const stock = allProducts.reduce((s, p) => s + (Number(p.stock)||0), 0);
             const low = allProducts.filter(p => p.stock > 0 && p.stock <= 5).length;
-            const val = allProducts.reduce((s, p) => s + (Number(p.sell_price)||0) * (Number(p.stock)||0), 0);
+            const val = allProducts.reduce((s, p) => s + (Number(p.buy_price)||0) * (Number(p.stock)||0), 0);
             document.getElementById('stat-total-value').textContent = total;
             document.getElementById('stat-stock-value').textContent = stock;
             document.getElementById('stat-low-value').textContent = low;
@@ -767,33 +733,29 @@
         }
 
         function renderReports() {
-            // Category
             const cm = {};
             allProducts.forEach(p => {
                 const c = p.category || 'অন্যান্য';
                 if (!cm[c]) cm[c] = { count: 0, val: 0 };
                 cm[c].count++;
-                cm[c].val += (Number(p.sell_price)||0) * (Number(p.stock)||0);
+                cm[c].val += (Number(p.buy_price)||0) * (Number(p.stock)||0);
             });
             document.getElementById('report-category-body').innerHTML = Object.entries(cm).map(([c,d]) =>
                 `<div class="flex justify-between border-b py-1"><span>${c} (${d.count})</span><span class="font-medium">৳${d.val.toLocaleString('bn-BD')}</span></div>`
             ).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
 
-            // Low
             const low = allProducts.filter(p => p.stock <= 5);
             document.getElementById('no-low-stock').classList.toggle('hidden', low.length > 0);
             document.getElementById('report-low-body').innerHTML = low.map(p =>
                 `<div class="flex justify-between border-b py-1"><span>${p.name}</span><span class="text-red-600 font-medium">${p.stock} ${p.unit||''}</span></div>`
             ).join('') || '<p class="text-green-600 text-sm">✅ সব ঠিক আছে</p>';
 
-            // Profit
             const prof = allProducts.filter(p => p.sell_price > 0 && p.buy_price > 0);
             document.getElementById('report-profit-body').innerHTML = prof.slice(0, 8).map(p => {
                 const m = ((p.sell_price - p.buy_price) / p.buy_price * 100).toFixed(1);
                 return `<div class="flex justify-between border-b py-1"><span>${p.name}</span><span class="${Number(m)>=0?'text-green-600':'text-red-600'}">${m}%</span></div>`;
             }).join('') || '<p class="text-gray-400 text-sm">কোনো তথ্য নেই</p>';
 
-            // Summary
             const bought = allProducts.reduce((s, p) => s + (Number(p.total_bought)||0), 0);
             const sold = allProducts.reduce((s, p) => s + (Number(p.total_sold)||0), 0);
             document.getElementById('report-summary-body').innerHTML = `
@@ -804,7 +766,7 @@
         }
 
         // ============================================
-        // HISTORY FILTER (রিটার্ন বাটন সহ)
+        // HISTORY FILTER
         // ============================================
         document.querySelectorAll('.filter-btn-history').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -814,7 +776,6 @@
                 });
                 this.classList.add('bg-teal-600', 'text-white');
                 this.classList.remove('bg-gray-200', 'text-gray-700');
-
                 historyFilter = this.dataset.filter;
                 const customDiv = document.getElementById('custom-date-range');
                 if (historyFilter === 'custom') {
@@ -909,7 +870,7 @@
         }
 
         // ============================================
-        // ↩️ RETURN SALE FUNCTION
+        // ↩️ RETURN SALE
         // ============================================
         async function returnSale(historyId) {
             if (!currentUser) {
@@ -930,7 +891,6 @@
             showToast('⏳ রিটার্ন প্রক্রিয়াকরণ...', 'info');
             
             try {
-                // 1️⃣ পণ্যের স্টক বাড়ান
                 const product = allProducts.find(p => p.__backendId === historyItem.product_id);
                 if (product) {
                     const updated = {
@@ -940,10 +900,8 @@
                         last_updated: new Date().toISOString()
                     };
                     await updateProduct(updated);
-                    console.log('✅ স্টক বাড়ানো হয়েছে:', historyItem.quantity);
                 }
                 
-                // 2️⃣ ইতিহাস থেকে ডিলিট
                 if (currentUser) {
                     await database.ref(`users/${currentUser.uid}/sale_history/${historyId}`).remove();
                 } else {
@@ -954,7 +912,6 @@
                     }
                 }
                 
-                // 3️⃣ যদি বাকি লেনদেন হয়, main page থেকে ডিলিট
                 if (historyItem.payment_type === 'due' && historyItem.customer_id) {
                     const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
                     const data = snapshot.val();
@@ -965,26 +922,23 @@
                                 value.amount === historyItem.final_price &&
                                 value.date === historyItem.date) {
                                 await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
-                                console.log('✅ main page থেকে বাকি লেনদেন ডিলিট:', key);
                                 break;
                             }
                         }
                     }
                 }
                 
-                // 4️⃣ লোকাল অ্যারে থেকে রিমুভ
                 const localIndex = saleHistory.findIndex(h => h.__backendId === historyId);
                 if (localIndex > -1) {
                     saleHistory.splice(localIndex, 1);
                 }
                 
-                // 5️⃣ UI রিফ্রেশ
                 renderHistory();
                 renderProfit();
                 renderProducts();
                 updateStats();
                 
-                showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন! (${historyItem.quantity}টি)`, 'success');
+                showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
                 
             } catch (error) {
                 console.error('রিটার্ন ব্যর্থ:', error);
@@ -1003,7 +957,6 @@
                 });
                 this.classList.add('bg-teal-600', 'text-white');
                 this.classList.remove('bg-gray-200', 'text-gray-700');
-
                 profitFilter = this.dataset.filter;
                 const customDiv = document.getElementById('profit-custom-date-range');
                 if (profitFilter === 'custom') {
@@ -1068,19 +1021,11 @@
             filtered.forEach(h => {
                 const product = allProducts.find(p => p.__backendId === h.product_id);
                 if (!product) return;
-                
                 const buyPrice = product.buy_price || 0;
                 const sellPrice = h.unit_price || 0;
                 const profit = (sellPrice - buyPrice) * h.quantity;
-                
                 if (!profitMap[h.product_id]) {
-                    profitMap[h.product_id] = {
-                        name: h.product_name,
-                        totalSold: 0,
-                        totalRevenue: 0,
-                        totalProfit: 0,
-                        quantity: 0
-                    };
+                    profitMap[h.product_id] = { name: h.product_name, totalSold: 0, totalRevenue: 0, totalProfit: 0, quantity: 0 };
                 }
                 profitMap[h.product_id].totalSold += h.quantity;
                 profitMap[h.product_id].totalRevenue += h.final_price;
@@ -1108,7 +1053,7 @@
         }
 
         // ============================================
-        // SELECT / DESELECT (Quantity সহ)
+        // SELECT / DESELECT
         // ============================================
         function toggleProductSelect(id) {
             if (selectedProducts.has(id)) {
@@ -1196,16 +1141,13 @@
         function updateBulkQty(productId, change) {
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product) return;
-            
             let currentQty = selectedProducts.get(productId) || 1;
             let newQty = currentQty + change;
-            
             if (newQty < 1) newQty = 1;
             if (newQty > product.stock) {
                 showToast(`সর্বোচ্চ ${product.stock} টি স্টক আছে`, 'warning');
                 return;
             }
-            
             selectedProducts.set(productId, newQty);
             renderBulkProductList();
             calculateBulkTotal();
@@ -1214,17 +1156,14 @@
         function updateBulkQtyFromInput(productId) {
             const input = document.getElementById(`qty-${productId}`);
             if (!input) return;
-            
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product) return;
-            
             let val = parseInt(input.value) || 1;
             if (val < 1) val = 1;
             if (val > product.stock) {
                 val = product.stock;
                 showToast(`সর্বোচ্চ ${product.stock} টি স্টক আছে`, 'warning');
             }
-            
             selectedProducts.set(productId, val);
             input.value = val;
             calculateBulkTotal();
@@ -1236,7 +1175,6 @@
             calculateBulkTotal();
             updateBulkSellBar();
             renderProducts();
-            
             if (selectedProducts.size === 0) {
                 closeBulkSellModal();
             }
@@ -1245,7 +1183,6 @@
         function calculateBulkTotal() {
             let totalOriginal = 0;
             let totalItems = 0;
-            
             for (const [id, qty] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === id);
                 if (product) {
@@ -1253,17 +1190,15 @@
                     totalItems += qty;
                 }
             }
-            
             document.getElementById('bulk-original-price').value = totalOriginal;
             document.getElementById('bulk-count').textContent = totalItems;
-            
             const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0;
             const finalPrice = Math.max(0, totalOriginal - discountAmount);
             document.getElementById('bulk-total-price').textContent = '৳' + finalPrice.toLocaleString('bn-BD');
-            
             return finalPrice;
         }
 
+        // 🔥 FIXED: বাকি লেনদেন main page এ সেভ
         async function confirmBulkSell() {
             const finalPrice = calculateBulkTotal();
             const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0;
@@ -1284,20 +1219,29 @@
                 return;
             }
 
-            const customer = allCustomers.find(c => c.customer_id === customerId);
+            // 🔥 কাস্টমার খোঁজ - সব জায়গায়
+            let customerData = allCustomers.find(c => c.customer_id === customerId);
+            if (!customerData && currentUser) {
+                const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
+                if (snap.exists()) {
+                    customerData = snap.val();
+                    customerData.customer_id = customerId;
+                }
+            }
+            const customerName = customerData?.customer_name || customerData?.name || 'অজানা';
+
             let soldCount = 0, totalRevenue = 0;
             
             for (const [productId, qty] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
                 if (!product || product.stock < qty) {
-                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
+                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!', 'red');
                     return;
                 }
                 
                 const unitPrice = product.sell_price || 0;
                 const totalPrice = unitPrice * qty;
                 
-                // 1️⃣ পণ্যের স্টক আপডেট
                 const updated = {
                     ...product,
                     stock: product.stock - qty,
@@ -1306,7 +1250,6 @@
                 };
                 await updateProduct(updated);
                 
-                // 2️⃣ বিক্রি ইতিহাস সেভ (comment সহ)
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
@@ -1316,7 +1259,7 @@
                     discount: discountAmount,
                     payment_type: paymentType,
                     customer_id: customerId || '',
-                    customer_name: customer ? customer.customer_name : '',
+                    customer_name: customerName,
                     comment: comment || '',
                     date: new Date().toISOString().split('T')[0],
                     time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
@@ -1324,12 +1267,12 @@
                 };
                 await saveSaleHistory(saleData);
                 
-                // 3️⃣ 🔥 MAIN PAGE এ বাকি লেনদেন সেভ (comment সহ)
-                if (paymentType === 'due' && customerId && customer) {
+                // 🔥 MAIN PAGE এ বাকি লেনদেন সেভ
+                if (paymentType === 'due' && customerId) {
                     const transactionData = {
                         type: 'due',
                         customer_id: customerId,
-                        customer_name: customer.customer_name || 'অজানা',
+                        customer_name: customerName,
                         amount: totalPrice,
                         date: new Date().toISOString().split('T')[0],
                         note: comment ? `পণ্য বিক্রি: ${product.name} (${qty}টি) - ${comment}` : `পণ্য বিক্রি: ${product.name} (${qty}টি)`,
@@ -1337,7 +1280,7 @@
                         timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                     };
                     await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
-                    console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে');
+                    console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে:', transactionData);
                 }
                 
                 soldCount += qty;
@@ -1516,7 +1459,7 @@
                 payment_type: 'cash',
                 customer_id: '',
                 customer_name: '',
-                comment: document.getElementById('sell-comment')?.value || '',
+                comment: '',
                 date: new Date().toISOString().split('T')[0],
                 time: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' }),
                 created_at: new Date().toISOString()
@@ -1613,7 +1556,6 @@
         // ============================================
         lucide.createIcons();
 
-        // প্রতি ৫ মিনিট পর স্টক চেক
         setInterval(() => { if (allProducts.length) checkLowStock(); }, 300000);
 
         console.log('✅ পণ্য সিস্টেম লোড হয়েছে');
