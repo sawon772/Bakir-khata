@@ -64,7 +64,7 @@
             <button onclick="window.location.href='index.html'" class="btn-sm bg-yellow-600 text-white hover:bg-yellow-700">লগইন</button>
         </div>
 
-        <!-- Stats - ক্রয় মূল্য দেখাবে -->
+        <!-- Stats -->
         <div class="grid grid-cols-4 gap-2.5 mb-4">
             <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">📦 মোট পণ্য</p><h3 id="stat-total-value" class="text-xl font-bold">0</h3></div>
             <div class="bg-white rounded-lg p-3 shadow-sm"><p class="text-[10px] text-gray-400">✅ স্টকে</p><h3 id="stat-stock-value" class="text-xl font-bold">0</h3></div>
@@ -704,7 +704,6 @@
             updateBulkSellBar();
         }
 
-        // 🔥 UPDATE: ক্রয় মূল্য দিয়ে স্ট্যাটস
         function updateStats() {
             const total = allProducts.length;
             const stock = allProducts.reduce((s, p) => s + (Number(p.stock)||0), 0);
@@ -1198,7 +1197,7 @@
             return finalPrice;
         }
 
-        // 🔥 FIXED: বাকি লেনদেন main page এ সেভ
+        // 🔥 MAIN FUNCTION - বাকি লেনদেন main page এ সেভ
         async function confirmBulkSell() {
             const finalPrice = calculateBulkTotal();
             const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0;
@@ -1219,29 +1218,53 @@
                 return;
             }
 
-            // 🔥 কাস্টমার খোঁজ - সব জায়গায়
-            let customerData = allCustomers.find(c => c.customer_id === customerId);
-            if (!customerData && currentUser) {
-                const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
-                if (snap.exists()) {
-                    customerData = snap.val();
-                    customerData.customer_id = customerId;
+            // 🔥 কাস্টমার খোঁজ - ডাটাবেস থেকে সরাসরি
+            let customerName = 'অজানা';
+            if (paymentType === 'due' && customerId) {
+                try {
+                    // ১. allCustomers অ্যারে থেকে খোঁজ
+                    const found = allCustomers.find(c => c.customer_id === customerId);
+                    if (found) {
+                        customerName = found.customer_name || found.name || 'অজানা';
+                    } else {
+                        // ২. Firebase থেকে সরাসরি খোঁজ
+                        const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
+                        if (snap.exists()) {
+                            const data = snap.val();
+                            customerName = data.customer_name || data.name || 'অজানা';
+                        } else {
+                            // ৩. সব ডাটা থেকে খোঁজ
+                            const allSnap = await database.ref(`users/${currentUser.uid}/data`).once('value');
+                            const allData = allSnap.val();
+                            if (allData) {
+                                for (const [key, value] of Object.entries(allData)) {
+                                    if (value.type === 'customer' && (value.customer_id === customerId || key === customerId)) {
+                                        customerName = value.customer_name || value.name || 'অজানা';
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log('✅ কাস্টমার পাওয়া গেছে:', customerName);
+                } catch(e) {
+                    console.error('কাস্টমার খোঁজা ব্যর্থ:', e);
                 }
             }
-            const customerName = customerData?.customer_name || customerData?.name || 'অজানা';
 
             let soldCount = 0, totalRevenue = 0;
             
             for (const [productId, qty] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
                 if (!product || product.stock < qty) {
-                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!', 'red');
+                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
                     return;
                 }
                 
                 const unitPrice = product.sell_price || 0;
                 const totalPrice = unitPrice * qty;
                 
+                // 1️⃣ পণ্যের স্টক আপডেট
                 const updated = {
                     ...product,
                     stock: product.stock - qty,
@@ -1250,6 +1273,7 @@
                 };
                 await updateProduct(updated);
                 
+                // 2️⃣ বিক্রি ইতিহাস সেভ
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
@@ -1267,7 +1291,7 @@
                 };
                 await saveSaleHistory(saleData);
                 
-                // 🔥 MAIN PAGE এ বাকি লেনদেন সেভ
+                // 3️⃣ 🔥 MAIN PAGE এ বাকি লেনদেন সেভ
                 if (paymentType === 'due' && customerId) {
                     const transactionData = {
                         type: 'due',
@@ -1279,8 +1303,15 @@
                         created_at: new Date().toISOString(),
                         timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                     };
-                    await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
-                    console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে:', transactionData);
+                    
+                    try {
+                        await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
+                        console.log('✅ বাকি লেনদেন main page এ সেভ হয়েছে:', transactionData);
+                    } catch(e) {
+                        console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
+                        showMsg(document.getElementById('bulk-msg'), 'বাকি লেনদেন সেভ ব্যর্থ!', 'red');
+                        return;
+                    }
                 }
                 
                 soldCount += qty;
@@ -1295,10 +1326,10 @@
             
             const msgEl = document.getElementById('bulk-msg');
             showMsg(msgEl, 
-                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}`, 
+                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 
                 'green'
             );
-            showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!${paymentType === 'due' ? ' বাকি লেনদেন সেভ হয়েছে' : ''}`, 'success');
+            showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
             setTimeout(closeBulkSellModal, 2000);
         }
 
