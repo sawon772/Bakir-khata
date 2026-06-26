@@ -186,8 +186,9 @@
             border-radius: 12px;
             font-weight: 700;
         }
-        .progress-bar {
-            transition: width 0.5s ease;
+        .today-sale-card {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 1px solid #6ee7b7;
         }
     </style>
 </head>
@@ -219,6 +220,21 @@
             <button onclick="window.location.href='index.html'" class="btn-sm bg-yellow-600 text-white hover:bg-yellow-700">লগইন</button>
         </div>
 
+        <!-- Today's Sale Summary -->
+        <div id="today-sale-summary" class="today-sale-card rounded-xl p-3 mb-4 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium text-teal-800">📊 আজকের বিক্রি:</span>
+                <span id="today-sale-count" class="text-sm font-bold text-teal-900">০টি</span>
+                <span class="text-gray-400">|</span>
+                <span id="today-sale-amount" class="text-sm font-bold text-emerald-700">৳০</span>
+                <span class="text-gray-400">|</span>
+                <span id="today-sale-profit" class="text-sm font-bold text-blue-700">লাভ: ৳০</span>
+            </div>
+            <button onclick="showTodayDetails()" class="btn-sm bg-teal-600 text-white hover:bg-teal-700 transition">
+                📋 বিস্তারিত
+            </button>
+        </div>
+
         <!-- Stats -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
             <div class="stat-card bg-white rounded-xl p-3 shadow-sm border-l-4 border-teal-500">
@@ -248,6 +264,7 @@
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="reports">📊 রিপোর্ট</button>
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="history">📜 ইতিহাস</button>
             <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="profit">💰 লাভ</button>
+            <button class="tab-btn px-4 py-2 rounded-lg transition hover:bg-teal-50" data-tab="today-details">📊 আজকের বিস্তারিত</button>
         </nav>
 
         <!-- Products Tab -->
@@ -459,6 +476,20 @@
                 <p id="no-profit" class="text-center text-gray-400 py-6 hidden">কোনো বিক্রি ডাটা নেই</p>
             </div>
         </section>
+
+        <!-- Today Details Tab -->
+        <section id="tab-today-details" class="tab-content hidden fade-in">
+            <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                <h3 class="font-semibold text-sm mb-4 gradient-text">📊 আজকের বিক্রির বিস্তারিত</h3>
+                <div id="today-details-list" class="space-y-2 max-h-96 overflow-y-auto custom-scroll"></div>
+                <div id="today-details-summary" class="mt-4 p-3 bg-gradient-to-r from-teal-50 to-emerald-50 rounded-lg grid grid-cols-1 md:grid-cols-3 gap-2 border border-teal-200">
+                    <div><span class="text-sm text-gray-600">মোট বিক্রি:</span> <span id="td-total-items" class="font-bold text-teal-700">০টি</span></div>
+                    <div><span class="text-sm text-gray-600">মোট আয়:</span> <span id="td-total-amount" class="font-bold text-emerald-700">৳০</span></div>
+                    <div><span class="text-sm text-gray-600">মোট লাভ:</span> <span id="td-total-profit" class="font-bold text-blue-700">৳০</span></div>
+                </div>
+                <p id="no-today-details" class="text-center text-gray-400 py-6 hidden">আজকে কোনো বিক্রি হয়নি</p>
+            </div>
+        </section>
     </main>
 
     <!-- Bulk Sell Modal -->
@@ -607,6 +638,7 @@
                 renderAll();
                 renderHistory();
                 renderProfit();
+                updateTodaySummary();
                 updateCustomerSelect();
             }
         });
@@ -631,6 +663,8 @@
                 saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
                 renderHistory();
                 renderProfit();
+                updateTodaySummary();
+                renderTodayDetails();
             });
         }
 
@@ -660,6 +694,102 @@
         }
 
         // ============================================
+        // TODAY'S SUMMARY
+        // ============================================
+        function updateTodaySummary() {
+            const today = new Date().toISOString().split('T')[0];
+            const todaySales = saleHistory.filter(h => h.date === today);
+            
+            const totalItems = todaySales.reduce((sum, h) => sum + h.quantity, 0);
+            const totalAmount = todaySales.reduce((sum, h) => sum + h.final_price, 0);
+            
+            // Calculate profit for today
+            let totalProfit = 0;
+            todaySales.forEach(h => {
+                const product = allProducts.find(p => p.__backendId === h.product_id);
+                if (product) {
+                    const buyPrice = product.buy_price || 0;
+                    const sellPricePerUnit = h.final_price / h.quantity;
+                    totalProfit += (sellPricePerUnit - buyPrice) * h.quantity;
+                }
+            });
+            
+            document.getElementById('today-sale-count').textContent = totalItems + 'টি';
+            document.getElementById('today-sale-amount').textContent = '৳' + totalAmount.toLocaleString('bn-BD');
+            document.getElementById('today-sale-profit').textContent = 'লাভ: ৳' + totalProfit.toLocaleString('bn-BD');
+        }
+
+        // ============================================
+        // TODAY DETAILS
+        // ============================================
+        function renderTodayDetails() {
+            const container = document.getElementById('today-details-list');
+            const empty = document.getElementById('no-today-details');
+            const today = new Date().toISOString().split('T')[0];
+            const todaySales = saleHistory.filter(h => h.date === today);
+
+            if (!todaySales.length) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                document.getElementById('td-total-items').textContent = '০টি';
+                document.getElementById('td-total-amount').textContent = '৳০';
+                document.getElementById('td-total-profit').textContent = '৳০';
+                return;
+            }
+            empty.classList.add('hidden');
+
+            let totalItems = 0, totalAmount = 0, totalProfit = 0;
+            
+            const sorted = todaySales.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            
+            container.innerHTML = sorted.map(h => {
+                totalItems += h.quantity;
+                totalAmount += h.final_price;
+                
+                const product = allProducts.find(p => p.__backendId === h.product_id);
+                let profit = 0;
+                if (product) {
+                    const buyPrice = product.buy_price || 0;
+                    const sellPricePerUnit = h.final_price / h.quantity;
+                    profit = (sellPricePerUnit - buyPrice) * h.quantity;
+                    totalProfit += profit;
+                }
+                
+                const paymentType = h.payment_type === 'due' ? 
+                    `<span class="payment-badge payment-due">বাকি</span>` : 
+                    `<span class="payment-badge payment-cash">নগদ</span>`;
+                
+                return `<div class="history-item bg-gray-50 rounded-lg p-3 flex justify-between items-center hover:shadow-sm transition">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-medium text-gray-800">${h.product_name}</span>
+                                ${paymentType}
+                                ${h.customer_name ? `<span class="text-xs text-gray-500">👤 ${h.customer_name}</span>` : ''}
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                🕐 ${h.time || ''}
+                                ${h.discount ? `| ডিসকাউন্ট: ৳${h.discount}` : ''}
+                                ${h.comment ? `| 💬 ${h.comment}` : ''}
+                            </div>
+                        </div>
+                        <div class="text-right ml-4">
+                            <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
+                            <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
+                            <div class="text-xs ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">লাভ: ৳${profit.toLocaleString()}</div>
+                        </div>
+                    </div>`;
+            }).join('');
+
+            document.getElementById('td-total-items').textContent = totalItems + 'টি';
+            document.getElementById('td-total-amount').textContent = '৳' + totalAmount.toLocaleString('bn-BD');
+            document.getElementById('td-total-profit').textContent = '৳' + totalProfit.toLocaleString('bn-BD');
+        }
+
+        function showTodayDetails() {
+            document.querySelector('[data-tab="today-details"]').click();
+        }
+
+        // ============================================
         // SAVE FUNCTIONS
         // ============================================
         async function saveProduct(data) {
@@ -675,11 +805,18 @@
 
         async function updateProduct(data) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
+            if (!data.__backendId) {
+                showToast('❌ পণ্য আইডি নেই!', 'error');
+                return;
+            }
             if (selectedImageFile) {
                 const url = await uploadImage();
                 if (url) data.image = url;
             }
-            await database.ref(`users/${currentUser.uid}/products/${data.__backendId}`).set(data);
+            // Remove __backendId from data before saving
+            const backendId = data.__backendId;
+            delete data.__backendId;
+            await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(data);
             selectedImageFile = null;
             showToast('✅ পণ্য আপডেট');
         }
@@ -700,6 +837,8 @@
                 localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
                 renderHistory();
                 renderProfit();
+                updateTodaySummary();
+                renderTodayDetails();
             }
         }
 
@@ -1137,6 +1276,8 @@
                 renderProfit();
                 renderProducts();
                 updateStats();
+                updateTodaySummary();
+                renderTodayDetails();
 
                 showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
 
@@ -1222,11 +1363,17 @@
                 const product = allProducts.find(p => p.__backendId === h.product_id);
                 if (!product) return;
                 const buyPrice = product.buy_price || 0;
-                const sellPrice = h.unit_price || 0;
-                const profit = (sellPrice - buyPrice) * h.quantity;
+                const sellPricePerUnit = h.final_price / h.quantity;
+                const profit = (sellPricePerUnit - buyPrice) * h.quantity;
+                
                 if (!profitMap[h.product_id]) {
-                    profitMap[h.product_id] = { name: h.product_name, totalSold: 0, totalRevenue: 0,
-                        totalProfit: 0, quantity: 0 };
+                    profitMap[h.product_id] = { 
+                        name: h.product_name, 
+                        totalSold: 0, 
+                        totalRevenue: 0,
+                        totalProfit: 0, 
+                        quantity: 0 
+                    };
                 }
                 profitMap[h.product_id].totalSold += h.quantity;
                 profitMap[h.product_id].totalRevenue += h.final_price;
@@ -1424,18 +1571,15 @@
             let customerName = 'অজানা';
             if (paymentType === 'due' && customerId) {
                 try {
-                    // ১. allCustomers অ্যারে থেকে খোঁজ
                     const found = allCustomers.find(c => c.customer_id === customerId);
                     if (found) {
                         customerName = found.customer_name || found.name || 'অজানা';
                     } else {
-                        // ২. Firebase থেকে সরাসরি খোঁজ
                         const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
                         if (snap.exists()) {
                             const data = snap.val();
                             customerName = data.customer_name || data.name || 'অজানা';
                         } else {
-                            // ৩. সব ডাটা থেকে খোঁজ
                             const allSnap = await database.ref(`users/${currentUser.uid}/data`).once('value');
                             const allData = allSnap.val();
                             if (allData) {
@@ -1529,6 +1673,8 @@
             renderAll();
             renderHistory();
             renderProfit();
+            updateTodaySummary();
+            renderTodayDetails();
 
             const msgEl = document.getElementById('bulk-msg');
             showMsg(msgEl,
@@ -1555,6 +1701,8 @@
                 localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
                 renderHistory();
                 renderProfit();
+                updateTodaySummary();
+                renderTodayDetails();
             }
             showToast('🗑️ ইতিহাস মুছে ফেলা হয়েছে', 'success');
         }
@@ -1607,7 +1755,10 @@
         function editProduct(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
             const p = allProducts.find(x => x.__backendId === id);
-            if (!p) return;
+            if (!p) {
+                showToast('❌ পণ্য পাওয়া যায়নি!', 'error');
+                return;
+            }
             editingProduct = p;
             document.getElementById('f-name').value = p.name || '';
             document.getElementById('f-category').value = p.category || '';
@@ -1620,6 +1771,7 @@
                 document.getElementById('image-preview').classList.remove('hidden');
                 document.getElementById('product-image-display').src = p.image;
             }
+            document.getElementById('form-title').textContent = '✏️ পণ্য এডিট';
             document.querySelector('[data-tab="add"]').click();
         }
 
@@ -1627,6 +1779,7 @@
             editingProduct = null;
             document.getElementById('product-form').reset();
             document.getElementById('form-error').classList.add('hidden');
+            document.getElementById('form-title').textContent = '➕ নতুন পণ্য';
             removeImage();
         }
 
@@ -1710,6 +1863,8 @@
             document.getElementById('sell-stock-info').textContent = '';
             renderHistory();
             renderProfit();
+            updateTodaySummary();
+            renderTodayDetails();
         });
 
         // ============================================
@@ -1784,6 +1939,7 @@
                 lucide.createIcons();
                 if (btn.dataset.tab === 'history') renderHistory();
                 if (btn.dataset.tab === 'profit') renderProfit();
+                if (btn.dataset.tab === 'today-details') renderTodayDetails();
             });
         });
 
