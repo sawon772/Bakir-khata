@@ -30,6 +30,9 @@
         .payment-badge { padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; }
         .payment-cash { background: #dcfce7; color: #166534; }
         .payment-due { background: #fee2e2; color: #991b1b; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-weight: bold; }
+        .qty-btn:hover { background: #f3f4f6; }
+        .qty-input { width: 50px; text-align: center; border: 1px solid #e5e7eb; border-radius: 6px; padding: 4px 0; }
     </style>
 </head>
 <body>
@@ -277,47 +280,63 @@
         </section>
     </main>
 
-    <!-- Bulk Sell Modal (ডিসকাউন্ট টাকায় পরিবর্তন) -->
+    <!-- Bulk Sell Modal (Quantity +/- সহ) -->
     <div id="bulk-sell-modal" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-xl p-5 max-w-md w-full shadow-xl">
+        <div class="bg-white rounded-xl p-5 max-w-lg w-full shadow-xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-lg font-bold">💰 বাল্ক বিক্রি</h3>
                 <button onclick="closeBulkSellModal()" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
-            <p class="text-sm text-gray-600 mb-3"><span id="bulk-count">0</span>টি পণ্য বিক্রি করতে যাচ্ছেন।</p>
-            <div id="bulk-products-list" class="max-h-40 overflow-y-auto space-y-1 text-sm mb-3 border rounded-lg p-2 bg-gray-50"></div>
-            <div class="space-y-3">
-                <div>
-                    <label class="text-xs font-medium">পেমেন্ট টাইপ</label>
-                    <div class="flex gap-3 mt-1">
-                        <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="cash" checked onchange="toggleCustomerSelect()"> নগদ</label>
-                        <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="due" onchange="toggleCustomerSelect()"> বাকি</label>
-                    </div>
-                </div>
-                <div id="customer-select-container" class="hidden">
-                    <label class="text-xs font-medium">বাকি কাস্টমার নির্বাচন করুন</label>
-                    <select id="due-customer-select" class="w-full px-3 py-1.5 border rounded-lg text-sm mt-1"><option value="">-- কাস্টমার বাছাই --</option></select>
-                    <button onclick="loadCustomersFromMain()" class="text-xs text-teal-600 hover:underline mt-1">🔄 কাস্টমার রিলোড</button>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">মূল বিক্রয় মূল্য</label>
-                        <input id="bulk-original-price" type="number" readonly 
-                            class="w-full px-3 py-1.5 border rounded-lg text-sm bg-gray-100">
-                    </div>
-                    <div>
-                        <label class="text-xs font-medium text-gray-600">ডিসকাউন্ট (৳)</label>
-                        <input id="bulk-discount" type="number" min="0" value="0" 
-                            oninput="calculateBulkTotal()"
-                            class="w-full px-3 py-1.5 border rounded-lg text-sm">
-                    </div>
-                </div>
-                <div class="bg-teal-50 rounded-lg p-3 flex justify-between items-center border border-teal-200">
-                    <span class="text-sm font-medium text-teal-700">মোট মূল্য:</span>
-                    <span id="bulk-total-price" class="text-xl font-bold text-teal-700">৳০</span>
-                </div>
-                <button onclick="confirmBulkSell()" class="w-full bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700 py-2.5 rounded-lg transition">💰 বিক্রি করুন</button>
+            <p class="text-sm text-gray-600 mb-3"><span id="bulk-count">0</span>টি পণ্য সিলেক্ট করা হয়েছে</p>
+            
+            <!-- সিলেক্টেড পণ্যের লিস্ট (প্রতিটি পণ্যের সাথে Quantity +/-) -->
+            <div id="bulk-products-list" class="max-h-48 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50">
+                <!-- ডায়নামিক্যালি লোড হবে -->
             </div>
+
+            <!-- পেমেন্ট টাইপ -->
+            <div class="mb-3">
+                <label class="text-xs font-medium">পেমেন্ট টাইপ</label>
+                <div class="flex gap-3 mt-1">
+                    <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="cash" checked onchange="toggleCustomerSelect()"> নগদ</label>
+                    <label class="flex items-center gap-1 text-sm"><input type="radio" name="payment-type" value="due" onchange="toggleCustomerSelect()"> বাকি</label>
+                </div>
+            </div>
+
+            <!-- বাকি কাস্টমার সিলেক্ট -->
+            <div id="customer-select-container" class="hidden mb-3">
+                <label class="text-xs font-medium">বাকি কাস্টমার নির্বাচন করুন</label>
+                <select id="due-customer-select" class="w-full px-3 py-1.5 border rounded-lg text-sm mt-1">
+                    <option value="">-- কাস্টমার বাছাই --</option>
+                </select>
+                <button onclick="loadCustomersFromMain()" class="text-xs text-teal-600 hover:underline mt-1">🔄 কাস্টমার রিলোড</button>
+            </div>
+
+            <!-- ডিসকাউন্ট -->
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                    <label class="text-xs font-medium text-gray-600">মূল্য (৳)</label>
+                    <input id="bulk-original-price" type="number" readonly 
+                        class="w-full px-3 py-1.5 border rounded-lg text-sm bg-gray-100">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-gray-600">ডিসকাউন্ট (৳)</label>
+                    <input id="bulk-discount" type="number" min="0" value="0" 
+                        oninput="calculateBulkTotal()"
+                        class="w-full px-3 py-1.5 border rounded-lg text-sm">
+                </div>
+            </div>
+
+            <!-- মোট মূল্য -->
+            <div class="bg-teal-50 rounded-lg p-3 flex justify-between items-center border border-teal-200 mb-3">
+                <span class="text-sm font-medium text-teal-700">মোট মূল্য:</span>
+                <span id="bulk-total-price" class="text-xl font-bold text-teal-700">৳০</span>
+            </div>
+
+            <!-- বিক্রি বাটন -->
+            <button onclick="confirmBulkSell()" class="w-full bg-teal-600 text-white btn-sm font-medium hover:bg-teal-700 py-2.5 rounded-lg transition">
+                💰 বিক্রি করুন
+            </button>
             <div id="bulk-msg" class="hidden text-center text-xs mt-2"></div>
         </div>
     </div>
@@ -367,7 +386,7 @@
         let deletingProduct = null;
         let currentUser = null;
         let selectedImageFile = null;
-        let selectedProducts = new Set();
+        let selectedProducts = new Map(); // {productId: quantity}
 
         // History filter state
         let historyFilter = 'today';
@@ -399,11 +418,19 @@
                 document.getElementById('add-form-container').classList.add('hidden');
                 const guest = localStorage.getItem('guest_products_data');
                 const guestHistory = localStorage.getItem('guest_sale_history');
+                const guestCustomers = localStorage.getItem('guest_data');
                 if (guest) allProducts = JSON.parse(guest);
                 if (guestHistory) saleHistory = JSON.parse(guestHistory);
+                if (guestCustomers) {
+                    try {
+                        const parsed = JSON.parse(guestCustomers);
+                        allCustomers = parsed.filter(d => d.type === 'customer');
+                    } catch(e) {}
+                }
                 renderAll();
                 renderHistory();
                 renderProfit();
+                updateCustomerSelect();
             }
         });
 
@@ -431,16 +458,28 @@
         }
 
         function loadCustomers() {
-            if (!currentUser) return;
-            database.ref(`users/${currentUser.uid}/data`).on('value', (snap) => {
-                const data = snap.val();
-                if (data) {
-                    allCustomers = Object.keys(data)
-                        .map(key => ({ ...data[key], __backendId: key }))
-                        .filter(d => d.type === 'customer');
-                    updateCustomerSelect();
+            if (currentUser) {
+                database.ref(`users/${currentUser.uid}/data`).on('value', (snap) => {
+                    const data = snap.val();
+                    if (data) {
+                        allCustomers = Object.keys(data)
+                            .map(key => ({ ...data[key], __backendId: key }))
+                            .filter(d => d.type === 'customer');
+                        updateCustomerSelect();
+                    }
+                });
+            } else {
+                const guestData = localStorage.getItem('guest_data');
+                if (guestData) {
+                    try {
+                        const parsed = JSON.parse(guestData);
+                        allCustomers = parsed.filter(d => d.type === 'customer');
+                        updateCustomerSelect();
+                    } catch(e) {
+                        console.error('গেস্ট ডাটা পড়তে সমস্যা:', e);
+                    }
                 }
-            });
+            }
         }
 
         // ============================================
@@ -535,7 +574,11 @@
             const container = document.getElementById('customer-select-container');
             if (selected && selected.value === 'due') {
                 container.classList.remove('hidden');
-                loadCustomers();
+                if (allCustomers.length === 0) {
+                    loadCustomers();
+                } else {
+                    updateCustomerSelect();
+                }
             } else {
                 container.classList.add('hidden');
             }
@@ -547,19 +590,10 @@
             const current = select.value;
             select.innerHTML = '<option value="">-- কাস্টমার বাছাই --</option>';
             allCustomers.forEach(c => {
-                const balance = getCustomerBalance(c.customer_id);
-                if (balance > 0) {
-                    select.innerHTML += `<option value="${c.customer_id}">${c.customer_name} (বাকি: ৳${balance.toLocaleString()})</option>`;
-                }
+                const mobile = c.mobile ? ` (${c.mobile})` : '';
+                select.innerHTML += `<option value="${c.customer_id}">${c.customer_name}${mobile}</option>`;
             });
             select.value = current;
-        }
-
-        function getCustomerBalance(customerId) {
-            // main app থেকে ব্যালেন্স ক্যালকুলেট
-            let balance = 0;
-            // অস্থায়ী সমাধান
-            return 0;
         }
 
         function loadCustomersFromMain() {
@@ -652,7 +686,8 @@
             tbody.innerHTML = filtered.map(p => {
                 const stockClass = p.stock <= 5 ? 'text-red-600 font-semibold' : '';
                 const img = p.image ? `<img src="${p.image}" class="product-img">` : `<span class="text-lg">📦</span>`;
-                const isSelected = selectedProducts.has(p.__backendId);
+                const qty = selectedProducts.get(p.__backendId) || 0;
+                const isSelected = qty > 0;
                 const rowClass = isSelected ? 'selected-row' : '';
                 
                 return `<tr class="hover:bg-gray-50 transition cursor-pointer ${rowClass}" onclick="toggleProductSelect('${p.__backendId}')">
@@ -960,13 +995,19 @@
         }
 
         // ============================================
-        // SELECT / DESELECT
+        // SELECT / DESELECT (Quantity সহ)
         // ============================================
         function toggleProductSelect(id) {
             if (selectedProducts.has(id)) {
                 selectedProducts.delete(id);
             } else {
-                selectedProducts.add(id);
+                const product = allProducts.find(p => p.__backendId === id);
+                if (product && product.stock > 0) {
+                    selectedProducts.set(id, 1);
+                } else {
+                    showToast('স্টক শেষ!', 'warning');
+                    return;
+                }
             }
             updateBulkSellBar();
             renderProducts();
@@ -975,7 +1016,11 @@
         function toggleSelectAll() {
             const checked = document.getElementById('select-all').checked;
             if (checked) {
-                allProducts.forEach(p => selectedProducts.add(p.__backendId));
+                allProducts.forEach(p => {
+                    if (p.stock > 0 && !selectedProducts.has(p.__backendId)) {
+                        selectedProducts.set(p.__backendId, 1);
+                    }
+                });
             } else {
                 selectedProducts.clear();
             }
@@ -995,7 +1040,7 @@
         }
 
         // ============================================
-        // BULK SELL (ডিসকাউন্ট টাকায়)
+        // BULK SELL (Quantity +/- সহ)
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) {
@@ -1003,43 +1048,112 @@
                 return;
             }
             document.getElementById('bulk-sell-modal').classList.remove('hidden');
-            
-            const list = document.getElementById('bulk-products-list');
-            const selected = allProducts.filter(p => selectedProducts.has(p.__backendId));
-            
-            list.innerHTML = selected.map(p => 
-                `<div class="flex justify-between border-b py-1 text-sm">
-                    <span>${p.name}</span>
-                    <span class="text-gray-500">স্টক: ${p.stock} ${p.unit||''} | ৳${p.sell_price||0}</span>
-                </div>`
-            ).join('');
-            
-            const totalOriginalPrice = selected.reduce((sum, p) => sum + (Number(p.sell_price) || 0), 0);
-            document.getElementById('bulk-original-price').value = totalOriginalPrice;
-            document.getElementById('bulk-discount').value = 0;
-            document.getElementById('bulk-count').textContent = selectedProducts.size;
-            
-            document.querySelector('input[name="payment-type"][value="cash"]').checked = true;
-            document.getElementById('customer-select-container').classList.add('hidden');
-            
+            renderBulkProductList();
             calculateBulkTotal();
             document.getElementById('bulk-msg').classList.add('hidden');
         }
 
+        function renderBulkProductList() {
+            const list = document.getElementById('bulk-products-list');
+            const selected = allProducts.filter(p => selectedProducts.has(p.__backendId));
+            
+            list.innerHTML = selected.map(p => {
+                const qty = selectedProducts.get(p.__backendId) || 1;
+                const maxStock = p.stock || 0;
+                return `
+                    <div class="flex items-center justify-between bg-white rounded-lg p-2 border">
+                        <div class="flex items-center gap-2 flex-1">
+                            ${p.image ? `<img src="${p.image}" class="w-8 h-8 rounded object-cover">` : `<span class="text-lg">📦</span>`}
+                            <span class="font-medium text-sm">${p.name}</span>
+                            <span class="text-xs text-gray-400">(স্টক: ${maxStock})</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="updateBulkQty('${p.__backendId}', -1)" class="qty-btn">−</button>
+                            <input type="number" id="qty-${p.__backendId}" value="${qty}" min="1" max="${maxStock}"
+                                class="qty-input text-sm" 
+                                onchange="updateBulkQtyFromInput('${p.__backendId}')">
+                            <button onclick="updateBulkQty('${p.__backendId}', 1)" class="qty-btn">+</button>
+                            <button onclick="removeFromBulk('${p.__backendId}')" class="text-red-500 hover:text-red-700 text-sm ml-1">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateBulkQty(productId, change) {
+            const product = allProducts.find(p => p.__backendId === productId);
+            if (!product) return;
+            
+            let currentQty = selectedProducts.get(productId) || 1;
+            let newQty = currentQty + change;
+            
+            if (newQty < 1) newQty = 1;
+            if (newQty > product.stock) {
+                showToast(`সর্বোচ্চ ${product.stock} টি স্টক আছে`, 'warning');
+                return;
+            }
+            
+            selectedProducts.set(productId, newQty);
+            renderBulkProductList();
+            calculateBulkTotal();
+        }
+
+        function updateBulkQtyFromInput(productId) {
+            const input = document.getElementById(`qty-${productId}`);
+            if (!input) return;
+            
+            const product = allProducts.find(p => p.__backendId === productId);
+            if (!product) return;
+            
+            let val = parseInt(input.value) || 1;
+            if (val < 1) val = 1;
+            if (val > product.stock) {
+                val = product.stock;
+                showToast(`সর্বোচ্চ ${product.stock} টি স্টক আছে`, 'warning');
+            }
+            
+            selectedProducts.set(productId, val);
+            input.value = val;
+            calculateBulkTotal();
+        }
+
+        function removeFromBulk(productId) {
+            selectedProducts.delete(productId);
+            renderBulkProductList();
+            calculateBulkTotal();
+            updateBulkSellBar();
+            renderProducts();
+            
+            if (selectedProducts.size === 0) {
+                closeBulkSellModal();
+            }
+        }
+
         function calculateBulkTotal() {
-            const originalPrice = parseFloat(document.getElementById('bulk-original-price').value) || 0;
-            const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0; // টাকা
+            let totalOriginal = 0;
+            let totalItems = 0;
             
-            // ডিসকাউন্ট টাকা বিয়োগ
-            const finalPrice = Math.max(0, originalPrice - discountAmount);
+            for (const [id, qty] of selectedProducts) {
+                const product = allProducts.find(p => p.__backendId === id);
+                if (product) {
+                    totalOriginal += (Number(product.sell_price) || 0) * qty;
+                    totalItems += qty;
+                }
+            }
             
+            document.getElementById('bulk-original-price').value = totalOriginal;
+            document.getElementById('bulk-count').textContent = totalItems;
+            
+            const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0;
+            const finalPrice = Math.max(0, totalOriginal - discountAmount);
             document.getElementById('bulk-total-price').textContent = '৳' + finalPrice.toLocaleString('bn-BD');
+            
             return finalPrice;
         }
 
         async function confirmBulkSell() {
             const finalPrice = calculateBulkTotal();
-            const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0; // টাকা
+            const discountAmount = parseFloat(document.getElementById('bulk-discount').value) || 0;
             const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
             const customerId = document.getElementById('due-customer-select').value;
             
@@ -1056,34 +1170,38 @@
                 return;
             }
 
-            const selected = allProducts.filter(p => selectedProducts.has(p.__backendId));
             const customer = allCustomers.find(c => c.customer_id === customerId);
             let soldCount = 0, totalRevenue = 0;
             
-            // ডিসকাউন্ট সহ প্রতি পিসের দাম ক্যালকুলেট
-            const totalOriginal = selected.reduce((sum, p) => sum + (Number(p.sell_price) || 0), 0);
-            const pricePerUnit = totalOriginal > 0 ? finalPrice / totalOriginal : 0;
-
-            for (const p of selected) {
-                if (p.stock <= 0) continue;
-                const discountedPrice = Math.round((Number(p.sell_price) || 0) * pricePerUnit);
+            // প্রতিটি পণ্যের জন্য আলাদা ক্যালকুলেশন
+            for (const [productId, qty] of selectedProducts) {
+                const product = allProducts.find(p => p.__backendId === productId);
+                if (!product || product.stock < qty) {
+                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
+                    return;
+                }
                 
+                // প্রতি পিসের দাম (ডিসকাউন্ট সহ)
+                const unitPrice = product.sell_price || 0;
+                const totalPrice = unitPrice * qty;
+                
+                // স্টক আপডেট
                 const updated = {
-                    ...p,
-                    stock: Math.max(0, p.stock - 1),
-                    sell_price: discountedPrice || p.sell_price,
-                    total_sold: (Number(p.total_sold)||0) + 1,
+                    ...product,
+                    stock: product.stock - qty,
+                    total_sold: (Number(product.total_sold)||0) + qty,
                     last_updated: new Date().toISOString()
                 };
                 await updateProduct(updated);
                 
+                // বিক্রি ইতিহাস সেভ
                 const saleData = {
-                    product_id: p.__backendId,
-                    product_name: p.name,
-                    quantity: 1,
-                    unit_price: discountedPrice || p.sell_price,
-                    final_price: discountedPrice || p.sell_price,
-                    discount: discountAmount, // টাকা
+                    product_id: product.__backendId,
+                    product_name: product.name,
+                    quantity: qty,
+                    unit_price: unitPrice,
+                    final_price: totalPrice,
+                    discount: discountAmount,
                     payment_type: paymentType,
                     customer_id: customerId || '',
                     customer_name: customer ? customer.customer_name : '',
@@ -1092,8 +1210,8 @@
                     created_at: new Date().toISOString()
                 };
                 await saveSaleHistory(saleData);
-                soldCount++;
-                totalRevenue += discountedPrice || p.sell_price;
+                soldCount += qty;
+                totalRevenue += totalPrice;
             }
 
             selectedProducts.clear();
