@@ -1000,7 +1000,7 @@
             </div>
         </section>
 
-        <!-- Categories Tab - NEW -->
+        <!-- Categories Tab -->
         <section id="tab-categories" class="tab-content hidden fade-in">
             <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
@@ -1276,17 +1276,12 @@
         }
 
         function updateCategoriesFromProducts() {
-            // Extract categories from products
             const productCategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            
-            // Merge with existing categories
             productCategories.forEach(cat => {
                 if (!categories.includes(cat)) {
                     categories.push(cat);
                 }
             });
-            
-            // Save categories
             saveCategories();
             renderCategories();
             updateCategorySuggestions();
@@ -1324,7 +1319,6 @@
 
         async function removeCategory(cat) {
             if (!confirm(`"${cat}" ক্যাটাগরি মুছবেন?`)) return;
-            // Check if any product uses this category
             const used = allProducts.some(p => p.category === cat);
             if (used) {
                 showToast('এই ক্যাটাগরি ব্যবহারে আছে!', 'error');
@@ -1360,8 +1354,6 @@
         function updateCategorySuggestions() {
             const suggestions = document.getElementById('category-suggestions');
             if (!suggestions) return;
-            
-            // Clear and hide if no categories
             if (!categories.length) {
                 suggestions.classList.remove('active');
                 suggestions.innerHTML = '';
@@ -1398,7 +1390,6 @@
             document.getElementById('category-suggestions').classList.remove('active');
         }
 
-        // Close suggestions on outside click
         document.addEventListener('click', function(e) {
             const wrapper = document.querySelector('.category-input-wrapper');
             if (wrapper && !wrapper.contains(e.target)) {
@@ -1953,7 +1944,6 @@
             const styles = document.querySelector('style').innerHTML;
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
-            // Extract only the invoice content without buttons
             const invoiceContent = content.innerHTML.replace(
                 /<div style="display: flex; gap: 8px; margin-top: 12px;">.*?<\/div>/s, 
                 ''
@@ -2004,7 +1994,6 @@
 
         function shareInvoice() {
             const content = document.getElementById('invoice-body');
-            // Extract text from invoice
             const textContent = content.textContent || '';
             if (navigator.share) {
                 navigator.share({
@@ -2016,7 +2005,6 @@
                     }
                 });
             } else {
-                // Fallback: copy to clipboard
                 navigator.clipboard.writeText(textContent).then(() => {
                     showToast('📋 রশিদ কপি করা হয়েছে!', 'success');
                 }).catch(() => {
@@ -2097,18 +2085,24 @@
 
         async function updateProduct(data) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
-            if (!data.__backendId) {
+            
+            // If data has __backendId, use it, otherwise check if it's a product object
+            const productId = data.__backendId || data.id;
+            if (!productId) {
                 showToast('❌ পণ্য আইডি নেই!', 'error');
                 return;
             }
+            
             if (selectedImageFile) {
                 const url = await uploadImage();
                 if (url) data.image = url;
             }
-            const backendId = data.__backendId;
+            
             const updateData = { ...data };
             delete updateData.__backendId;
-            await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(updateData);
+            delete updateData.id;
+            
+            await database.ref(`users/${currentUser.uid}/products/${productId}`).update(updateData);
             selectedImageFile = null;
             showToast('✅ পণ্য আপডেট');
         }
@@ -2127,11 +2121,6 @@
                 saleData.__backendId = 'HIST_' + Date.now();
                 saleHistory.push(saleData);
                 localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
-                renderHistory();
-                renderProfit();
-                updateTodaySummary();
-                renderTodayDetails();
-                updateChart(currentChartPeriod);
             }
         }
 
@@ -2346,7 +2335,6 @@
                     stockBadge = `<span class="badge-low-stock">কম</span>`;
                 }
 
-                // Three-dot menu items
                 const menuItems = currentUser ? `
                     <button onclick="showProductDetail('${p.__backendId}')">📄 বিস্তারিত</button>
                     <button onclick="editProduct('${p.__backendId}')">✏️ এডিট</button>
@@ -2390,14 +2378,12 @@
         // ============================================
         function toggleThreeDotMenu(btn) {
             const menu = btn.parentElement.querySelector('.three-dot-menu-content');
-            // Close all other menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 if (el !== menu) el.classList.remove('show');
             });
             menu.classList.toggle('show');
         }
 
-        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.three-dot-menu')) {
                 document.querySelectorAll('.three-dot-menu-content').forEach(el => {
@@ -2410,26 +2396,18 @@
         // STOCK UPDATE FROM THREE-DOT MENU
         // ============================================
         function openStockUpdate(productId) {
-            // Switch to stock update tab and select the product
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product) {
                 showToast('পণ্য পাওয়া যায়নি!', 'error');
                 return;
             }
-            
-            // Switch to stock tab
             document.querySelector('[data-tab="stock-update"]').click();
-            
-            // Select the product in dropdown
             const stockSelect = document.getElementById('stock-product');
             if (stockSelect) {
                 stockSelect.value = productId;
-                // Trigger change event to show current stock
                 const event = new Event('change');
                 stockSelect.dispatchEvent(event);
             }
-            
-            // Focus on quantity input
             setTimeout(() => {
                 document.getElementById('stock-qty')?.focus();
             }, 300);
@@ -2446,7 +2424,6 @@
                 return;
             }
             
-            // Close any open three-dot menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 el.classList.remove('show');
             });
@@ -2467,8 +2444,6 @@
             }
             document.getElementById('form-title').textContent = '✏️ পণ্য এডিট';
             document.querySelector('[data-tab="add"]').click();
-            
-            // Scroll to form
             document.getElementById('add-form-container').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -2487,7 +2462,6 @@
             const sel = document.getElementById('filter-category');
             const cur = sel.value;
             const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            // Also add from categories array
             categories.forEach(c => {
                 if (!cats.includes(c)) cats.push(c);
             });
@@ -2650,7 +2624,7 @@
         }
 
         // ============================================
-        // ↩️ RETURN SALE
+        // ↩️ RETURN SALE - FIXED
         // ============================================
         async function returnSale(historyId) {
             if (!currentUser) {
@@ -2673,15 +2647,23 @@
             try {
                 const product = allProducts.find(p => p.__backendId === historyItem.product_id);
                 if (product) {
-                    const updated = {
+                    // Update product stock - add back the returned quantity
+                    const updatedProduct = {
                         ...product,
                         stock: (Number(product.stock) || 0) + historyItem.quantity,
                         total_sold: Math.max(0, (Number(product.total_sold) || 0) - historyItem.quantity),
                         last_updated: new Date().toISOString()
                     };
-                    await updateProduct(updated);
+                    // Use the product's __backendId for update
+                    const productId = product.__backendId;
+                    if (productId) {
+                        const updateData = { ...updatedProduct };
+                        delete updateData.__backendId;
+                        await database.ref(`users/${currentUser.uid}/products/${productId}`).update(updateData);
+                    }
                 }
 
+                // Remove from sale history
                 if (currentUser) {
                     await database.ref(`users/${currentUser.uid}/sale_history/${historyId}`).remove();
                 } else {
@@ -2692,6 +2674,7 @@
                     }
                 }
 
+                // Remove due transaction if exists
                 if (historyItem.payment_type === 'due' && historyItem.customer_id) {
                     const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
                     const data = snapshot.val();
@@ -2699,7 +2682,7 @@
                         for (const [key, value] of Object.entries(data)) {
                             if (value.type === 'due' &&
                                 value.customer_id === historyItem.customer_id &&
-                                value.amount === historyItem.final_price &&
+                                Math.abs(value.amount - historyItem.final_price) < 0.01 &&
                                 value.date === historyItem.date) {
                                 await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
                                 break;
@@ -2708,11 +2691,13 @@
                     }
                 }
 
+                // Remove from local array
                 const localIndex = saleHistory.findIndex(h => h.__backendId === historyId);
                 if (localIndex > -1) {
                     saleHistory.splice(localIndex, 1);
                 }
 
+                // Refresh all views
                 renderHistory();
                 renderProfit();
                 renderProducts();
@@ -3030,7 +3015,7 @@
             return { totalOriginal, totalWithCustomPrice, finalPrice, totalItems, discountAmount };
         }
 
-        // 🔥 MAIN FUNCTION - বাল্ক বিক্রি
+        // BULK SELL CONFIRM
         async function confirmBulkSell() {
             const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
             const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
@@ -3091,7 +3076,14 @@
                     total_sold: (Number(product.total_sold) || 0) + data.qty,
                     last_updated: new Date().toISOString()
                 };
-                await updateProduct(updated);
+                
+                // Update product with the product's __backendId
+                const productIdForUpdate = product.__backendId;
+                if (productIdForUpdate) {
+                    const updateData = { ...updated };
+                    delete updateData.__backendId;
+                    await database.ref(`users/${currentUser.uid}/products/${productIdForUpdate}`).update(updateData);
+                }
 
                 const saleData = {
                     product_id: product.__backendId,
@@ -3138,7 +3130,7 @@
                 totalRevenue += Math.round(finalPricePerProduct);
             }
 
-            // 🔥 Show invoice after all sales
+            // Show invoice after all sales
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
@@ -3196,7 +3188,6 @@
 
             const cat = document.getElementById('f-category').value.trim();
             
-            // Add category if new
             if (cat && !categories.includes(cat)) {
                 categories.push(cat);
                 await saveCategories();
@@ -3254,7 +3245,6 @@
         function confirmDelete(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
             
-            // Close any open three-dot menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 el.classList.remove('show');
             });
@@ -3291,7 +3281,13 @@
 
             const updated = { ...p, stock: (Number(p.stock) || 0) + qty, buy_price: price, total_bought: (Number(p
                     .total_bought) || 0) + qty, last_updated: new Date().toISOString() };
-            await updateProduct(updated);
+            
+            const productId = p.__backendId;
+            if (productId) {
+                const updateData = { ...updated };
+                delete updateData.__backendId;
+                await database.ref(`users/${currentUser.uid}/products/${productId}`).update(updateData);
+            }
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} কেনা হয়েছে`, 'green');
             e.target.reset();
         });
@@ -3315,7 +3311,13 @@
 
             const updated = { ...p, stock: (Number(p.stock) || 0) - qty, total_sold: (Number(p
                     .total_sold) || 0) + qty, last_updated: new Date().toISOString() };
-            await updateProduct(updated);
+            
+            const productId = p.__backendId;
+            if (productId) {
+                const updateData = { ...updated };
+                delete updateData.__backendId;
+                await database.ref(`users/${currentUser.uid}/products/${productId}`).update(updateData);
+            }
 
             const saleData = {
                 product_id: p.__backendId,
@@ -3334,7 +3336,7 @@
             };
             await saveSaleHistory(saleData);
 
-            // 🔥 Show invoice
+            // Show invoice
             showInvoice([saleData]);
 
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
@@ -3367,7 +3369,13 @@
             else newStock = qty;
 
             const updated = { ...p, stock: newStock, last_updated: new Date().toISOString() };
-            await updateProduct(updated);
+            
+            const productId = p.__backendId;
+            if (productId) {
+                const updateData = { ...updated };
+                delete updateData.__backendId;
+                await database.ref(`users/${currentUser.uid}/products/${productId}`).update(updateData);
+            }
             showMsg(msg, `✓ নতুন স্টক: ${newStock}`, 'green');
             e.target.reset();
             document.getElementById('stock-current').textContent = '';
