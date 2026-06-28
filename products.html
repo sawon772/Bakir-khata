@@ -1134,29 +1134,29 @@
 
         let chartInstance = null;
         let currentChartPeriod = 'week';
-
-        // ============================================
-        // THEME MANAGEMENT
-        // ============================================
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeButton(newTheme);
-            if (chartInstance) { updateChart(currentChartPeriod); }
-        }
-
-        function updateThemeButton(theme) {
-            const btn = document.getElementById('theme-toggle-btn');
-            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeButton(savedTheme);
-
+// ============================================
+// থিম টগল ফাংশন - সম্পূর্ণ রিপ্লেস
+// ============================================
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeButton(newTheme);
+    
+    // চার্ট রিফ্রেশ (যদি Reports ট্যাব খোলা থাকে)
+    const reportsTab = document.getElementById('tab-reports');
+    if (reportsTab && !reportsTab.classList.contains('hidden')) {
+        setTimeout(() => {
+            if (saleHistory && saleHistory.length > 0) {
+                updateChart(currentChartPeriod || 'week');
+            } else {
+                showEmptyChart();
+            }
+        }, 200);
+    }
+}
         // ============================================
         // AUTH
         // ============================================
@@ -1212,18 +1212,58 @@
             });
         }
 
-        function loadSaleHistory() {
-            if (!currentUser) return;
-            database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
-                const data = snap.val();
-                saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
-                renderHistory();
-                renderProfit();
-                updateTodaySummary();
-                renderTodayDetails();
-                updateChart(currentChartPeriod);
-            });
+        // ============================================
+// বিক্রি ইতিহাস লোড - সম্পূর্ণ রিপ্লেস
+// ============================================
+function loadSaleHistory() {
+    if (!currentUser) return;
+    database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
+        const data = snap.val();
+        saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
+        renderHistory();
+        renderProfit();
+        updateTodaySummary();
+        renderTodayDetails();
+        
+        // চার্ট আপডেট (যদি Reports ট্যাব খোলা থাকে)
+        const reportsTab = document.getElementById('tab-reports');
+        if (reportsTab && !reportsTab.classList.contains('hidden')) {
+            setTimeout(() => {
+                if (saleHistory && saleHistory.length > 0) {
+                    updateChart(currentChartPeriod || 'week');
+                } else {
+                    showEmptyChart();
+                }
+            }, 100);
         }
+    });
+}
+    
+    // ============================================
+// Reports ট্যাবের জন্য ইভেন্ট লিসেনার - নতুন যোগ করুন
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Reports ট্যাব এর জন্য বিশেষ হ্যান্ডলার
+    const reportsBtn = document.querySelector('[data-tab="reports"]');
+    if (reportsBtn) {
+        reportsBtn.addEventListener('click', function() {
+            // অন্যান্য ট্যাব ক্লিয়ার
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            this.classList.add('tab-active');
+            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+            document.getElementById('tab-reports').classList.remove('hidden');
+            
+            // চার্ট আপডেট - একটু দেরি করে যাতে DOM রেন্ডার হয়
+            setTimeout(() => {
+                if (saleHistory && saleHistory.length > 0) {
+                    updateChart(currentChartPeriod || 'week');
+                } else {
+                    showEmptyChart();
+                }
+            }, 150);
+        });
+    }
+});
 
         function loadCustomers() {
             if (currentUser) {
@@ -1498,109 +1538,193 @@
             document.getElementById('today-sale-profit').textContent = 'লাভ: ৳' + totalProfit.toLocaleString('bn-BD');
         }
 
-        // ============================================
-        // CHART
-        // ============================================
-        function updateChart(period = 'week') {
-            currentChartPeriod = period;
-            const ctx = document.getElementById('sales-chart').getContext('2d');
-            
-            document.querySelectorAll('.chart-period-btn').forEach(btn => {
-                btn.classList.remove('action-btn-primary');
-                btn.classList.add('action-btn-secondary');
+       // ============================================
+// চার্ট আপডেট ফাংশন - সম্পূর্ণ রিপ্লেস
+// ============================================
+function updateChart(period = 'week') {
+    currentChartPeriod = period;
+    const ctx = document.getElementById('sales-chart');
+    if (!ctx) {
+        console.error('❌ চার্ট ক্যানভাস পাওয়া যায়নি!');
+        return;
+    }
+    
+    const context = ctx.getContext('2d');
+    
+    // চার্ট বাটন আপডেট
+    document.querySelectorAll('.chart-period-btn').forEach(btn => {
+        btn.classList.remove('action-btn-primary');
+        btn.classList.add('action-btn-secondary');
+    });
+    const activeBtn = document.querySelector(`.chart-period-btn[onclick*="${period}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('action-btn-primary');
+        activeBtn.classList.remove('action-btn-secondary');
+    }
+    
+    // ডাটা প্রস্তুত
+    let labels = [];
+    let data = [];
+    let today = new Date();
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#cbd5e1' : '#4a5568';
+    const gridColor = isDark ? '#334155' : '#e2e8f0';
+    
+    // saleHistory চেক করুন
+    const historyData = saleHistory || [];
+    
+    if (period === 'week') {
+        // গত ৭ দিনের ডাটা
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            labels.push(d.toLocaleDateString('bn-BD', { weekday: 'short' }));
+            const daySales = historyData.filter(h => h.date === dateStr);
+            const total = daySales.reduce((sum, h) => sum + (h.final_price || 0), 0);
+            data.push(total);
+        }
+    } else if (period === 'month') {
+        // গত ৩০ দিনের ডাটা
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date(today);
+            d.setDate(today.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            labels.push(d.getDate().toString());
+            const daySales = historyData.filter(h => h.date === dateStr);
+            data.push(daySales.reduce((sum, h) => sum + (h.final_price || 0), 0));
+        }
+    } else {
+        // গত ১২ মাসের ডাটা
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(today);
+            d.setMonth(today.getMonth() - i);
+            labels.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
+            const monthSales = historyData.filter(h => {
+                const hDate = new Date(h.date);
+                return hDate.getMonth() === d.getMonth() && hDate.getFullYear() === d.getFullYear();
             });
-            const activeBtn = document.querySelector(`.chart-period-btn[onclick="updateChart('${period}')"]`);
-            if (activeBtn) {
-                activeBtn.classList.add('action-btn-primary');
-                activeBtn.classList.remove('action-btn-secondary');
-            }
-            
-            let labels = [];
-            let data = [];
-            let today = new Date();
-            
-            if (period === 'week') {
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() - i);
-                    const dateStr = d.toISOString().split('T')[0];
-                    labels.push(d.toLocaleDateString('bn-BD', { weekday: 'short' }));
-                    const daySales = saleHistory.filter(h => h.date === dateStr);
-                    data.push(daySales.reduce((sum, h) => sum + h.final_price, 0));
-                }
-            } else if (period === 'month') {
-                for (let i = 29; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setDate(today.getDate() - i);
-                    const dateStr = d.toISOString().split('T')[0];
-                    labels.push(d.getDate().toString());
-                    const daySales = saleHistory.filter(h => h.date === dateStr);
-                    data.push(daySales.reduce((sum, h) => sum + h.final_price, 0));
-                }
-            } else {
-                for (let i = 11; i >= 0; i--) {
-                    const d = new Date(today);
-                    d.setMonth(today.getMonth() - i);
-                    labels.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
-                    const monthSales = saleHistory.filter(h => {
-                        const hDate = new Date(h.date);
-                        return hDate.getMonth() === d.getMonth() && hDate.getFullYear() === d.getFullYear();
-                    });
-                    data.push(monthSales.reduce((sum, h) => sum + h.final_price, 0));
-                }
-            }
+            data.push(monthSales.reduce((sum, h) => sum + (h.final_price || 0), 0));
+        }
+    }
 
-            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-            const textColor = isDark ? '#cbd5e1' : '#4a5568';
-            const gridColor = isDark ? '#334155' : '#e2e8f0';
+    // পুরনো চার্ট ডেস্ট্রয়
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
 
-            if (chartInstance) { chartInstance.destroy(); }
-
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'বিক্রি (৳)',
-                        data: data,
-                        backgroundColor: 'rgba(13, 148, 136, 0.6)',
-                        borderColor: 'rgba(13, 148, 136, 1)',
-                        borderWidth: 2,
-                        borderRadius: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: { color: textColor, font: { size: 12 } }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: textColor,
-                                font: { size: 10 },
-                                callback: function(value) { return '৳' + value.toLocaleString(); }
-                            },
-                            grid: { color: gridColor }
-                        },
-                        x: {
-                            ticks: {
-                                color: textColor,
-                                font: { size: 10 },
-                                maxRotation: 45,
-                                autoSkip: true
-                            },
-                            grid: { color: gridColor }
+    // নতুন চার্ট তৈরি
+    try {
+        chartInstance = new Chart(context, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'বিক্রি (৳)',
+                    data: data,
+                    backgroundColor: 'rgba(13, 148, 136, 0.6)',
+                    borderColor: 'rgba(13, 148, 136, 1)',
+                    borderWidth: 2,
+                    borderRadius: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { 
+                            color: textColor, 
+                            font: { size: 12 } 
                         }
                     }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 },
+                            callback: function(value) { 
+                                return '৳' + value.toLocaleString(); 
+                            }
+                        },
+                        grid: { color: gridColor }
+                    },
+                    x: {
+                        ticks: {
+                            color: textColor,
+                            font: { size: 10 },
+                            maxRotation: 45,
+                            autoSkip: true
+                        },
+                        grid: { color: gridColor }
+                    }
                 }
-            });
-        }
+            }
+        });
+        
+        console.log(`✅ চার্ট আপডেট: ${period} - ${data.length} ডাটা পয়েন্ট`);
+        
+    } catch (error) {
+        console.error('❌ চার্ট তৈরি ব্যর্থ:', error);
+        showToast('চার্ট লোড করতে সমস্যা!', 'error');
+    }
+}
 
+    // ============================================
+// খালি ডাটার জন্য চার্ট ফাংশন - নতুন যোগ করুন
+// ============================================
+function showEmptyChart() {
+    const ctx = document.getElementById('sales-chart');
+    if (!ctx) return;
+    
+    if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+    }
+    
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const textColor = isDark ? '#cbd5e1' : '#4a5568';
+    const gridColor = isDark ? '#334155' : '#e2e8f0';
+    
+    chartInstance = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি', 'রবি'],
+            datasets: [{
+                label: 'বিক্রি (৳)',
+                data: [0, 0, 0, 0, 0, 0, 0],
+                backgroundColor: 'rgba(13, 148, 136, 0.3)',
+                borderColor: 'rgba(13, 148, 136, 0.6)',
+                borderWidth: 2,
+                borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: textColor, font: { size: 12 } }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: textColor, font: { size: 10 } },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    ticks: { color: textColor, font: { size: 10 } },
+                    grid: { color: gridColor }
+                }
+            }
+        }
+    });
+}
+    
         // ============================================
         // PDF EXPORT
         // ============================================
@@ -3409,24 +3533,51 @@
             container.appendChild(el);
             setTimeout(() => el.remove(), duration);
         }
-
-        // ============================================
-        // TABS
-        // ============================================
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-                btn.classList.add('tab-active');
-                document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
-                document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
-                lucide.createIcons();
-                if (btn.dataset.tab === 'history') renderHistory();
-                if (btn.dataset.tab === 'profit') renderProfit();
-                if (btn.dataset.tab === 'today-details') renderTodayDetails();
-                if (btn.dataset.tab === 'customers') renderCustomers();
-                if (btn.dataset.tab === 'categories') renderCategories();
-            });
-        });
+// ============================================
+// ট্যাব ইভেন্ট হ্যান্ডলার - এই অংশটি সংশোধন করুন
+// ============================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+        btn.classList.add('tab-active');
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+        lucide.createIcons();
+        
+        // বিভিন্ন ট্যাবের জন্য বিশেষ কাজ
+        if (btn.dataset.tab === 'history') renderHistory();
+        if (btn.dataset.tab === 'profit') renderProfit();
+        if (btn.dataset.tab === 'today-details') renderTodayDetails();
+        if (btn.dataset.tab === 'customers') renderCustomers();
+        if (btn.dataset.tab === 'categories') renderCategories();
+        
+        // 🔥 Reports ট্যাবের জন্য চার্ট আপডেট
+        if (btn.dataset.tab === 'reports') {
+            setTimeout(() => {
+                if (saleHistory && saleHistory.length > 0) {
+                    updateChart(currentChartPeriod || 'week');
+                } else {
+                    showEmptyChart();
+                }
+            }, 100);
+        }
+    });
+});
+    
+    // ============================================
+// পেজ লোড হলে চেক করুন - নতুন যোগ করুন
+// ============================================
+// পেজ লোডের পর Reports ট্যাব খোলা থাকলে চার্ট দেখান
+setTimeout(() => {
+    const reportsTab = document.getElementById('tab-reports');
+    if (reportsTab && !reportsTab.classList.contains('hidden')) {
+        if (saleHistory && saleHistory.length > 0) {
+            updateChart('week');
+        } else {
+            showEmptyChart();
+        }
+    }
+}, 500);
 
         document.getElementById('search-input')?.addEventListener('input', renderProducts);
         document.getElementById('filter-category')?.addEventListener('change', renderProducts);
