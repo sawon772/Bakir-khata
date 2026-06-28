@@ -140,14 +140,39 @@
         .action-btn-sm { padding: 4px 10px; font-size: 11px; }
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
         .btn-group .action-btn { margin: 0; }
-        
-        /* Customer info in sell form */
         .customer-info-fields { background: var(--bg-input); border-radius: 10px; padding: 10px; margin-top: 8px; border: 1px solid var(--border-color); }
         .customer-info-fields input { width: 100%; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px; background: var(--bg-card); color: var(--text-primary); margin-bottom: 6px; }
         .customer-info-fields input:focus { border-color: #0d9488; outline: none; ring: 2px solid #0d9488; }
         .customer-info-fields label { font-size: 11px; font-weight: 500; color: var(--text-muted); }
         .toggle-customer-btn { cursor: pointer; font-size: 12px; color: #0d9488; font-weight: 500; }
         .toggle-customer-btn:hover { text-decoration: underline; }
+        
+        /* স্টক সার্চ ড্রপডাউন উন্নত */
+        .stock-search-wrapper { position: relative; }
+        .stock-search-input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: var(--bg-card); color: var(--text-primary); }
+        .stock-search-input:focus { border-color: #0d9488; outline: none; box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2); }
+        .stock-search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 10px; max-height: 200px; overflow-y: auto; z-index: 50; display: none; box-shadow: 0 8px 25px var(--shadow-color); }
+        .stock-search-results.show { display: block; }
+        .stock-search-item { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .stock-search-item:hover { background: #0d9488; color: white; }
+        .stock-search-item:last-child { border-bottom: none; }
+        .stock-search-item .stock-info { font-size: 11px; color: var(--text-muted); }
+        .stock-search-item:hover .stock-info { color: rgba(255,255,255,0.8); }
+        .selected-stock-display { background: var(--bg-input); border-radius: 8px; padding: 8px 12px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .selected-stock-display .clear-btn { cursor: pointer; color: #dc2626; font-size: 16px; }
+        
+        /* রশিদ প্রিভিউ বাটন */
+        .receipt-preview-btn { 
+            background: #8b5cf6; 
+            color: white; 
+            padding: 2px 10px; 
+            border-radius: 6px; 
+            font-size: 11px; 
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .receipt-preview-btn:hover { background: #7c3aed; transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -344,10 +369,9 @@
             </div>
         </section>
 
-        <!-- Buy/Sell Tab - আপডেটেড (কাস্টমার তথ্য সহ) -->
+        <!-- Buy/Sell Tab -->
         <section id="tab-buy-sell" class="tab-content hidden fade-in">
             <div class="grid md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                <!-- Buy Section -->
                 <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover-lift">
                     <h3 class="font-semibold text-sm mb-3 gradient-text">🛒 ক্রয়</h3>
                     <form id="buy-form" class="space-y-2">
@@ -360,8 +384,6 @@
                     </form>
                     <div id="buy-msg" class="hidden text-center text-xs mt-1"></div>
                 </div>
-
-                <!-- Sell Section - আপডেটেড (কাস্টমার তথ্য সহ) -->
                 <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100 hover-lift">
                     <h3 class="font-semibold text-sm mb-3 gradient-text">💰 বিক্রয়</h3>
                     <form id="sell-form" class="space-y-2">
@@ -371,8 +393,6 @@
                             <input id="sell-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
                         </div>
                         <div id="sell-stock-info" class="text-xs text-gray-400"></div>
-                        
-                        <!-- 🔥 কাস্টমার তথ্য ফিল্ড - ঐচ্ছিক -->
                         <div class="mt-2">
                             <span class="toggle-customer-btn" onclick="toggleCustomerFields()">➕ গ্রাহকের তথ্য দিন (ঐচ্ছিক)</span>
                             <div id="customer-fields" class="customer-info-fields hidden">
@@ -384,7 +404,6 @@
                                 <input type="text" id="sell-customer-address" placeholder="ঠিকানা (ঐচ্ছিক)" class="w-full">
                             </div>
                         </div>
-                        
                         <button type="submit" class="w-full action-btn action-btn-success py-2 rounded-lg font-medium">✅ বিক্রি</button>
                     </form>
                     <div id="sell-msg" class="hidden text-center text-xs mt-1"></div>
@@ -392,16 +411,34 @@
             </div>
         </section>
 
-        <!-- Stock Update Tab -->
+        <!-- Stock Update Tab - উন্নত সার্চ সহ -->
         <section id="tab-stock-update" class="tab-content hidden fade-in">
             <div class="bg-white rounded-xl p-6 shadow-lg max-w-md mx-auto border border-gray-100">
                 <h3 class="font-semibold text-sm mb-4 gradient-text">📦 স্টক আপডেট</h3>
                 <form id="stock-form" class="space-y-3">
-                    <select id="stock-product" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></select>
+                    <!-- 🔥 উন্নত সার্চ -->
+                    <div class="stock-search-wrapper">
+                        <input type="text" id="stock-search-input" placeholder="🔍 পণ্য খুঁজুন (নাম বা কোড)" 
+                            class="stock-search-input" oninput="filterStockSearch(this.value)" onfocus="filterStockSearch(this.value)">
+                        <div id="stock-search-results" class="stock-search-results"></div>
+                    </div>
+                    
+                    <div id="selected-stock-display" class="selected-stock-display hidden">
+                        <div>
+                            <span id="selected-stock-name" class="font-medium">পণ্য</span>
+                            <span id="selected-stock-detail" class="text-xs text-gray-400 ml-2"></span>
+                        </div>
+                        <button type="button" onclick="clearStockSelection()" class="clear-btn">✕</button>
+                    </div>
+                    
+                    <input type="hidden" id="stock-product" value="">
                     <div id="stock-current" class="text-xs text-gray-500"></div>
+                    
                     <div class="grid grid-cols-2 gap-3">
                         <select id="stock-action" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
-                            <option value="add">যোগ (+)</option><option value="subtract">বিয়োগ (-)</option><option value="set">নির্ধারণ (=)</option>
+                            <option value="add">যোগ (+)</option>
+                            <option value="subtract">বিয়োগ (-)</option>
+                            <option value="set">নির্ধারণ (=)</option>
                         </select>
                         <input id="stock-qty" type="number" min="0" placeholder="পরিমাণ" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
                     </div>
@@ -448,7 +485,7 @@
             </div>
         </section>
         
-        <!-- History Tab -->
+        <!-- History Tab - রশিদ প্রিভিউ সহ -->
         <section id="tab-history" class="tab-content hidden fade-in">
             <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
@@ -554,7 +591,7 @@
         </section>
     </main>
 
-    <!-- Bulk Sell Modal - আপডেটেড (কাস্টমার তথ্য সহ) -->
+    <!-- Bulk Sell Modal -->
     <div id="bulk-sell-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl p-6 max-w-2xl w-full shadow-2xl max-h-[90vh] overflow-y-auto custom-scroll border border-gray-100">
             <div class="flex justify-between items-center mb-4">
@@ -565,7 +602,6 @@
 
             <div id="bulk-products-list" class="max-h-60 overflow-y-auto space-y-2 mb-3 border rounded-lg p-2 bg-gray-50 custom-scroll"></div>
 
-            <!-- 🔥 বাল্ক বিক্রিতে কাস্টমার তথ্য -->
             <div class="mb-3">
                 <span class="toggle-customer-btn" onclick="toggleBulkCustomerFields()">➕ গ্রাহকের তথ্য দিন (ঐচ্ছিক)</span>
                 <div id="bulk-customer-fields" class="customer-info-fields hidden">
@@ -636,7 +672,7 @@
     <div id="toast-container" class="fixed top-16 right-3 z-50 space-y-1.5 max-w-xs w-full"></div>
 
     <!-- ============================================ -->
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT - সম্পূর্ণ -->
     <!-- ============================================ -->
     <script>
         // ============================================
@@ -675,22 +711,95 @@
         let profitEndDate = '';
         let chartInstance = null;
         let currentChartPeriod = 'week';
+        let selectedStockProduct = null;
 
         // ============================================
         // TOGGLE CUSTOMER FIELDS
         // ============================================
         function toggleCustomerFields() {
             const fields = document.getElementById('customer-fields');
-            fields.classList.toggle('hidden');
+            if (fields) fields.classList.toggle('hidden');
         }
 
         function toggleBulkCustomerFields() {
             const fields = document.getElementById('bulk-customer-fields');
-            fields.classList.toggle('hidden');
+            if (fields) fields.classList.toggle('hidden');
         }
 
         // ============================================
-        // THIEM TOGGLE
+        // 🆕 স্টক সার্চ ফাংশন
+        // ============================================
+        function filterStockSearch(value) {
+            const query = value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('stock-search-results');
+            const display = document.getElementById('selected-stock-display');
+            
+            if (!query) {
+                resultsContainer.classList.remove('show');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+            
+            const matches = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                (p.code && p.code.toLowerCase().includes(query))
+            ).slice(0, 15);
+            
+            if (matches.length === 0) {
+                resultsContainer.innerHTML = `<div class="p-3 text-center text-gray-400">কোনো পণ্য পাওয়া যায়নি</div>`;
+                resultsContainer.classList.add('show');
+                return;
+            }
+            
+            resultsContainer.innerHTML = matches.map(p => `
+                <div class="stock-search-item" onclick="selectStockProduct('${p.__backendId}')">
+                    <span>${p.name}</span>
+                    <span class="stock-info">স্টক: ${p.stock || 0} ${p.unit || 'পিস'} | ${p.code || 'কোড নেই'}</span>
+                </div>
+            `).join('');
+            
+            resultsContainer.classList.add('show');
+        }
+
+        function selectStockProduct(productId) {
+            const product = allProducts.find(p => p.__backendId === productId);
+            if (!product) return;
+            
+            selectedStockProduct = product;
+            document.getElementById('stock-product').value = productId;
+            
+            // ডিসপ্লে আপডেট
+            const display = document.getElementById('selected-stock-display');
+            document.getElementById('selected-stock-name').textContent = product.name;
+            document.getElementById('selected-stock-detail').textContent = `স্টক: ${product.stock || 0} ${product.unit || 'পিস'} | ${product.code || ''}`;
+            display.classList.remove('hidden');
+            
+            document.getElementById('stock-current').textContent = `বর্তমান স্টক: ${product.stock || 0} ${product.unit || 'পিস'}`;
+            
+            // সার্চ রিসাল্ট বন্ধ
+            document.getElementById('stock-search-results').classList.remove('show');
+            document.getElementById('stock-search-input').value = product.name;
+        }
+
+        function clearStockSelection() {
+            selectedStockProduct = null;
+            document.getElementById('stock-product').value = '';
+            document.getElementById('selected-stock-display').classList.add('hidden');
+            document.getElementById('stock-current').textContent = '';
+            document.getElementById('stock-search-input').value = '';
+            document.getElementById('stock-search-results').classList.remove('show');
+        }
+
+        // সার্চ রেজাল্ট বন্ধ (বাইরে ক্লিক করলে)
+        document.addEventListener('click', function(e) {
+            const wrapper = document.querySelector('.stock-search-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('stock-search-results').classList.remove('show');
+            }
+        });
+
+        // ============================================
+        // THEME TOGGLE
         // ============================================
         function toggleTheme() {
             const html = document.documentElement;
@@ -718,7 +827,7 @@
 
         function updateThemeButton(theme) {
             const btn = document.getElementById('theme-toggle-btn');
-            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+            if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
         }
 
         const savedTheme = localStorage.getItem('theme') || 'light';
@@ -1199,6 +1308,7 @@
                 return;
             }
             hideChartError();
+            
             document.querySelectorAll('.chart-period-btn').forEach(btn => {
                 btn.classList.remove('action-btn-primary');
                 btn.classList.add('action-btn-secondary');
@@ -1209,13 +1319,16 @@
                 activeBtn.classList.remove('action-btn-secondary');
             }
             currentChartPeriod = period;
+            
             const { labels, data } = prepareChartData(period);
             console.log('📊 ডাটা প্রস্তুত:', { labels: labels.length, data: data.length });
+            
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             const textColor = isDark ? '#cbd5e1' : '#4a5568';
             const gridColor = isDark ? '#334155' : '#e2e8f0';
             const bgColor = isDark ? 'rgba(13, 148, 136, 0.4)' : 'rgba(13, 148, 136, 0.6)';
             const borderColor = isDark ? 'rgba(13, 148, 136, 0.8)' : 'rgba(13, 148, 136, 1)';
+            
             if (chartInstance) {
                 try {
                     chartInstance.destroy();
@@ -1482,7 +1595,6 @@
             const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
             const shopName = document.getElementById('shop-name').textContent || 'বাকির খাতা';
 
-            // Get customer info if available
             const customerInfo = items[0].customer_name ? `
                 <div style="margin-top: 8px; padding: 8px; background: var(--bg-input); border-radius: 8px; font-size: 12px;">
                     <div><strong>👤 গ্রাহক:</strong> ${items[0].customer_name || ''}</div>
@@ -1623,6 +1735,21 @@
         document.getElementById('invoice-modal')?.addEventListener('click', function(e) {
             if (e.target === this) { closeInvoice(); }
         });
+
+        // ============================================
+        // 🆕 রশিদ প্রিভিউ ফাংশন (ইতিহাস থেকে)
+        // ============================================
+        function showReceiptPreview(historyId) {
+            const historyItem = saleHistory.find(h => h.__backendId === historyId);
+            if (!historyItem) {
+                showToast('লেনদেন পাওয়া যায়নি!', 'error');
+                return;
+            }
+            
+            // একক লেনদেনকে অ্যারেতে কনভার্ট করুন
+            const saleData = [historyItem];
+            showInvoice(saleData);
+        }
 
         // ============================================
         // SAVE FUNCTIONS
@@ -1859,6 +1986,7 @@
                 const rowClass = isSelected ? 'selected-row' : '';
                 let stockBadge = '';
                 if (p.stock === 0) { stockBadge = `<span class="badge-out-stock">শেষ</span>`; } else if (p.stock <= 5) { stockBadge = `<span class="badge-low-stock">কম</span>`; }
+                
                 const menuItems = currentUser ? `
                     <button onclick="showProductDetail('${p.__backendId}')">📄 বিস্তারিত</button>
                     <button onclick="editProduct('${p.__backendId}')">✏️ এডিট</button>
@@ -1868,6 +1996,7 @@
                     <button onclick="showProductDetail('${p.__backendId}')">📄 বিস্তারিত</button>
                     <span style="padding: 8px 16px; color: #94a3b8; font-size: 12px;">🔒 লগইন করুন</span>
                 `;
+                
                 return `<tr class="hover:bg-gray-50 transition cursor-pointer ${rowClass}" onclick="toggleProductSelect('${p.__backendId}')">
                         <td class="text-center p-2"><input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleProductSelect('${p.__backendId}')" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500"></td>
                         <td class="text-center p-2">${img}</td>
@@ -1879,7 +2008,7 @@
                         <td class="text-right p-2 ${stockClass}">${p.stock||0} ${p.unit||''} ${stockBadge}</td>
                         <td class="text-center p-2" onclick="event.stopPropagation();">
                             <div class="three-dot-menu">
-                                <button onclick="toggleThreeDotMenu(this)" class="action-btn action-btn-secondary action-btn-sm" style="padding: 4px 10px; font-size: 16px; line-height: 1;">⋮</button>
+                                <button onclick="toggleThreeDotMenu(event, this)" class="action-btn action-btn-secondary action-btn-sm" style="padding: 4px 10px; font-size: 16px; line-height: 1;">⋮</button>
                                 <div class="three-dot-menu-content">${menuItems}</div>
                             </div>
                         </td>
@@ -1891,14 +2020,20 @@
         // ============================================
         // THREE-DOT MENU
         // ============================================
-        function toggleThreeDotMenu(btn) {
+        function toggleThreeDotMenu(event, btn) {
+            event.stopPropagation();
             const menu = btn.parentElement.querySelector('.three-dot-menu-content');
-            document.querySelectorAll('.three-dot-menu-content').forEach(el => { if (el !== menu) el.classList.remove('show'); });
+            document.querySelectorAll('.three-dot-menu-content').forEach(el => {
+                if (el !== menu) el.classList.remove('show');
+            });
             menu.classList.toggle('show');
         }
+        
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.three-dot-menu')) {
-                document.querySelectorAll('.three-dot-menu-content').forEach(el => { el.classList.remove('show'); });
+                document.querySelectorAll('.three-dot-menu-content').forEach(el => {
+                    el.classList.remove('show');
+                });
             }
         });
 
@@ -1909,13 +2044,18 @@
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product) { showToast('পণ্য পাওয়া যায়নি!', 'error'); return; }
             document.querySelector('[data-tab="stock-update"]').click();
-            const stockSelect = document.getElementById('stock-product');
-            if (stockSelect) {
-                stockSelect.value = productId;
-                const event = new Event('change');
-                stockSelect.dispatchEvent(event);
-            }
-            setTimeout(() => { document.getElementById('stock-qty')?.focus(); }, 300);
+            
+            // স্টক সার্চে প্রি-সিলেক্ট করা
+            setTimeout(() => {
+                selectedStockProduct = product;
+                document.getElementById('stock-product').value = productId;
+                document.getElementById('selected-stock-name').textContent = product.name;
+                document.getElementById('selected-stock-detail').textContent = `স্টক: ${product.stock || 0} ${product.unit || 'পিস'} | ${product.code || ''}`;
+                document.getElementById('selected-stock-display').classList.remove('hidden');
+                document.getElementById('stock-current').textContent = `বর্তমান স্টক: ${product.stock || 0} ${product.unit || 'পিস'}`;
+                document.getElementById('stock-search-input').value = product.name;
+                document.getElementById('stock-qty')?.focus();
+            }, 300);
         }
 
         // ============================================
@@ -1925,7 +2065,9 @@
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
             const p = allProducts.find(x => x.__backendId === id);
             if (!p) { showToast('❌ পণ্য পাওয়া যায়নি!', 'error'); return; }
+            
             document.querySelectorAll('.three-dot-menu-content').forEach(el => { el.classList.remove('show'); });
+            
             editingProduct = p;
             document.getElementById('f-name').value = p.name || '';
             document.getElementById('f-category').value = p.category || '';
@@ -1967,7 +2109,7 @@
 
         function updateSelects() {
             const opts = '<option value="">-- বাছাই --</option>' + allProducts.map(p => `<option value="${p.__backendId}">${p.name} (${p.stock||0})</option>`).join('');
-            ['buy-product', 'sell-product', 'stock-product'].forEach(id => {
+            ['buy-product', 'sell-product'].forEach(id => {
                 const sel = document.getElementById(id);
                 if (sel) { const cur = sel.value;
                     sel.innerHTML = opts; if (allProducts.find(p => p.__backendId === cur)) sel.value = cur; }
@@ -2005,7 +2147,7 @@
         }
 
         // ============================================
-        // HISTORY
+        // HISTORY - রশিদ প্রিভিউ সহ
         // ============================================
         document.querySelectorAll('.filter-btn-history').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -2067,6 +2209,7 @@
                 const product = allProducts.find(p => p.__backendId === h.product_id);
                 const priceDiff = product ? h.unit_price - product.sell_price : 0;
                 const priceDiffHtml = priceDiff !== 0 ? `<span class="text-xs ${priceDiff > 0 ? 'text-green-600' : 'text-red-600'}">(${priceDiff > 0 ? '+' : ''}${priceDiff} টাকা)</span>` : '';
+                
                 return `<div class="history-item bg-gray-50 rounded-lg p-3 flex justify-between items-center hover:shadow-sm transition">
                         <div class="flex-1">
                             <div class="flex items-center gap-2 flex-wrap">
@@ -2084,7 +2227,10 @@
                         <div class="text-right ml-4">
                             <div class="font-bold text-teal-700">৳${h.final_price.toLocaleString('bn-BD')}</div>
                             <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
-                            <button onclick="returnSale('${h.__backendId}')" class="mt-1 action-btn action-btn-warning action-btn-sm">↩️ রিটার্ন</button>
+                            <div class="flex gap-1 mt-1 justify-end">
+                                <button onclick="showReceiptPreview('${h.__backendId}')" class="receipt-preview-btn">🧾 রশিদ</button>
+                                <button onclick="returnSale('${h.__backendId}')" class="action-btn action-btn-warning action-btn-sm">↩️</button>
+                            </div>
                         </div>
                     </div>`;
             }).join('');
@@ -2381,7 +2527,6 @@
             const customerId = document.getElementById('due-customer-select').value;
             const comment = document.getElementById('bulk-comment').value.trim();
 
-            // 🔥 বাল্ক কাস্টমার তথ্য
             const customerName = document.getElementById('bulk-customer-name').value.trim() || '';
             const customerMobile = document.getElementById('bulk-customer-mobile').value.trim() || '';
             const customerAddress = document.getElementById('bulk-customer-address').value.trim() || '';
@@ -2444,7 +2589,12 @@
                 soldCount += data.qty;
                 totalRevenue += Math.round(finalPricePerProduct);
             }
-            if (allSales.length > 0) { showInvoice(allSales); }
+            
+            // 🔥 ইনভয়েস দেখান
+            if (allSales.length > 0) { 
+                showInvoice(allSales); 
+            }
+            
             selectedProducts.clear();
             updateBulkSellBar();
             renderAll();
@@ -2531,7 +2681,7 @@
             deletingProduct = null; });
 
         // ============================================
-        // BUY / SELL - আপডেটেড (কাস্টমার তথ্য সহ)
+        // BUY / SELL
         // ============================================
         document.getElementById('buy-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -2562,7 +2712,6 @@
             if (qty > (Number(p.stock) || 0)) { showMsg(msg, 'স্টক কম!', 'red'); return; }
             if (price === 0) { price = p.sell_price || 0; }
 
-            // 🔥 কাস্টমার তথ্য নিন
             const customerName = document.getElementById('sell-customer-name').value.trim() || '';
             const customerMobile = document.getElementById('sell-customer-mobile').value.trim() || '';
             const customerAddress = document.getElementById('sell-customer-address').value.trim() || '';
@@ -2588,11 +2737,13 @@
                 created_at: new Date().toISOString()
             };
             await saveSaleHistory(saleData);
+            
+            // 🔥 ইনভয়েস দেখান
             showInvoice([saleData]);
+            
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
             e.target.reset();
             document.getElementById('sell-stock-info').textContent = '';
-            // কাস্টমার ফিল্ড রিসেট
             document.getElementById('sell-customer-name').value = '';
             document.getElementById('sell-customer-mobile').value = '';
             document.getElementById('sell-customer-address').value = '';
@@ -2611,20 +2762,34 @@
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
             const msg = document.getElementById('stock-msg');
             msg.classList.add('hidden');
+            
             const pid = document.getElementById('stock-product').value;
+            if (!pid) { showMsg(msg, 'পণ্য নির্বাচন করুন!', 'red'); return; }
+            
             const action = document.getElementById('stock-action').value;
             const qty = parseInt(document.getElementById('stock-qty').value) || 0;
             const p = allProducts.find(x => x.__backendId === pid);
             if (!p) { showMsg(msg, 'পণ্য বাছাই করুন', 'red'); return; }
+            
+            if (qty <= 0 && action !== 'set') {
+                showMsg(msg, 'সঠিক পরিমাণ দিন', 'red');
+                return;
+            }
+
             let newStock = Number(p.stock) || 0;
             if (action === 'add') newStock += qty;
             else if (action === 'subtract') newStock = Math.max(0, newStock - qty);
             else newStock = qty;
+
             const updated = { ...p, stock: newStock, last_updated: new Date().toISOString() };
             await updateProduct(updated);
             showMsg(msg, `✓ নতুন স্টক: ${newStock}`, 'green');
+            
+            // স্টক ডিসপ্লে আপডেট
+            document.getElementById('stock-current').textContent = `বর্তমান স্টক: ${newStock} ${p.unit || 'পিস'}`;
+            document.getElementById('selected-stock-detail').textContent = `স্টক: ${newStock} ${p.unit || 'পিস'} | ${p.code || ''}`;
+            
             e.target.reset();
-            document.getElementById('stock-current').textContent = '';
         });
 
         // ============================================
@@ -2634,11 +2799,6 @@
             const p = allProducts.find(x => x.__backendId === e.target.value);
             document.getElementById('sell-stock-info').textContent = p ? `স্টক: ${p.stock||0} ${p.unit||''} | বিক্রয় মূল্য: ৳${p.sell_price||0}` : '';
             if (p) { document.getElementById('sell-price').value = p.sell_price || ''; }
-        });
-
-        document.getElementById('stock-product')?.addEventListener('change', (e) => {
-            const p = allProducts.find(x => x.__backendId === e.target.value);
-            document.getElementById('stock-current').textContent = p ? `বর্তমান স্টক: ${p.stock||0} ${p.unit||''}` : '';
         });
 
         // ============================================
