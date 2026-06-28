@@ -871,46 +871,46 @@
                 <div id="stock-msg" class="hidden text-center text-xs mt-1"></div>
             </div>
         </section>
-<!-- ============================================ -->
-<!-- Reports Tab - সম্পূর্ণ রিপ্লেস করুন -->
-<!-- ============================================ -->
-<section id="tab-reports" class="tab-content hidden fade-in">
-    <!-- Chart Section -->
-    <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-sm gradient-text">📈 সাপ্তাহিক বিক্রি</h3>
-            <div class="btn-group" id="chart-btn-group">
-                <button onclick="updateChart('week')" class="chart-period-btn action-btn action-btn-primary action-btn-sm" data-period="week">সপ্তাহ</button>
-                <button onclick="updateChart('month')" class="chart-period-btn action-btn action-btn-secondary action-btn-sm" data-period="month">মাস</button>
-                <button onclick="updateChart('year')" class="chart-period-btn action-btn action-btn-secondary action-btn-sm" data-period="year">বছর</button>
-            </div>
-        </div>
-        <div class="h-64" id="chart-container">
-            <canvas id="sales-chart"></canvas>
-        </div>
-        <div id="chart-error" class="hidden text-red-500 text-center text-sm mt-2"></div>
-    </div>
 
-    <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
-            <h4 class="font-semibold text-sm mb-3 gradient-text">📂 ক্যাটাগরি</h4>
-            <div id="report-category-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
-        </div>
-        <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
-            <h4 class="font-semibold text-sm mb-3 gradient-text">⚠️ কম স্টক</h4>
-            <div id="report-low-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
-            <p id="no-low-stock" class="text-green-600 text-sm hidden">✅ সব ঠিক আছে</p>
-        </div>
-        <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
-            <h4 class="font-semibold text-sm mb-3 gradient-text">📈 লাভ মার্জিন</h4>
-            <div id="report-profit-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
-        </div>
-        <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
-            <h4 class="font-semibold text-sm mb-3 gradient-text">📊 সারাংশ</h4>
-            <div id="report-summary-body" class="space-y-1 text-sm"></div>
-        </div>
-    </div>
-</section>
+        <!-- ============================================ -->
+        <!-- Reports Tab -->
+        <!-- ============================================ -->
+        <section id="tab-reports" class="tab-content hidden fade-in">
+            <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold text-sm gradient-text">📈 সাপ্তাহিক বিক্রি</h3>
+                    <div class="btn-group" id="chart-btn-group">
+                        <button onclick="updateChart('week')" class="chart-period-btn action-btn action-btn-primary action-btn-sm" data-period="week">সপ্তাহ</button>
+                        <button onclick="updateChart('month')" class="chart-period-btn action-btn action-btn-secondary action-btn-sm" data-period="month">মাস</button>
+                        <button onclick="updateChart('year')" class="chart-period-btn action-btn action-btn-secondary action-btn-sm" data-period="year">বছর</button>
+                    </div>
+                </div>
+                <div class="h-64" id="chart-container">
+                    <canvas id="sales-chart"></canvas>
+                </div>
+                <div id="chart-error" class="hidden text-red-500 text-center text-sm mt-2"></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📂 ক্যাটাগরি</h4>
+                    <div id="report-category-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">⚠️ কম স্টক</h4>
+                    <div id="report-low-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                    <p id="no-low-stock" class="text-green-600 text-sm hidden">✅ সব ঠিক আছে</p>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📈 লাভ মার্জিন</h4>
+                    <div id="report-profit-body" class="space-y-1 text-sm custom-scroll max-h-60 overflow-y-auto"></div>
+                </div>
+                <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
+                    <h4 class="font-semibold text-sm mb-3 gradient-text">📊 সারাংশ</h4>
+                    <div id="report-summary-body" class="space-y-1 text-sm"></div>
+                </div>
+            </div>
+        </section>
         
         <!-- History Tab -->
         <section id="tab-history" class="tab-content hidden fade-in">
@@ -1002,7 +1002,7 @@
             </div>
         </section>
 
-        <!-- Categories Tab - NEW -->
+        <!-- Categories Tab -->
         <section id="tab-categories" class="tab-content hidden fade-in">
             <div class="bg-white rounded-xl p-5 shadow-lg border border-gray-100">
                 <div class="flex flex-wrap justify-between items-center mb-3 gap-2">
@@ -1095,7 +1095,7 @@
     <div id="toast-container" class="fixed top-16 right-3 z-50 space-y-1.5 max-w-xs w-full"></div>
 
     <!-- ============================================ -->
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT - সম্পূর্ণ নতুন কোড -->
     <!-- ============================================ -->
     <script>
         // ============================================
@@ -1134,35 +1134,43 @@
         let profitStartDate = '';
         let profitEndDate = '';
 
+        // 🔥 চার্ট ভেরিয়েবল
         let chartInstance = null;
         let currentChartPeriod = 'week';
-// ============================================
-// থিম টগল ফাংশন - সম্পূর্ণ রিপ্লেস করুন
-// ============================================
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeButton(newTheme);
-    
-    const reportsTab = document.getElementById('tab-reports');
-    if (reportsTab && !reportsTab.classList.contains('hidden')) {
-        setTimeout(() => {
-            try {
-                if (saleHistory && saleHistory.length > 0) {
-                    updateChart(currentChartPeriod || 'week');
-                } else {
-                    showEmptyChart();
-                }
-            } catch (e) {
-                console.warn('থিম চেঞ্জে চার্ট রিফ্রেশ ব্যর্থ:', e);
-                showEmptyChart();
+
+        // ============================================
+        // থিম টগল ফাংশন
+        // ============================================
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+            
+            const reportsTab = document.getElementById('tab-reports');
+            if (reportsTab && !reportsTab.classList.contains('hidden')) {
+                setTimeout(() => {
+                    try {
+                        if (saleHistory && saleHistory.length > 0) {
+                            updateChart(currentChartPeriod || 'week');
+                        } else {
+                            showEmptyChart();
+                        }
+                    } catch (e) {
+                        console.warn('থিম চেঞ্জে চার্ট রিফ্রেশ ব্যর্থ:', e);
+                        showEmptyChart();
+                    }
+                }, 300);
             }
-        }, 300);
-    }
-}
+        }
+
+        function updateThemeButton(theme) {
+            const btn = document.getElementById('theme-toggle-btn');
+            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+
         // ============================================
         // AUTH
         // ============================================
@@ -1218,40 +1226,34 @@ function toggleTheme() {
             });
         }
 
- // ============================================
-// loadSaleHistory - সম্পূর্ণ রিপ্লেস করুন
-// ============================================
-function loadSaleHistory() {
-    if (!currentUser) return;
-    
-    database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
-        const data = snap.val();
-        saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
-        
-        renderHistory();
-        renderProfit();
-        updateTodaySummary();
-        renderTodayDetails();
-        
-        const reportsTab = document.getElementById('tab-reports');
-        if (reportsTab && !reportsTab.classList.contains('hidden')) {
-            setTimeout(() => {
-                try {
-                    if (saleHistory && saleHistory.length > 0) {
-                        updateChart(currentChartPeriod || 'week');
-                    } else {
-                        showEmptyChart();
-                    }
-                } catch (e) {
-                    console.warn('সেল হিস্ট্রি লোডে চার্ট আপডেট ব্যর্থ:', e);
-                    showEmptyChart();
+        function loadSaleHistory() {
+            if (!currentUser) return;
+            database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
+                const data = snap.val();
+                saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
+                renderHistory();
+                renderProfit();
+                updateTodaySummary();
+                renderTodayDetails();
+                
+                const reportsTab = document.getElementById('tab-reports');
+                if (reportsTab && !reportsTab.classList.contains('hidden')) {
+                    setTimeout(() => {
+                        try {
+                            if (saleHistory && saleHistory.length > 0) {
+                                updateChart(currentChartPeriod || 'week');
+                            } else {
+                                showEmptyChart();
+                            }
+                        } catch (e) {
+                            console.warn('সেল হিস্ট্রি লোডে চার্ট আপডেট ব্যর্থ:', e);
+                            showEmptyChart();
+                        }
+                    }, 200);
                 }
-            }, 200);
+            });
         }
-    });
-}
-    
-  
+
         function loadCustomers() {
             if (currentUser) {
                 database.ref(`users/${currentUser.uid}/data`).on('value', (snap) => {
@@ -1303,17 +1305,12 @@ function loadSaleHistory() {
         }
 
         function updateCategoriesFromProducts() {
-            // Extract categories from products
             const productCategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            
-            // Merge with existing categories
             productCategories.forEach(cat => {
                 if (!categories.includes(cat)) {
                     categories.push(cat);
                 }
             });
-            
-            // Save categories
             saveCategories();
             renderCategories();
             updateCategorySuggestions();
@@ -1351,7 +1348,6 @@ function loadSaleHistory() {
 
         async function removeCategory(cat) {
             if (!confirm(`"${cat}" ক্যাটাগরি মুছবেন?`)) return;
-            // Check if any product uses this category
             const used = allProducts.some(p => p.category === cat);
             if (used) {
                 showToast('এই ক্যাটাগরি ব্যবহারে আছে!', 'error');
@@ -1387,8 +1383,6 @@ function loadSaleHistory() {
         function updateCategorySuggestions() {
             const suggestions = document.getElementById('category-suggestions');
             if (!suggestions) return;
-            
-            // Clear and hide if no categories
             if (!categories.length) {
                 suggestions.classList.remove('active');
                 suggestions.innerHTML = '';
@@ -1425,7 +1419,6 @@ function loadSaleHistory() {
             document.getElementById('category-suggestions').classList.remove('active');
         }
 
-        // Close suggestions on outside click
         document.addEventListener('click', function(e) {
             const wrapper = document.querySelector('.category-input-wrapper');
             if (wrapper && !wrapper.contains(e.target)) {
@@ -1525,220 +1518,288 @@ function loadSaleHistory() {
             document.getElementById('today-sale-profit').textContent = 'লাভ: ৳' + totalProfit.toLocaleString('bn-BD');
         }
 
- 
-    // ============================================
-// চার্ট আপডেট ফাংশন - ফাংশন সেকশনে যোগ করুন
-// ============================================
-function updateChart(period = 'week') {
-    console.log('🔄 চার্ট আপডেট শুরু:', period);
-    
-    const canvas = document.getElementById('sales-chart');
-    if (!canvas) {
-        console.error('❌ ক্যানভাস পাওয়া যায়নি!');
-        showChartError('চার্ট ক্যানভাস পাওয়া যায়নি!');
-        return;
-    }
+        // ============================================
+        // 📊 চার্ট ফাংশনসমূহ
+        // ============================================
 
-    const container = document.getElementById('chart-container');
-    if (!container) {
-        console.error('❌ কন্টেইনার পাওয়া যায়নি!');
-        showChartError('চার্ট কন্টেইনার পাওয়া যায়নি!');
-        return;
-    }
-
-    hideChartError();
-
-    document.querySelectorAll('.chart-period-btn').forEach(btn => {
-        btn.classList.remove('action-btn-primary');
-        btn.classList.add('action-btn-secondary');
-    });
-    const activeBtn = document.querySelector(`.chart-period-btn[data-period="${period}"]`);
-    if (activeBtn) {
-        activeBtn.classList.add('action-btn-primary');
-        activeBtn.classList.remove('action-btn-secondary');
-    }
-
-    currentChartPeriod = period;
-
-    const { labels, data } = prepareChartData(period);
-    
-    console.log('📊 ডাটা প্রস্তুত:', { labels: labels.length, data: data.length });
-
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const textColor = isDark ? '#cbd5e1' : '#4a5568';
-    const gridColor = isDark ? '#334155' : '#e2e8f0';
-    const bgColor = isDark ? 'rgba(13, 148, 136, 0.4)' : 'rgba(13, 148, 136, 0.6)';
-    const borderColor = isDark ? 'rgba(13, 148, 136, 0.8)' : 'rgba(13, 148, 136, 1)';
-
-    if (chartInstance) {
-        try {
-            chartInstance.destroy();
-            chartInstance = null;
-        } catch (e) {
-            console.warn('পুরনো চার্ট ডেস্ট্রয় ব্যর্থ:', e);
-        }
-    }
-
-    try {
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-            throw new Error('Canvas Context পাওয়া যায়নি!');
+        function showChartError(message) {
+            const errorEl = document.getElementById('chart-error');
+            if (errorEl) {
+                errorEl.textContent = '⚠️ ' + message;
+                errorEl.classList.remove('hidden');
+            }
+            showToast('⚠️ ' + message, 'error');
         }
 
-        chartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'বিক্রি (৳)',
-                    data: data,
-                    backgroundColor: bgColor,
-                    borderColor: borderColor,
-                    borderWidth: 2,
-                    borderRadius: 4,
-                    hoverBackgroundColor: 'rgba(13, 148, 136, 0.8)',
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: {
-                    duration: 500,
-                    easing: 'easeInOutQuad'
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        labels: { 
-                            color: textColor, 
-                            font: { 
-                                size: 12,
-                                weight: '500'
+        function hideChartError() {
+            const errorEl = document.getElementById('chart-error');
+            if (errorEl) {
+                errorEl.classList.add('hidden');
+            }
+        }
+
+        function prepareChartData(period) {
+            let labels = [];
+            let data = [];
+            let today = new Date();
+            const historyData = saleHistory || [];
+
+            try {
+                if (period === 'week') {
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date(today);
+                        d.setDate(today.getDate() - i);
+                        const dateStr = d.toISOString().split('T')[0];
+                        labels.push(d.toLocaleDateString('bn-BD', { weekday: 'short' }));
+                        
+                        const daySales = historyData.filter(h => h.date === dateStr);
+                        const total = daySales.reduce((sum, h) => sum + (parseFloat(h.final_price) || 0), 0);
+                        data.push(Math.round(total));
+                    }
+                    
+                } else if (period === 'month') {
+                    for (let i = 29; i >= 0; i--) {
+                        const d = new Date(today);
+                        d.setDate(today.getDate() - i);
+                        const dateStr = d.toISOString().split('T')[0];
+                        labels.push(d.getDate().toString());
+                        
+                        const daySales = historyData.filter(h => h.date === dateStr);
+                        const total = daySales.reduce((sum, h) => sum + (parseFloat(h.final_price) || 0), 0);
+                        data.push(Math.round(total));
+                    }
+                    
+                } else {
+                    for (let i = 11; i >= 0; i--) {
+                        const d = new Date(today);
+                        d.setMonth(today.getMonth() - i);
+                        labels.push(d.toLocaleDateString('bn-BD', { month: 'short' }));
+                        
+                        const monthSales = historyData.filter(h => {
+                            if (!h.date) return false;
+                            const hDate = new Date(h.date);
+                            return hDate.getMonth() === d.getMonth() && hDate.getFullYear() === d.getFullYear();
+                        });
+                        const total = monthSales.reduce((sum, h) => sum + (parseFloat(h.final_price) || 0), 0);
+                        data.push(Math.round(total));
+                    }
+                }
+
+                if (data.every(v => v === 0)) {
+                    console.log('ℹ️ সব ডাটা শূন্য, খালি চার্ট দেখানো হবে');
+                }
+
+            } catch (error) {
+                console.error('ডাটা প্রস্তুত করতে সমস্যা:', error);
+                labels = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি', 'রবি'];
+                data = [0, 0, 0, 0, 0, 0, 0];
+            }
+
+            return { labels, data };
+        }
+
+        function showEmptyChart() {
+            console.log('📊 খালি চার্ট দেখানো হচ্ছে');
+            
+            const canvas = document.getElementById('sales-chart');
+            if (!canvas) return;
+            
+            if (chartInstance) {
+                try {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                } catch (e) {}
+            }
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#cbd5e1' : '#4a5568';
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+            
+            try {
+                const ctx = canvas.getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি', 'রবি'],
+                        datasets: [{
+                            label: 'বিক্রি (৳)',
+                            data: [0, 0, 0, 0, 0, 0, 0],
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            borderColor: 'rgba(13, 148, 136, 0.5)',
+                            borderWidth: 2,
+                            borderRadius: 4,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: { 
+                                    color: textColor, 
+                                    font: { size: 12 } 
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { 
+                                    color: textColor, 
+                                    font: { size: 10 },
+                                    callback: function(value) { return '৳0'; }
+                                },
+                                grid: { color: gridColor }
                             },
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return '৳ ' + context.parsed.y.toLocaleString('bn-BD');
+                            x: {
+                                ticks: { color: textColor, font: { size: 10 } },
+                                grid: { color: gridColor }
                             }
                         }
                     }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            color: textColor,
-                            font: { size: 10 },
-                            callback: function(value) { 
-                                return '৳' + value.toLocaleString(); 
-                            }
-                        },
-                        grid: { 
-                            color: gridColor,
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: textColor,
-                            font: { size: 10 },
-                            maxRotation: 45,
-                            autoSkip: true
-                        },
-                        grid: { 
-                            color: gridColor,
-                            drawBorder: false
-                        }
-                    }
-                }
-            }
-        });
-
-        console.log('✅ চার্ট সফলভাবে তৈরি হয়েছে!');
-        
-    } catch (error) {
-        console.error('❌ চার্ট তৈরি ব্যর্থ:', error);
-        showChartError('চার্ট তৈরি করতে সমস্যা: ' + error.message);
-    }
-}
-    
-    
-    
-    // ============================================
-// এরর হ্যান্ডলিং ফাংশন - prepareChartData() এর পরে যোগ করুন
-// ============================================
-function showChartError(message) {
-    const errorEl = document.getElementById('chart-error');
-    if (errorEl) {
-        errorEl.textContent = '⚠️ ' + message;
-        errorEl.classList.remove('hidden');
-    }
-    showToast('⚠️ ' + message, 'error');
-}
-
-function hideChartError() {
-    const errorEl = document.getElementById('chart-error');
-    if (errorEl) {
-        errorEl.classList.add('hidden');
-    }
-}
-
-
-    // ============================================
-// খালি ডাটার জন্য চার্ট ফাংশন - নতুন যোগ করুন
-// ============================================
-function showEmptyChart() {
-    const ctx = document.getElementById('sales-chart');
-    if (!ctx) return;
-    
-    if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-    }
-    
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const textColor = isDark ? '#cbd5e1' : '#4a5568';
-    const gridColor = isDark ? '#334155' : '#e2e8f0';
-    
-    chartInstance = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
-        data: {
-            labels: ['সোম', 'মঙ্গল', 'বুধ', 'বৃহ', 'শুক্র', 'শনি', 'রবি'],
-            datasets: [{
-                label: 'বিক্রি (৳)',
-                data: [0, 0, 0, 0, 0, 0, 0],
-                backgroundColor: 'rgba(13, 148, 136, 0.3)',
-                borderColor: 'rgba(13, 148, 136, 0.6)',
-                borderWidth: 2,
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: { color: textColor, font: { size: 12 } }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { color: textColor, font: { size: 10 } },
-                    grid: { color: gridColor }
-                },
-                x: {
-                    ticks: { color: textColor, font: { size: 10 } },
-                    grid: { color: gridColor }
-                }
+                });
+                console.log('✅ খালি চার্ট তৈরি হয়েছে');
+            } catch (error) {
+                console.error('❌ খালি চার্ট তৈরি ব্যর্থ:', error);
             }
         }
-    });
-}
-    
+
+        function updateChart(period = 'week') {
+            console.log('🔄 চার্ট আপডেট শুরু:', period);
+            
+            const canvas = document.getElementById('sales-chart');
+            if (!canvas) {
+                console.error('❌ ক্যানভাস পাওয়া যায়নি!');
+                showChartError('চার্ট ক্যানভাস পাওয়া যায়নি!');
+                return;
+            }
+
+            const container = document.getElementById('chart-container');
+            if (!container) {
+                console.error('❌ কন্টেইনার পাওয়া যায়নি!');
+                showChartError('চার্ট কন্টেইনার পাওয়া যায়নি!');
+                return;
+            }
+
+            hideChartError();
+
+            document.querySelectorAll('.chart-period-btn').forEach(btn => {
+                btn.classList.remove('action-btn-primary');
+                btn.classList.add('action-btn-secondary');
+            });
+            const activeBtn = document.querySelector(`.chart-period-btn[data-period="${period}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('action-btn-primary');
+                activeBtn.classList.remove('action-btn-secondary');
+            }
+
+            currentChartPeriod = period;
+
+            const { labels, data } = prepareChartData(period);
+            
+            console.log('📊 ডাটা প্রস্তুত:', { labels: labels.length, data: data.length });
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const textColor = isDark ? '#cbd5e1' : '#4a5568';
+            const gridColor = isDark ? '#334155' : '#e2e8f0';
+            const bgColor = isDark ? 'rgba(13, 148, 136, 0.4)' : 'rgba(13, 148, 136, 0.6)';
+            const borderColor = isDark ? 'rgba(13, 148, 136, 0.8)' : 'rgba(13, 148, 136, 1)';
+
+            if (chartInstance) {
+                try {
+                    chartInstance.destroy();
+                    chartInstance = null;
+                } catch (e) {
+                    console.warn('পুরনো চার্ট ডেস্ট্রয় ব্যর্থ:', e);
+                }
+            }
+
+            try {
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Canvas Context পাওয়া যায়নি!');
+                }
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'বিক্রি (৳)',
+                            data: data,
+                            backgroundColor: bgColor,
+                            borderColor: borderColor,
+                            borderWidth: 2,
+                            borderRadius: 4,
+                            hoverBackgroundColor: 'rgba(13, 148, 136, 0.8)',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 500,
+                            easing: 'easeInOutQuad'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                labels: { 
+                                    color: textColor, 
+                                    font: { 
+                                        size: 12,
+                                        weight: '500'
+                                    },
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return '৳ ' + context.parsed.y.toLocaleString('bn-BD');
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: textColor,
+                                    font: { size: 10 },
+                                    callback: function(value) { 
+                                        return '৳' + value.toLocaleString(); 
+                                    }
+                                },
+                                grid: { 
+                                    color: gridColor,
+                                    drawBorder: false
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: textColor,
+                                    font: { size: 10 },
+                                    maxRotation: 45,
+                                    autoSkip: true
+                                },
+                                grid: { 
+                                    color: gridColor,
+                                    drawBorder: false
+                                }
+                            }
+                        }
+                    }
+                });
+
+                console.log('✅ চার্ট সফলভাবে তৈরি হয়েছে!');
+                
+            } catch (error) {
+                console.error('❌ চার্ট তৈরি ব্যর্থ:', error);
+                showChartError('চার্ট তৈরি করতে সমস্যা: ' + error.message);
+            }
+        }
+
         // ============================================
         // PDF EXPORT
         // ============================================
@@ -1994,7 +2055,6 @@ function showEmptyChart() {
             const totalAmount = items.reduce((sum, item) => sum + item.final_price, 0);
             const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
-            // Get shop name from header
             const shopName = document.getElementById('shop-name').textContent || 'বাকির খাতা';
 
             body.innerHTML = `
@@ -2091,7 +2151,6 @@ function showEmptyChart() {
             const styles = document.querySelector('style').innerHTML;
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
-            // Extract only the invoice content without buttons
             const invoiceContent = content.innerHTML.replace(
                 /<div style="display: flex; gap: 8px; margin-top: 12px;">.*?<\/div>/s, 
                 ''
@@ -2142,7 +2201,6 @@ function showEmptyChart() {
 
         function shareInvoice() {
             const content = document.getElementById('invoice-body');
-            // Extract text from invoice
             const textContent = content.textContent || '';
             if (navigator.share) {
                 navigator.share({
@@ -2154,7 +2212,6 @@ function showEmptyChart() {
                     }
                 });
             } else {
-                // Fallback: copy to clipboard
                 navigator.clipboard.writeText(textContent).then(() => {
                     showToast('📋 রশিদ কপি করা হয়েছে!', 'success');
                 }).catch(() => {
@@ -2453,7 +2510,7 @@ function showEmptyChart() {
         }
 
         // ============================================
-        // RENDER PRODUCTS WITH THREE-DOT MENU
+        // RENDER PRODUCTS
         // ============================================
         function renderProducts() {
             const tbody = document.getElementById('product-tbody');
@@ -2484,7 +2541,6 @@ function showEmptyChart() {
                     stockBadge = `<span class="badge-low-stock">কম</span>`;
                 }
 
-                // Three-dot menu items
                 const menuItems = currentUser ? `
                     <button onclick="showProductDetail('${p.__backendId}')">📄 বিস্তারিত</button>
                     <button onclick="editProduct('${p.__backendId}')">✏️ এডিট</button>
@@ -2524,18 +2580,16 @@ function showEmptyChart() {
         }
 
         // ============================================
-        // THREE-DOT MENU TOGGLE
+        // THREE-DOT MENU
         // ============================================
         function toggleThreeDotMenu(btn) {
             const menu = btn.parentElement.querySelector('.three-dot-menu-content');
-            // Close all other menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 if (el !== menu) el.classList.remove('show');
             });
             menu.classList.toggle('show');
         }
 
-        // Close menu when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.three-dot-menu')) {
                 document.querySelectorAll('.three-dot-menu-content').forEach(el => {
@@ -2548,33 +2602,28 @@ function showEmptyChart() {
         // STOCK UPDATE FROM THREE-DOT MENU
         // ============================================
         function openStockUpdate(productId) {
-            // Switch to stock update tab and select the product
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product) {
                 showToast('পণ্য পাওয়া যায়নি!', 'error');
                 return;
             }
             
-            // Switch to stock tab
             document.querySelector('[data-tab="stock-update"]').click();
             
-            // Select the product in dropdown
             const stockSelect = document.getElementById('stock-product');
             if (stockSelect) {
                 stockSelect.value = productId;
-                // Trigger change event to show current stock
                 const event = new Event('change');
                 stockSelect.dispatchEvent(event);
             }
             
-            // Focus on quantity input
             setTimeout(() => {
                 document.getElementById('stock-qty')?.focus();
             }, 300);
         }
 
         // ============================================
-        // EDIT PRODUCT FIX
+        // EDIT PRODUCT
         // ============================================
         function editProduct(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -2584,7 +2633,6 @@ function showEmptyChart() {
                 return;
             }
             
-            // Close any open three-dot menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 el.classList.remove('show');
             });
@@ -2606,7 +2654,6 @@ function showEmptyChart() {
             document.getElementById('form-title').textContent = '✏️ পণ্য এডিট';
             document.querySelector('[data-tab="add"]').click();
             
-            // Scroll to form
             document.getElementById('add-form-container').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -2625,7 +2672,6 @@ function showEmptyChart() {
             const sel = document.getElementById('filter-category');
             const cur = sel.value;
             const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))];
-            // Also add from categories array
             categories.forEach(c => {
                 if (!cats.includes(c)) cats.push(c);
             });
@@ -2678,7 +2724,7 @@ function showEmptyChart() {
         }
 
         // ============================================
-        // HISTORY FILTER
+        // HISTORY
         // ============================================
         document.querySelectorAll('.filter-btn-history').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -2788,7 +2834,7 @@ function showEmptyChart() {
         }
 
         // ============================================
-        // ↩️ RETURN SALE
+        // RETURN SALE
         // ============================================
         async function returnSale(historyId) {
             if (!currentUser) {
@@ -2868,7 +2914,7 @@ function showEmptyChart() {
         }
 
         // ============================================
-        // PROFIT FILTER
+        // PROFIT
         // ============================================
         document.querySelectorAll('.filter-btn-profit').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3168,7 +3214,6 @@ function showEmptyChart() {
             return { totalOriginal, totalWithCustomPrice, finalPrice, totalItems, discountAmount };
         }
 
-        // 🔥 MAIN FUNCTION - বাল্ক বিক্রি
         async function confirmBulkSell() {
             const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
             const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
@@ -3276,7 +3321,6 @@ function showEmptyChart() {
                 totalRevenue += Math.round(finalPricePerProduct);
             }
 
-            // 🔥 Show invoice after all sales
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
@@ -3334,7 +3378,6 @@ function showEmptyChart() {
 
             const cat = document.getElementById('f-category').value.trim();
             
-            // Add category if new
             if (cat && !categories.includes(cat)) {
                 categories.push(cat);
                 await saveCategories();
@@ -3392,7 +3435,6 @@ function showEmptyChart() {
         function confirmDelete(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
             
-            // Close any open three-dot menus
             document.querySelectorAll('.three-dot-menu-content').forEach(el => {
                 el.classList.remove('show');
             });
@@ -3472,7 +3514,6 @@ function showEmptyChart() {
             };
             await saveSaleHistory(saleData);
 
-            // 🔥 Show invoice
             showInvoice([saleData]);
 
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
@@ -3547,91 +3588,47 @@ function showEmptyChart() {
             container.appendChild(el);
             setTimeout(() => el.remove(), duration);
         }
-// ============================================
-// ট্যাব ইভেন্ট হ্যান্ডলার - এই অংশটি আপডেট করুন
-// ============================================
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-        this.classList.add('tab-active');
-        document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
-        document.getElementById('tab-' + this.dataset.tab).classList.remove('hidden');
-        
-        lucide.createIcons();
-        
-        if (this.dataset.tab === 'history') renderHistory();
-        if (this.dataset.tab === 'profit') renderProfit();
-        if (this.dataset.tab === 'today-details') renderTodayDetails();
-        if (this.dataset.tab === 'customers') renderCustomers();
-        if (this.dataset.tab === 'categories') renderCategories();
-        
-        // 🔥 Reports ট্যাব - চার্ট লোড
-        if (this.dataset.tab === 'reports') {
-            setTimeout(() => {
-                try {
-                    if (typeof saleHistory !== 'undefined' && saleHistory && saleHistory.length > 0) {
-                        updateChart(currentChartPeriod || 'week');
-                    } else {
-                        showEmptyChart();
-                    }
-                } catch (error) {
-                    console.error('ট্যাব ক্লিকে চার্ট লোড ব্যর্থ:', error);
-                    showEmptyChart();
+
+        // ============================================
+        // ট্যাব ইভেন্ট হ্যান্ডলার
+        // ============================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+                this.classList.add('tab-active');
+                document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
+                document.getElementById('tab-' + this.dataset.tab).classList.remove('hidden');
+                
+                lucide.createIcons();
+                
+                if (this.dataset.tab === 'history') renderHistory();
+                if (this.dataset.tab === 'profit') renderProfit();
+                if (this.dataset.tab === 'today-details') renderTodayDetails();
+                if (this.dataset.tab === 'customers') renderCustomers();
+                if (this.dataset.tab === 'categories') renderCategories();
+                
+                if (this.dataset.tab === 'reports') {
+                    setTimeout(() => {
+                        try {
+                            if (saleHistory && saleHistory.length > 0) {
+                                updateChart(currentChartPeriod || 'week');
+                            } else {
+                                showEmptyChart();
+                            }
+                        } catch (error) {
+                            console.error('ট্যাব ক্লিকে চার্ট লোড ব্যর্থ:', error);
+                            showEmptyChart();
+                        }
+                    }, 200);
                 }
-            }, 200);
-        }
-    });
-});
-    // ============================================
-// পেজ লোড হলে চেক করুন - নতুন যোগ করুন
-// ============================================
-// পেজ লোডের পর Reports ট্যাব খোলা থাকলে চার্ট দেখান
-setTimeout(() => {
-    const reportsTab = document.getElementById('tab-reports');
-    if (reportsTab && !reportsTab.classList.contains('hidden')) {
-        if (saleHistory && saleHistory.length > 0) {
-            updateChart('week');
-        } else {
-            showEmptyChart();
-        }
-    }
-}, 500);
-    
-    // ============================================
-// DOMContentLoaded - সবশেষে যোগ করুন (সব কোডের পরে)
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    const reportsBtn = document.querySelector('[data-tab="reports"]');
-    if (reportsBtn) {
-        reportsBtn.addEventListener('click', function(e) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
-            this.classList.add('tab-active');
-            document.querySelectorAll('.tab-content').forEach(s => s.classList.add('hidden'));
-            document.getElementById('tab-reports').classList.remove('hidden');
-            
-            setTimeout(() => {
-                try {
-                    if (typeof saleHistory !== 'undefined' && saleHistory && saleHistory.length > 0) {
-                        console.log('📊 Reports ট্যাব: চার্ট লোড করা হচ্ছে');
-                        updateChart(currentChartPeriod || 'week');
-                    } else {
-                        console.log('ℹ️ Reports ট্যাব: কোনো ডাটা নেই, খালি চার্ট দেখানো হচ্ছে');
-                        showEmptyChart();
-                    }
-                } catch (error) {
-                    console.error('Reports ট্যাব চার্ট লোড ব্যর্থ:', error);
-                    showEmptyChart();
-                }
-            }, 200);
+            });
         });
-    }
-});
 
         document.getElementById('search-input')?.addEventListener('input', renderProducts);
         document.getElementById('filter-category')?.addEventListener('change', renderProducts);
 
         // ============================================
-        // INIT
+        // INIT - সবশেষে
         // ============================================
         lucide.createIcons();
 
@@ -3639,26 +3636,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
         console.log('✅ পণ্য সিস্টেম লোড হয়েছে');
         console.log('🔒 লগইন স্ট্যাটাস:', currentUser ? 'লগইন করা' : 'গেস্ট');
-    // ============================================
-// উইন্ডো লোড - একদম শেষে যোগ করুন
-// ============================================
-window.addEventListener('load', function() {
-    setTimeout(() => {
-        const reportsTab = document.getElementById('tab-reports');
-        if (reportsTab && !reportsTab.classList.contains('hidden')) {
-            try {
-                if (typeof saleHistory !== 'undefined' && saleHistory && saleHistory.length > 0) {
+
+        // পেজ লোডের পর চার্ট চেক
+        setTimeout(() => {
+            const reportsTab = document.getElementById('tab-reports');
+            if (reportsTab && !reportsTab.classList.contains('hidden')) {
+                if (saleHistory && saleHistory.length > 0) {
                     updateChart('week');
                 } else {
                     showEmptyChart();
                 }
-            } catch (e) {
-                console.warn('পেজ লোডে চার্ট লোড ব্যর্থ:', e);
-                showEmptyChart();
             }
-        }
-    }, 500);
-});
+        }, 500);
+
+        // Window Load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const reportsTab = document.getElementById('tab-reports');
+                if (reportsTab && !reportsTab.classList.contains('hidden')) {
+                    try {
+                        if (saleHistory && saleHistory.length > 0) {
+                            updateChart('week');
+                        } else {
+                            showEmptyChart();
+                        }
+                    } catch (e) {
+                        console.warn('পেজ লোডে চার্ট লোড ব্যর্থ:', e);
+                        showEmptyChart();
+                    }
+                }
+            }, 500);
+        });
     </script>
 </body>
 </html>
