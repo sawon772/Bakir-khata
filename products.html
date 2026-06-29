@@ -683,7 +683,7 @@
     <div id="toast-container" class="fixed top-16 right-3 z-50 space-y-1.5 max-w-xs w-full"></div>
 
     <!-- ============================================ -->
-    <!-- JAVASCRIPT - সম্পূর্ণ আপডেটেড এবং ফিক্সড -->
+    <!-- JAVASCRIPT - সম্পূর্ণ ফিক্সড -->
     <!-- ============================================ -->
     <script>
     // ============================================
@@ -727,7 +727,7 @@
     }
 
     // ============================================
-    // THEME TOGGLE - FIXED
+    // THEME TOGGLE
     // ============================================
     function toggleTheme() {
         const html = document.documentElement;
@@ -736,16 +736,8 @@
         html.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
         updateThemeButton(newTheme);
-        
-        // ✅ চার্ট রি-ক্রিয়েট করুন থিম চেঞ্জে
-        if (chartInstance) {
-            chartInstance.destroy();
-            chartInstance = null;
-        }
         if (saleHistory && saleHistory.length > 0) {
-            setTimeout(() => updateChart(currentChartPeriod || 'week'), 300);
-        } else {
-            showEmptyChart();
+            setTimeout(() => updateChart(currentChartPeriod || 'week'), 500);
         }
     }
 
@@ -888,18 +880,10 @@
             database.ref(`users/${currentUser.uid}/data`).on('value', (snap) => {
                 const data = snap.val();
                 if (data) {
-                    // ✅ ডুপ্লিকেট কাস্টমার ফিক্স
-                    const customerMap = new Map();
-                    Object.keys(data).forEach(key => {
-                        const d = data[key];
-                        if (d.type === 'customer' || d.type === 'due') {
-                            const id = d.customer_id || key;
-                            if (!customerMap.has(id)) {
-                                customerMap.set(id, { ...d, __backendId: key });
-                            }
-                        }
-                    });
-                    allCustomers = Array.from(customerMap.values());
+                    allCustomers = Object.keys(data)
+                        .map(key => ({ ...data[key], __backendId: key, customer_id: data[key].customer_id || data[
+                                key].__backendId }))
+                        .filter(d => d.type === 'customer' || d.type === 'due');
                     updateCustomerSelect();
                     renderCustomers();
                 }
@@ -909,14 +893,8 @@
             if (guestData) {
                 try {
                     const parsed = JSON.parse(guestData);
-                    const customerMap = new Map();
-                    parsed.filter(d => d.type === 'customer' || d.type === 'due').forEach(c => {
-                        const id = c.customer_id || c.__backendId;
-                        if (!customerMap.has(id)) {
-                            customerMap.set(id, { ...c, customer_id: id });
-                        }
-                    });
-                    allCustomers = Array.from(customerMap.values());
+                    allCustomers = parsed.filter(d => d.type === 'customer' || d.type === 'due').map(c => ({ ...c,
+                        customer_id: c.customer_id || c.__backendId }));
                     updateCustomerSelect();
                     renderCustomers();
                 } catch (e) { console.error('গেস্ট ডাটা পড়তে সমস্যা:', e); }
@@ -1573,7 +1551,7 @@
     });
 
     // ============================================
-    // INVOICE FUNCTIONS - FIXED
+    // INVOICE FUNCTIONS
     // ============================================
     function showInvoice(saleData) {
         console.log('🧾 ইনভয়েস দেখানো হচ্ছে:', saleData);
@@ -1585,22 +1563,11 @@
             return;
         }
         
-        // ✅ null/undefined চেক
-        if (!saleData) { 
-            showToast('ইনভয়েস ডাটা নেই!', 'error'); 
-            return; 
-        }
-        
-        const items = Array.isArray(saleData) ? saleData : [saleData];
-        if (items.length === 0) { 
-            showToast('কোনো আইটেম নেই!', 'warning'); 
-            return; 
-        }
-        
         const date = new Date().toLocaleDateString('bn-BD', { day: '2-digit', month: '2-digit', year: 'numeric' });
         const time = new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
-        const totalAmount = items.reduce((sum, item) => sum + (item.final_price || 0), 0);
-        const totalItems = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        const items = Array.isArray(saleData) ? saleData : [saleData];
+        const totalAmount = items.reduce((sum, item) => sum + item.final_price, 0);
+        const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
         const shopName = document.getElementById('shop-name').textContent || 'বাকির খাতা';
 
         const customerInfo = items[0].customer_name ? `
@@ -1817,7 +1784,7 @@
     });
 
     // ============================================
-    // SAVE FUNCTIONS - FIXED
+    // SAVE FUNCTIONS
     // ============================================
     async function saveProduct(data) {
         if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -1830,20 +1797,16 @@
         showToast('✅ পণ্য সংরক্ষিত');
     }
 
-    // ✅ FIXED: updateProduct - __backendId ডিলিট করা হয়েছে
     async function updateProduct(data) {
         if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
         if (!data.__backendId) { showToast('❌ পণ্য আইডি নেই!', 'error'); return; }
-        
-        const backendId = data.__backendId;
-        const updateData = { ...data };
-        delete updateData.__backendId; // ✅ গুরুত্বপূর্ণ ফিক্স
-        
         if (selectedImageFile) {
             const url = await uploadImage();
-            if (url) updateData.image = url;
+            if (url) data.image = url;
         }
-        
+        const backendId = data.__backendId;
+        const updateData = { ...data };
+        delete updateData.__backendId;
         await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(updateData);
         selectedImageFile = null;
         showToast('✅ পণ্য আপডেট');
@@ -1941,46 +1904,17 @@
     }
 
     // ============================================
-    // EXPORT / IMPORT - FIXED
+    // EXPORT / IMPORT
     // ============================================
     function exportData() {
-        // ✅ গেস্ট এবং লগইন উভয় মোডে কাজ করে
-        let productsToExport = [];
-        let historyToExport = [];
-        let categoriesToExport = [];
-        
-        if (currentUser) {
-            productsToExport = allProducts;
-            historyToExport = saleHistory;
-            categoriesToExport = categories;
-        } else {
-            // গেস্ট ডাটা
-            const guestProducts = localStorage.getItem('guest_products_data');
-            const guestHistory = localStorage.getItem('guest_sale_history');
-            const guestCategories = localStorage.getItem('guest_categories');
-            if (guestProducts) productsToExport = JSON.parse(guestProducts);
-            if (guestHistory) historyToExport = JSON.parse(guestHistory);
-            if (guestCategories) categoriesToExport = JSON.parse(guestCategories);
-        }
-        
-        if (!productsToExport.length && !historyToExport.length) { 
-            showToast('এক্সপোর্ট করার মতো ডাটা নেই', 'warning'); 
-            return; 
-        }
-        
-        const blob = new Blob([JSON.stringify({ 
-            exported: new Date().toISOString(), 
-            products: productsToExport, 
-            history: historyToExport, 
-            categories: categoriesToExport 
-        }, null, 2)], { type: 'application/json' });
-        
+        if (!allProducts.length) { showToast('পণ্য নেই', 'warning'); return; }
+        const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), products: allProducts, history: saleHistory, categories: categories }, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `bakir_khata_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.download = `products_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(a.href);
-        showToast('📥 ব্যাকআপ ডাউনলোড', 'success');
+        showToast('📥 ব্যাকআপ ডাউনলোড');
     }
 
     document.getElementById('import-input')?.addEventListener('change', async (e) => {
@@ -1991,48 +1925,23 @@
             const data = JSON.parse(text);
             if (!data.products || !Array.isArray(data.products)) { showToast('❌ ভুল ফাইল', 'error'); return; }
             if (!confirm(`${data.products.length} টি পণ্য ইম্পোর্ট করবেন?`)) return;
-            
-            showLoading('ইম্পোর্ট করা হচ্ছে');
-            
-            if (currentUser) {
-                for (const p of data.products) {
-                    await database.ref(`users/${currentUser.uid}/products`).push().set(p);
-                }
-                if (data.history) {
-                    for (const h of data.history) {
-                        await database.ref(`users/${currentUser.uid}/sale_history`).push().set(h);
-                    }
-                }
-                if (data.categories) {
-                    categories = data.categories;
-                    await saveCategories();
-                    renderCategories();
-                    updateCategorySuggestions();
-                    updateCategoryFilter();
-                }
-            } else {
-                // গেস্ট মোডে ইম্পোর্ট
-                localStorage.setItem('guest_products_data', JSON.stringify(data.products));
-                if (data.history) localStorage.setItem('guest_sale_history', JSON.stringify(data.history));
-                if (data.categories) localStorage.setItem('guest_categories', JSON.stringify(data.categories));
-                allProducts = data.products;
-                saleHistory = data.history || [];
-                categories = data.categories || [];
-                renderAll();
-                renderHistory();
-                renderProfit();
-                updateTodaySummary();
-                renderTodayDetails();
-                updateChart(currentChartPeriod);
+            for (const p of data.products) {
+                if (currentUser) await database.ref(`users/${currentUser.uid}/products`).push().set(p);
             }
-            
+            if (data.history) {
+                for (const h of data.history) {
+                    if (currentUser) await database.ref(`users/${currentUser.uid}/sale_history`).push().set(h);
+                }
+            }
+            if (data.categories) {
+                categories = data.categories;
+                await saveCategories();
+                renderCategories();
+                updateCategorySuggestions();
+                updateCategoryFilter();
+            }
             showToast(`✅ ইম্পোর্ট সম্পন্ন!`, 'success');
-            hideLoading();
-        } catch (err) { 
-            showToast('❌ ইম্পোর্ট ব্যর্থ: ' + err.message, 'error');
-            hideLoading();
-        }
-        e.target.value = ''; // রিসেট
+        } catch (err) { showToast('❌ ইম্পোর্ট ব্যর্থ', 'error'); }
     });
 
     // ============================================
@@ -2169,7 +2078,7 @@
     }
 
     // ============================================
-    // EDIT PRODUCT - FIXED
+    // 🔥 EDIT PRODUCT - সম্পূর্ণ ফিক্সড
     // ============================================
     function editProduct(id) {
         console.log('✏️ editProduct কল হয়েছে:', id);
@@ -2520,7 +2429,7 @@
     }
 
     // ============================================
-    // BULK SELL - FIXED
+    // BULK SELL
     // ============================================
     function openBulkSellModal() {
         if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -2676,10 +2585,7 @@
             totalRevenue = 0;
         const allSales = [];
 
-        // ✅ সেলেক্টেড প্রোডাক্ট কপি করে রাখুন
-        const selectedItems = new Map(selectedProducts);
-        
-        for (const [productId, data] of selectedItems) {
+        for (const [productId, data] of selectedProducts) {
             const product = allProducts.find(p => p.__backendId === productId);
             if (!product || product.stock < data.qty) { showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
                 hideLoading(); return; }
@@ -2718,14 +2624,12 @@
             totalRevenue += Math.round(finalPricePerProduct);
         }
         
-        // ✅ সেলেক্টেড প্রোডাক্ট ক্লিয়ার করুন
-        selectedProducts.clear();
-        
         // 🔥 ইনভয়েস দেখান
         if (allSales.length > 0) { 
             showInvoice(allSales); 
         }
         
+        selectedProducts.clear();
         updateBulkSellBar();
         renderAll();
         renderHistory();
@@ -2745,18 +2649,14 @@
     }
 
     // ============================================
-    // CLEAR HISTORY - FIXED (গেস্ট সাপোর্ট)
+    // CLEAR HISTORY
     // ============================================
     async function clearHistory() {
         if (!confirm('সব বিক্রি ইতিহাস মুছে ফেলতে চান? এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।')) return;
         showLoading('ইতিহাস মুছে ফেলা হচ্ছে');
-        if (currentUser) { 
-            await database.ref(`users/${currentUser.uid}/sale_history`).set(null); 
-        } else {
-            // ✅ গেস্ট ডাটা ক্লিয়ার
+        if (currentUser) { await database.ref(`users/${currentUser.uid}/sale_history`).set(null); } else {
             saleHistory = [];
-            localStorage.removeItem('guest_sale_history');
-            localStorage.removeItem('guest_data');
+            localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
             renderHistory();
             renderProfit();
             updateTodaySummary();
@@ -2827,7 +2727,7 @@
         hideLoading(); });
 
     // ============================================
-    // BUY / SELL - 🔥 সম্পূর্ণ ফিক্সড (ফর্ম রিসেট)
+    // BUY / SELL - 🔥 সম্পূর্ণ ফিক্সড
     // ============================================
     document.getElementById('buy-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2844,13 +2744,10 @@
         await updateProduct(updated);
         showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} কেনা হয়েছে`, 'green');
         hideLoading();
-        // ✅ ফর্ম রিসেট
         e.target.reset();
-        document.getElementById('buy-qty').value = '';
-        document.getElementById('buy-price').value = '';
     });
 
-    // 🔥 বিক্রি ফর্ম - সম্পূর্ণ ফিক্সড (ফর্ম রিসেট + ইনভয়েস)
+    // 🔥 বিক্রি ফর্ম - ইনভয়েস সহ + ফর্ম বন্ধ
     document.getElementById('sell-form')?.addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -2897,21 +2794,18 @@
         
         showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
         
-        // ✅ ফর্ম সম্পূর্ণ রিসেট করুন - বিক্রি ফর্ম যায় না এই ইস্যু ফিক্স!
-        document.getElementById('sell-product').value = '';
-        document.getElementById('sell-qty').value = '';
-        document.getElementById('sell-price').value = '';
+        // 🔥 ফর্ম রিসেট ও ক্লোজ
+        e.target.reset();
         document.getElementById('sell-stock-info').textContent = '';
         document.getElementById('sell-customer-name').value = '';
         document.getElementById('sell-customer-mobile').value = '';
         document.getElementById('sell-customer-address').value = '';
-        // গ্রাহক ফিল্ড লুকান
-        document.getElementById('customer-fields').classList.add('hidden');
         
-        // ✅ সিলেক্ট রিসেট
-        setTimeout(() => {
-            document.getElementById('sell-product').value = '';
-        }, 100);
+        // মডাল বন্ধ করুন
+        const modalOverlay = document.getElementById('modal-overlay');
+        if (modalOverlay && !modalOverlay.classList.contains('hidden')) {
+            modalOverlay.classList.add('hidden');
+        }
         
         hideLoading();
         renderHistory();
@@ -2957,7 +2851,6 @@
         document.getElementById('selected-stock-detail').textContent = `স্টক: ${newStock} ${p.unit || 'পিস'} | ${p.code || ''}`;
         hideLoading();
         e.target.reset();
-        document.getElementById('stock-qty').value = '';
     });
 
     // ============================================
