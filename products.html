@@ -85,7 +85,6 @@
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
-        /* More stylish row selection & spacing */
         #product-tbody tr {
             transition: background 0.2s ease, transform 0.1s ease;
             border-bottom: 1px solid var(--border-color);
@@ -3133,7 +3132,7 @@
         }
 
         // ============================================
-        // BULK SELL
+        // BULK SELL - সম্পূর্ণ ফিক্সড
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -3255,6 +3254,7 @@
             return { totalOriginal, totalWithCustomPrice, finalPrice, totalItems, discountAmount };
         }
 
+        // 🔥 সম্পূর্ণ ফিক্সড বাল্ক বিক্রি
         async function confirmBulkSell() {
             showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
             const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
@@ -3349,8 +3349,19 @@
                 showInvoice(allSales);
             }
 
-            // ✅ বাল্ক বিক্রির পর সিলেক্টেড পণ্য আনসিলেক্ট হবে
+            // ✅ বাল্ক বিক্রির পর সিলেক্টেড পণ্য সম্পূর্ণ ক্লিয়ার করি
             selectedProducts.clear();
+            
+            // ✅ ফর্ম রিসেট করি
+            document.getElementById('bulk-customer-name').value = '';
+            document.getElementById('bulk-customer-mobile').value = '';
+            document.getElementById('bulk-customer-address').value = '';
+            document.getElementById('bulk-comment').value = '';
+            document.getElementById('bulk-discount').value = '0';
+            document.querySelector('input[name="payment-type"][value="cash"]').checked = true;
+            document.getElementById('customer-select-container').classList.add('hidden');
+            
+            // ✅ UI আপডেট - আগে bulk bar আপডেট করি
             updateBulkSellBar();
             renderAll();
             renderHistory();
@@ -3358,17 +3369,23 @@
             updateTodaySummary();
             renderTodayDetails();
             updateChart(currentChartPeriod);
+            
             const msgEl = document.getElementById('bulk-msg');
             showMsg(msgEl,
                 `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`,
                 'green');
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
             hideLoading();
-            setTimeout(closeBulkSellModal, 2000);
+            
+            // 🔥 মডাল বন্ধ করি
+            setTimeout(() => {
+                closeBulkSellModal();
+            }, 2000);
         }
 
         function closeBulkSellModal() {
             document.getElementById('bulk-sell-modal').classList.add('hidden');
+            // সম্পূর্ণ রিসেট - আবার খুললে নতুন করে লোড হবে
         }
 
         // ============================================
@@ -3439,7 +3456,7 @@
         }
 
         // ============================================
-        // DELETE
+        // DELETE - ফিক্সড (ইতিহাস মুছে না)
         // ============================================
         function confirmDelete(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -3450,15 +3467,27 @@
         document.getElementById('delete-cancel')?.addEventListener('click', () => { document.getElementById(
                 'delete-modal').classList.add('hidden');
             deletingProduct = null; });
-        document.getElementById('delete-confirm')?.addEventListener('click', async () => { if (!deletingProduct) return;
+        
+        // 🔥 ফিক্সড ডিলিট - ইতিহাস অক্ষত রাখে
+        document.getElementById('delete-confirm')?.addEventListener('click', async () => { 
+            if (!deletingProduct) return;
             showLoading('পণ্য মুছে ফেলা হচ্ছে');
+            
+            // শুধু পণ্য ডিলিট করব, ইতিহাস থাকবে
             await deleteProductDB(deletingProduct.__backendId);
+            
             document.getElementById('delete-modal').classList.add('hidden');
             deletingProduct = null;
-            hideLoading(); });
+            
+            // ইতিহাস রিলোড করি (ইতিহাসে পণ্যের নাম সংরক্ষিত ছিল)
+            loadSaleHistory();
+            
+            hideLoading();
+            showToast('✅ পণ্য ডিলিট করা হয়েছে (ইতিহাস অক্ষত)', 'success');
+        });
 
         // ============================================
-        // BUY / SELL - 🔥 সম্পূর্ণ ফিক্সড
+        // BUY / SELL
         // ============================================
         document.getElementById('buy-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -3479,7 +3508,7 @@
             e.target.reset();
         });
 
-        // 🔥 বিক্রি ফর্ম - ইনভয়েস সহ + ফর্ম বন্ধ
+        // 🔥 বিক্রি ফর্ম - ইনভয়েস সহ
         document.getElementById('sell-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -3527,7 +3556,7 @@
 
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
 
-            // 🔥 ফর্ম রিসেট ও ক্লোজ (ফর্ম বন্ধ থাকবে)
+            // 🔥 ফর্ম রিসেট
             e.target.reset();
             document.getElementById('sell-stock-info').textContent = '';
             document.getElementById('sell-customer-name').value = '';
