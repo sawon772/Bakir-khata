@@ -1527,20 +1527,16 @@
             database.ref(`users/${currentUser.uid}/sale_history`).on('value', (snap) => {
                 const data = snap.val();
                 saleHistory = data ? Object.keys(data).map(key => ({ ...data[key], __backendId: key })) : [];
-
                 renderHistory();
                 renderProfit();
                 updateTodaySummary();
                 renderTodayDetails();
-
                 const reportsTab = document.getElementById('tab-reports');
                 if (reportsTab && !reportsTab.classList.contains('hidden')) {
                     setTimeout(function() {
                         if (saleHistory && saleHistory.length > 0) {
-                            console.log('📊 চার্ট আপডেট করা হচ্ছে, ডাটা:', saleHistory.length);
                             updateChart(currentChartPeriod || 'week');
                         } else {
-                            console.log('📊 কোনো ডাটা নেই, খালি চার্ট দেখানো হচ্ছে');
                             showEmptyChart();
                         }
                         hideLoading();
@@ -1791,12 +1787,15 @@
             const totalAmount = todaySales.reduce((sum, h) => sum + h.final_price, 0);
             let totalProfit = 0;
             todaySales.forEach(h => {
-                const product = allProducts.find(p => p.__backendId === h.product_id);
-                if (product) {
-                    const buyPrice = product.buy_price || 0;
-                    const sellPricePerUnit = h.final_price / h.quantity;
-                    totalProfit += (sellPricePerUnit - buyPrice) * h.quantity;
+                let buyPrice = h.product_buy_price || 0;
+                if (!buyPrice) {
+                    const product = allProducts.find(p => p.__backendId === h.product_id);
+                    if (product) {
+                        buyPrice = product.buy_price || 0;
+                    }
                 }
+                const sellPricePerUnit = h.final_price / h.quantity;
+                totalProfit += (sellPricePerUnit - buyPrice) * h.quantity;
             });
             document.getElementById('today-sale-count').textContent = totalItems + 'টি';
             document.getElementById('today-sale-amount').textContent = '৳' + totalAmount.toLocaleString('bn-BD');
@@ -2140,18 +2139,23 @@
             container.innerHTML = sorted.map(h => {
                 totalItems += h.quantity;
                 totalAmount += h.final_price;
-                const product = allProducts.find(p => p.__backendId === h.product_id);
-                let profit = 0;
-                if (product) {
-                    const buyPrice = product.buy_price || 0;
-                    const sellPricePerUnit = h.final_price / h.quantity;
-                    profit = (sellPricePerUnit - buyPrice) * h.quantity;
-                    totalProfit += profit;
+
+                let buyPrice = h.product_buy_price || 0;
+                if (!buyPrice) {
+                    const product = allProducts.find(p => p.__backendId === h.product_id);
+                    if (product) {
+                        buyPrice = product.buy_price || 0;
+                    }
                 }
+
+                const sellPricePerUnit = h.final_price / h.quantity;
+                const profit = (sellPricePerUnit - buyPrice) * h.quantity;
+                totalProfit += profit;
+
                 const paymentType = h.payment_type === 'due' ?
                     `<span class="payment-badge payment-due">বাকি</span>` :
                     `<span class="payment-badge payment-cash">নগদ</span>`;
-                const priceDiff = h.unit_price - (product ? product.sell_price : 0);
+                const priceDiff = h.unit_price - (h.product_sell_price || 0);
                 const priceDiffHtml = priceDiff !== 0 ?
                     `<span class="text-xs ${priceDiff > 0 ? 'text-green-600' : 'text-red-600'}">(${priceDiff > 0 ? '+' : ''}${priceDiff} টাকা)</span>` :
                     '';
@@ -2168,7 +2172,7 @@
                                     ${h.comment ? `| 💬 ${h.comment}` : ''}
                                 </div>
                                 <div class="text-xs mt-1 flex flex-wrap gap-2">
-                                    <span class="font-medium">ক্রয়: ৳${product ? (product.buy_price || 0) : 0}</span>
+                                    <span class="font-medium">ক্রয়: ৳${buyPrice || 0}</span>
                                     <span class="font-medium">বিক্রয়: ৳${h.unit_price} ${priceDiffHtml}</span>
                                     <span class="font-medium ${profit >= 0 ? 'text-green-600' : 'text-red-600'}">লাভ: ৳${profit.toLocaleString()}</span>
                                 </div>
@@ -2499,7 +2503,16 @@
             showToast('🗑️ পণ্য ডিলিট');
         }
 
+        // ============================================
+        // SAVE SALE HISTORY - buy_price সংরক্ষণ
+        // ============================================
         async function saveSaleHistory(saleData) {
+            const product = allProducts.find(p => p.__backendId === saleData.product_id);
+            if (product) {
+                saleData.product_buy_price = product.buy_price || 0;
+                saleData.product_sell_price = product.sell_price || 0;
+            }
+
             if (currentUser) {
                 const newRef = await database.ref(`users/${currentUser.uid}/sale_history`).push().set(saleData);
                 saleData.__backendId = newRef.key;
@@ -2768,7 +2781,7 @@
         }
 
         // ============================================
-        // 🔥 EDIT PRODUCT - সম্পূর্ণ ফিক্সড
+        // 🔥 EDIT PRODUCT
         // ============================================
         function editProduct(id) {
             console.log('✏️ editProduct কল হয়েছে:', id);
@@ -2892,6 +2905,9 @@
             renderHistory();
         }
 
+        // ============================================
+        // RENDER HISTORY - লাভ সহ
+        // ============================================
         function renderHistory() {
             const container = document.getElementById('history-list');
             const empty = document.getElementById('no-history');
@@ -2928,11 +2944,16 @@
                     `<span class="payment-badge payment-cash">নগদ</span>`;
                 const customerName = h.customer_name ? `👤 ${h.customer_name}` : '';
                 const commentHtml = h.comment ? `<div class="comment-box mt-1">💬 ${h.comment}</div>` : '';
-                const product = allProducts.find(p => p.__backendId === h.product_id);
-                const priceDiff = product ? h.unit_price - product.sell_price : 0;
-                const priceDiffHtml = priceDiff !== 0 ?
-                    `<span class="text-xs ${priceDiff > 0 ? 'text-green-600' : 'text-red-600'}">(${priceDiff > 0 ? '+' : ''}${priceDiff} টাকা)</span>` :
-                    '';
+
+                let buyPrice = h.product_buy_price || 0;
+                if (!buyPrice) {
+                    const product = allProducts.find(p => p.__backendId === h.product_id);
+                    if (product) {
+                        buyPrice = product.buy_price || 0;
+                    }
+                }
+                const profit = (h.unit_price - buyPrice) * h.quantity;
+                const profitClass = profit >= 0 ? 'text-green-600' : 'text-red-600';
 
                 return `<div class="history-item bg-gray-50 rounded-lg p-3 flex justify-between items-center hover:shadow-sm transition">
                             <div class="flex-1">
@@ -2940,11 +2961,12 @@
                                     <span class="font-medium text-gray-800">${h.product_name}</span>
                                     ${paymentType}
                                     ${customerName ? `<span class="text-xs text-gray-500">${customerName}</span>` : ''}
+                                    <span class="text-xs ${profitClass} font-medium">লাভ: ৳${profit.toFixed(0)}</span>
                                 </div>
                                 <div class="text-xs text-gray-400 mt-1">
                                     📅 ${new Date(h.date).toLocaleDateString('bn-BD')} 🕐 ${h.time || ''}
                                     ${h.discount ? `| ডিসকাউন্ট: ৳${h.discount}` : ''}
-                                    ${priceDiffHtml}
+                                    ${h.product_buy_price ? `| ক্রয়: ৳${h.product_buy_price}` : ''}
                                 </div>
                                 ${commentHtml}
                             </div>
@@ -3039,6 +3061,9 @@
             renderProfit();
         }
 
+        // ============================================
+        // RENDER PROFIT - ফিক্সড
+        // ============================================
         function renderProfit() {
             const container = document.getElementById('profit-list');
             const empty = document.getElementById('no-profit');
@@ -3046,6 +3071,7 @@
             let filtered = [...saleHistory];
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
             if (profitFilter === 'today') {
                 filtered = filtered.filter(h => new Date(h.date) >= today);
             } else if (profitFilter === 'week') {
@@ -3064,6 +3090,7 @@
                 end.setHours(23, 59, 59);
                 filtered = filtered.filter(h => { const d = new Date(h.date); return d >= start && d <= end; });
             }
+
             if (!filtered.length) {
                 container.innerHTML = '';
                 empty.classList.remove('hidden');
@@ -3071,32 +3098,53 @@
                 return;
             }
             empty.classList.add('hidden');
+
             const profitMap = {};
             filtered.forEach(h => {
-                const product = allProducts.find(p => p.__backendId === h.product_id);
-                if (!product) return;
-                const buyPrice = product.buy_price || 0;
+                let buyPrice = h.product_buy_price || 0;
+                if (!buyPrice) {
+                    const product = allProducts.find(p => p.__backendId === h.product_id);
+                    if (product) {
+                        buyPrice = product.buy_price || 0;
+                    }
+                }
+
                 const sellPricePerUnit = h.final_price / h.quantity;
                 const profit = (sellPricePerUnit - buyPrice) * h.quantity;
+
                 if (!profitMap[h.product_id]) {
-                    profitMap[h.product_id] = { name: h.product_name, totalSold: 0, totalRevenue: 0,
+                    profitMap[h.product_id] = {
+                        name: h.product_name,
+                        totalSold: 0,
+                        totalRevenue: 0,
                         totalProfit: 0,
-                        quantity: 0 };
+                        quantity: 0,
+                        buyPrice: buyPrice
+                    };
                 }
                 profitMap[h.product_id].totalSold += h.quantity;
                 profitMap[h.product_id].totalRevenue += h.final_price;
                 profitMap[h.product_id].totalProfit += profit;
                 profitMap[h.product_id].quantity += h.quantity;
             });
+
             const sorted = Object.values(profitMap).sort((a, b) => b.totalProfit - a.totalProfit);
             const totalProfit = sorted.reduce((sum, p) => sum + p.totalProfit, 0);
             totalProfitEl.textContent = '৳' + totalProfit.toLocaleString('bn-BD');
+
             container.innerHTML = sorted.map(p => {
                 const profitClass = p.totalProfit >= 0 ? 'profit-positive' : 'profit-negative';
+                const avgBuyPrice = p.buyPrice || 0;
                 return `<div class="flex justify-between items-center border-b border-gray-100 py-2">
-                            <div><span class="font-medium text-gray-800">${p.name}</span><span class="text-xs text-gray-400 ml-2">${p.quantity}টি বিক্রি</span></div>
-                            <div class="text-right"><div class="font-bold ${profitClass}">৳${p.totalProfit.toLocaleString('bn-BD')}</div>
-                            <div class="text-xs text-gray-400">আয়: ৳${p.totalRevenue.toLocaleString()}</div></div>
+                            <div>
+                                <span class="font-medium text-gray-800">${p.name}</span>
+                                <span class="text-xs text-gray-400 ml-2">${p.quantity}টি বিক্রি</span>
+                                <span class="text-xs text-gray-400 ml-2">ক্রয়: ৳${avgBuyPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold ${profitClass}">৳${p.totalProfit.toLocaleString('bn-BD')}</div>
+                                <div class="text-xs text-gray-400">আয়: ৳${p.totalRevenue.toLocaleString()}</div>
+                            </div>
                         </div>`;
             }).join('');
         }
@@ -3132,7 +3180,7 @@
         }
 
         // ============================================
-        // BULK SELL - সম্পূর্ণ ফিক্সড
+        // BULK SELL - সম্পূর্ণ ফিক্সড (ফর্ম রিসেট হয়)
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -3254,7 +3302,9 @@
             return { totalOriginal, totalWithCustomPrice, finalPrice, totalItems, discountAmount };
         }
 
-        // 🔥 সম্পূর্ণ ফিক্সড বাল্ক বিক্রি
+        // ============================================
+        // CONFIRM BULK SELL - ফর্ম রিসেট হয়
+        // ============================================
         async function confirmBulkSell() {
             showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
             const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
@@ -3344,14 +3394,14 @@
                 totalRevenue += Math.round(finalPricePerProduct);
             }
 
-            // 🔥 ইনভয়েস দেখান
+            // ইনভয়েস দেখান
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
 
             // ✅ বাল্ক বিক্রির পর সিলেক্টেড পণ্য সম্পূর্ণ ক্লিয়ার করি
             selectedProducts.clear();
-            
+
             // ✅ ফর্ম রিসেট করি
             document.getElementById('bulk-customer-name').value = '';
             document.getElementById('bulk-customer-mobile').value = '';
@@ -3360,8 +3410,8 @@
             document.getElementById('bulk-discount').value = '0';
             document.querySelector('input[name="payment-type"][value="cash"]').checked = true;
             document.getElementById('customer-select-container').classList.add('hidden');
-            
-            // ✅ UI আপডেট - আগে bulk bar আপডেট করি
+
+            // ✅ UI আপডেট
             updateBulkSellBar();
             renderAll();
             renderHistory();
@@ -3369,14 +3419,14 @@
             updateTodaySummary();
             renderTodayDetails();
             updateChart(currentChartPeriod);
-            
+
             const msgEl = document.getElementById('bulk-msg');
             showMsg(msgEl,
                 `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`,
                 'green');
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
             hideLoading();
-            
+
             // 🔥 মডাল বন্ধ করি
             setTimeout(() => {
                 closeBulkSellModal();
@@ -3385,7 +3435,6 @@
 
         function closeBulkSellModal() {
             document.getElementById('bulk-sell-modal').classList.add('hidden');
-            // সম্পূর্ণ রিসেট - আবার খুললে নতুন করে লোড হবে
         }
 
         // ============================================
@@ -3456,7 +3505,7 @@
         }
 
         // ============================================
-        // DELETE - ফিক্সড (ইতিহাস মুছে না)
+        // DELETE - ফিক্সড (ইতিহাস অক্ষত থাকে)
         // ============================================
         function confirmDelete(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -3467,21 +3516,24 @@
         document.getElementById('delete-cancel')?.addEventListener('click', () => { document.getElementById(
                 'delete-modal').classList.add('hidden');
             deletingProduct = null; });
-        
-        // 🔥 ফিক্সড ডিলিট - ইতিহাস অক্ষত রাখে
-        document.getElementById('delete-confirm')?.addEventListener('click', async () => { 
+
+        document.getElementById('delete-confirm')?.addEventListener('click', async () => {
             if (!deletingProduct) return;
             showLoading('পণ্য মুছে ফেলা হচ্ছে');
-            
-            // শুধু পণ্য ডিলিট করব, ইতিহাস থাকবে
+
             await deleteProductDB(deletingProduct.__backendId);
-            
+
             document.getElementById('delete-modal').classList.add('hidden');
             deletingProduct = null;
-            
-            // ইতিহাস রিলোড করি (ইতিহাসে পণ্যের নাম সংরক্ষিত ছিল)
-            loadSaleHistory();
-            
+
+            // ইতিহাস রিলোড করি - buy_price ইতিহাসে সংরক্ষিত আছে
+            renderAll();
+            renderHistory();
+            renderProfit();
+            updateTodaySummary();
+            renderTodayDetails();
+            updateChart(currentChartPeriod);
+
             hideLoading();
             showToast('✅ পণ্য ডিলিট করা হয়েছে (ইতিহাস অক্ষত)', 'success');
         });
@@ -3508,7 +3560,6 @@
             e.target.reset();
         });
 
-        // 🔥 বিক্রি ফর্ম - ইনভয়েস সহ
         document.getElementById('sell-form')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -3550,13 +3601,10 @@
             };
             await saveSaleHistory(saleData);
 
-            // 🔥 ইনভয়েস দেখান
-            console.log('🧾 ইনভয়েস দেখানো হচ্ছে');
             showInvoice([saleData]);
 
             showMsg(msg, `✓ ${qty} ${p.unit||'পিস'} বিক্রি হয়েছে (৳${price} করে)`, 'green');
 
-            // 🔥 ফর্ম রিসেট
             e.target.reset();
             document.getElementById('sell-stock-info').textContent = '';
             document.getElementById('sell-customer-name').value = '';
@@ -3684,7 +3732,6 @@
         console.log('✅ পণ্য সিস্টেম লোড হয়েছে');
         console.log('🔒 লগইন স্ট্যাটাস:', currentUser ? 'লগইন করা' : 'গেস্ট');
 
-        // চার্ট রিফ্রেশ
         setTimeout(() => {
             const reportsTab = document.getElementById('tab-reports');
             if (reportsTab && !reportsTab.classList.contains('hidden')) {
@@ -3717,7 +3764,6 @@
             }, 1000);
         });
 
-        // ডট অ্যানিমেশন
         setInterval(() => {
             const dotsEl = document.getElementById('loading-dots');
             if (dotsEl) {
