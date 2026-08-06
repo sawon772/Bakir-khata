@@ -3248,7 +3248,7 @@
         }
 
         // ============================================
-        // BULK SELL - সম্পূর্ণ ফিক্সড (সিলেক্ট ক্লিয়ার + মডাল বন্ধ)
+        // BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -3371,7 +3371,7 @@
         }
 
         // ============================================
-        // CONFIRM BULK SELL - ফিক্সড (মডাল বন্ধ হবে)
+        // CONFIRM BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
         // ============================================
         async function confirmBulkSell() {
             showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
@@ -3407,34 +3407,45 @@
 
             if (paymentType === 'due' && customerId) {
                 try {
-                    const found = allCustomers.find(c => (c.customer_id === customerId || c.__backendId ===
-                    customerId));
-                    if (found) { finalCustomerName = found.customer_name || found.name || 'অজানা'; } else {
-                        const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once(
-                        'value');
-                        if (snap.exists()) { const data = snap.val();
-                            finalCustomerName = data.customer_name || data.name || 'অজানা'; }
+                    const found = allCustomers.find(c => (c.customer_id === customerId || c.__backendId === customerId));
+                    if (found) { 
+                        finalCustomerName = found.customer_name || found.name || 'অজানা'; 
+                    } else {
+                        const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
+                        if (snap.exists()) { 
+                            const data = snap.val();
+                            finalCustomerName = data.customer_name || data.name || 'অজানা'; 
+                        }
                     }
-                } catch (e) { console.error('কাস্টমার খোঁজা ব্যর্থ:', e); }
+                } catch (e) { 
+                    console.error('কাস্টমার খোঁজা ব্যর্থ:', e); 
+                }
             }
 
-            let soldCount = 0,
-                totalRevenue = 0;
+            let soldCount = 0, totalRevenue = 0;
             const allSales = [];
 
             for (const [productId, data] of selectedProducts) {
                 const product = allProducts.find(p => p.__backendId === productId);
-                if (!product || product.stock < data.qty) { showMsg(document.getElementById('bulk-msg'),
-                        `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
-                    hideLoading(); return; }
+                if (!product || product.stock < data.qty) { 
+                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
+                    hideLoading(); 
+                    return; 
+                }
+                
                 const unitPrice = data.price || product.sell_price || 0;
                 const totalPrice = unitPrice * data.qty;
-                const proportionalDiscount = totalWithCustomPrice > 0 ? (totalPrice / totalWithCustomPrice) *
-                    discountAmount : 0;
+                const proportionalDiscount = totalWithCustomPrice > 0 ? (totalPrice / totalWithCustomPrice) * discountAmount : 0;
                 const finalPricePerProduct = Math.max(0, totalPrice - proportionalDiscount);
-                const updated = { ...product, stock: product.stock - data.qty, total_sold: (Number(product
-                        .total_sold) || 0) + data.qty, last_updated: new Date().toISOString() };
+                
+                const updated = { 
+                    ...product, 
+                    stock: product.stock - data.qty, 
+                    total_sold: (Number(product.total_sold) || 0) + data.qty, 
+                    last_updated: new Date().toISOString() 
+                };
                 await updateProduct(updated);
+                
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
@@ -3454,25 +3465,32 @@
                 };
                 await saveSaleHistory(saleData);
                 allSales.push(saleData);
+                
                 if (paymentType === 'due' && finalCustomerId) {
-                    const transactionData = { type: 'due', customer_id: finalCustomerId,
-                        customer_name: finalCustomerName, amount: Math.round(finalPricePerProduct),
+                    const transactionData = { 
+                        type: 'due', 
+                        customer_id: finalCustomerId,
+                        customer_name: finalCustomerName, 
+                        amount: Math.round(finalPricePerProduct),
                         date: new Date().toISOString().split('T')[0],
-                        note: comment ? `পণ্য বিক্রি: ${product.name} (${data.qty}টি) - ${comment}` :
-                            `পণ্য বিক্রি: ${product.name} (${data.qty}টি)`,
+                        note: comment ? `পণ্য বিক্রি: ${product.name} (${data.qty}টি) - ${comment}` : `পণ্য বিক্রি: ${product.name} (${data.qty}টি)`,
                         created_at: new Date().toISOString(),
-                        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit',
-                            second: '2-digit' }) };
-                    try { await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData); } catch (
-                        e) { console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
+                        timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
+                    };
+                    try { 
+                        await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData); 
+                    } catch (e) { 
+                        console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
                         showMsg(document.getElementById('bulk-msg'), 'বাকি লেনদেন সেভ ব্যর্থ!', 'red');
-                        hideLoading(); return; }
+                        hideLoading(); 
+                        return; 
+                    }
                 }
                 soldCount += data.qty;
                 totalRevenue += Math.round(finalPricePerProduct);
             }
 
-            // ইনভয়েস দেখান
+            // 🔥 ইনভয়েস দেখান
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
@@ -3499,23 +3517,25 @@
             updateChart(currentChartPeriod);
 
             const msgEl = document.getElementById('bulk-msg');
-            showMsg(msgEl,
-                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`,
-                'green');
+            showMsg(msgEl, `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 'green');
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
-            
-            // 🔥 মডাল বন্ধ করুন - তাৎক্ষণিক
+
+            // 🔥 মডাল বন্ধ করুন - ইমিডিয়েটলি
             closeBulkSellModal();
-            
+
             hideLoading();
         }
 
+        // ============================================
+        // CLOSE BULK SELL MODAL - ফিক্সড
+        // ============================================
         function closeBulkSellModal() {
             const modal = document.getElementById('bulk-sell-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                // ব্যাকড্রপ ক্লিক বন্ধ করতে
+                // ফোর্স বন্ধ করতে
                 modal.style.display = 'none';
+                document.body.style.overflow = '';
                 setTimeout(() => {
                     modal.style.display = '';
                 }, 100);
