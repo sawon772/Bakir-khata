@@ -3105,7 +3105,7 @@
         }
 
         // ============================================
-        // RENDER PROFIT - সম্পূর্ণ ফিক্সড (পণ্য ডিলিট করলে প্রফিট ঠিক থাকবে + গতকাল)
+        // RENDER PROFIT - সম্পূর্ণ ফিক্সড (ডিলিট করলেও প্রফিট ঠিক থাকবে)
         // ============================================
         function renderProfit() {
             const container = document.getElementById('profit-list');
@@ -3115,9 +3115,9 @@
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-            // 🔥 পণ্য ডিলিট করলে প্রফিট থেকে বাদ দিতে
-            const productIds = new Set(allProducts.map(p => p.__backendId));
-            filtered = filtered.filter(h => productIds.has(h.product_id));
+            // 🔥 ফিক্স: ডিলিট করা পণ্যের হিস্ট্রি থেকেও প্রফিট দেখাবো
+            // কোনো ফিল্টার না করে সব হিস্ট্রি রাখবো
+            // কিন্তু পণ্যের নাম দেখানোর সময় চেক করবো
 
             if (profitFilter === 'today') {
                 filtered = filtered.filter(h => new Date(h.date) >= today);
@@ -3171,20 +3171,26 @@
                 const sellPricePerUnit = h.final_price / h.quantity;
                 const profit = (sellPricePerUnit - buyPrice) * h.quantity;
 
-                if (!profitMap[h.product_id]) {
-                    profitMap[h.product_id] = {
-                        name: h.product_name,
+                // 🔥 পণ্য আইডি দিয়ে গ্রুপিং
+                const productId = h.product_id || 'deleted';
+                if (!profitMap[productId]) {
+                    // 🔥 পণ্যের নাম চেক করুন (ডিলিট করা হলে দেখাবো "ডিলিট করা পণ্য")
+                    const productName = allProducts.find(p => p.__backendId === h.product_id)?.name || 
+                                       h.product_name || 'ডিলিট করা পণ্য';
+                    profitMap[productId] = {
+                        name: productName,
                         totalSold: 0,
                         totalRevenue: 0,
                         totalProfit: 0,
                         quantity: 0,
-                        buyPrice: buyPrice
+                        buyPrice: buyPrice,
+                        isDeleted: !allProducts.some(p => p.__backendId === h.product_id)
                     };
                 }
-                profitMap[h.product_id].totalSold += h.quantity;
-                profitMap[h.product_id].totalRevenue += h.final_price;
-                profitMap[h.product_id].totalProfit += profit;
-                profitMap[h.product_id].quantity += h.quantity;
+                profitMap[productId].totalSold += h.quantity;
+                profitMap[productId].totalRevenue += h.final_price;
+                profitMap[productId].totalProfit += profit;
+                profitMap[productId].quantity += h.quantity;
             });
 
             const sorted = Object.values(profitMap).sort((a, b) => b.totalProfit - a.totalProfit);
@@ -3194,9 +3200,12 @@
             container.innerHTML = sorted.map(p => {
                 const profitClass = p.totalProfit >= 0 ? 'profit-positive' : 'profit-negative';
                 const avgBuyPrice = p.buyPrice || 0;
+                // 🔥 ডিলিট করা পণ্যের জন্য আলাদা স্টাইল
+                const deletedClass = p.isDeleted ? 'text-gray-400 italic' : '';
+                const deletedBadge = p.isDeleted ? ' <span class="text-xs text-red-500">(ডিলিট)</span>' : '';
                 return `<div class="flex justify-between items-center border-b border-gray-100 py-2">
                             <div>
-                                <span class="font-medium text-gray-800">${p.name}</span>
+                                <span class="font-medium ${deletedClass}">${p.name}${deletedBadge}</span>
                                 <span class="text-xs text-gray-400 ml-2">${p.quantity}টি বিক্রি</span>
                                 <span class="text-xs text-gray-400 ml-2">ক্রয়: ৳${avgBuyPrice.toFixed(2)}</span>
                             </div>
@@ -3239,7 +3248,7 @@
         }
 
         // ============================================
-        // BULK SELL - সম্পূর্ণ ফিক্সড
+        // BULK SELL - সম্পূর্ণ ফিক্সড (সিলেক্ট ক্লিয়ার + মডাল বন্ধ)
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -3362,7 +3371,7 @@
         }
 
         // ============================================
-        // CONFIRM BULK SELL - ফিক্সড (সিলেক্ট ক্লিয়ার + ফর্ম রিসেট)
+        // CONFIRM BULK SELL - ফিক্সড (মডাল বন্ধ হবে)
         // ============================================
         async function confirmBulkSell() {
             showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
@@ -3375,13 +3384,23 @@
             const customerMobile = document.getElementById('bulk-customer-mobile').value.trim() || '';
             const customerAddress = document.getElementById('bulk-customer-address').value.trim() || '';
 
-            if (finalPrice <= 0) { showMsg(document.getElementById('bulk-msg'), 'মূল্য ০ হতে পারে না!', 'red');
-                hideLoading(); return; }
-            if (paymentType === 'due' && !customerId) { showMsg(document.getElementById('bulk-msg'),
-                    'বাকি কাস্টমার নির্বাচন করুন!', 'red');
-                hideLoading(); return; }
-            if (!currentUser) { showMsg(document.getElementById('bulk-msg'), 'বিক্রি করতে লগইন করুন!', 'red');
-                hideLoading(); return; }
+            if (finalPrice <= 0) { 
+                showMsg(document.getElementById('bulk-msg'), 'মূল্য ০ হতে পারে না!', 'red');
+                hideLoading(); 
+                return; 
+            }
+            
+            if (paymentType === 'due' && !customerId) { 
+                showMsg(document.getElementById('bulk-msg'), 'বাকি কাস্টমার নির্বাচন করুন!', 'red');
+                hideLoading(); 
+                return; 
+            }
+            
+            if (!currentUser) { 
+                showMsg(document.getElementById('bulk-msg'), 'বিক্রি করতে লগইন করুন!', 'red');
+                hideLoading(); 
+                return; 
+            }
 
             let finalCustomerName = customerName || 'অজানা';
             let finalCustomerId = customerId || '';
@@ -3484,16 +3503,23 @@
                 `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`,
                 'green');
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
+            
+            // 🔥 মডাল বন্ধ করুন - তাৎক্ষণিক
+            closeBulkSellModal();
+            
             hideLoading();
-
-            // মডাল বন্ধ
-            setTimeout(() => {
-                closeBulkSellModal();
-            }, 2000);
         }
 
         function closeBulkSellModal() {
-            document.getElementById('bulk-sell-modal').classList.add('hidden');
+            const modal = document.getElementById('bulk-sell-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                // ব্যাকড্রপ ক্লিক বন্ধ করতে
+                modal.style.display = 'none';
+                setTimeout(() => {
+                    modal.style.display = '';
+                }, 100);
+            }
         }
 
         // ============================================
