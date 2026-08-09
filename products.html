@@ -2577,10 +2577,10 @@
         }
 
         // ============================================
-        // ⭐ RETURN WITH QUANTITY SELECTION (FIXED)
+        // ⭐⭐⭐ RETURN WITH QUANTITY SELECTION - সম্পূর্ণ নতুন করে লেখা ⭐⭐⭐
         // ============================================
         function openReturnModal(historyId) {
-            console.log('🔄 রিটার্ন মডাল ওপেন করা হচ্ছে:', historyId);
+            console.log('🔄 openReturnModal কল করা হয়েছে, ID:', historyId);
             
             if (!currentUser) { 
                 showToast('রিটার্ন করতে লগইন করুন!', 'error'); 
@@ -2590,8 +2590,11 @@
             const historyItem = saleHistory.find(h => h.__backendId === historyId);
             if (!historyItem) { 
                 showToast('লেনদেন পাওয়া যায়নি!', 'error'); 
+                console.error('❌ historyItem পাওয়া যায়নি:', historyId);
                 return; 
             }
+            
+            console.log('✅ historyItem পাওয়া গেছে:', historyItem);
             
             returnHistoryItem = historyItem;
             returnMaxQty = historyItem.quantity;
@@ -2611,6 +2614,7 @@
             document.getElementById('return-confirm-btn').disabled = false;
             
             document.getElementById('return-modal').classList.add('active');
+            console.log('✅ রিটার্ন মডাল ওপেন করা হয়েছে');
         }
 
         function closeReturnModal() {
@@ -2638,15 +2642,18 @@
         }
 
         async function confirmReturn() {
-            console.log('✅ রিটার্ন কনফার্ম করা হচ্ছে');
+            console.log('✅ confirmReturn কল হয়েছে');
             
             if (!returnHistoryItem) {
                 showToast('❌ কোনো পণ্য নির্বাচন করা নেই!', 'error');
+                console.error('❌ returnHistoryItem খালি');
                 return;
             }
             
             const input = document.getElementById('return-qty-input');
             const returnQty = parseInt(input.value) || 0;
+            
+            console.log('📦 রিটার্ন পরিমাণ:', returnQty, 'সর্বোচ্চ:', returnMaxQty);
             
             if (returnQty < 1 || returnQty > returnMaxQty) {
                 showToast('❌ সঠিক পরিমাণ দিন!', 'error');
@@ -2654,6 +2661,7 @@
             }
             
             if (!confirm(`"${returnHistoryItem.product_name}" এর ${returnQty}টি রিটার্ন করতে চান?`)) {
+                console.log('❌ ইউজার কনফার্ম করেনি');
                 return;
             }
             
@@ -2662,9 +2670,13 @@
             
             try {
                 const historyItem = returnHistoryItem;
-                const product = allProducts.find(p => p.__backendId === historyItem.product_id);
+                console.log('📝 প্রক্রিয়াকরণ শুরু:', historyItem);
                 
-                // রিটার্নের পরিমাণ অনুযায়ী স্টক আপডেট
+                // 1. পণ্য খোঁজা
+                const product = allProducts.find(p => p.__backendId === historyItem.product_id);
+                console.log('📦 পণ্য পাওয়া গেছে:', product ? product.name : '❌ নেই');
+                
+                // 2. স্টক আপডেট
                 if (product) {
                     const updated = { 
                         ...product, 
@@ -2672,31 +2684,27 @@
                         total_sold: Math.max(0, (Number(product.total_sold) || 0) - returnQty),
                         last_updated: new Date().toISOString() 
                     };
+                    console.log('📊 স্টক আপডেট:', updated.stock);
                     await updateProduct(updated);
                 }
                 
-                // যদি পুরো পরিমাণ রিটার্ন হয় তাহলে পুরো লেনদেন ডিলিট
+                // 3. লেনদেন আপডেট
                 if (returnQty === historyItem.quantity) {
+                    // পুরো রিটার্ন - লেনদেন ডিলিট
+                    console.log('🗑️ পুরো লেনদেন ডিলিট করা হচ্ছে');
                     if (currentUser) {
                         await database.ref(`users/${currentUser.uid}/sale_history/${historyItem.__backendId}`).remove();
-                    } else {
-                        const index = saleHistory.findIndex(h => h.__backendId === historyItem.__backendId);
-                        if (index > -1) { 
-                            saleHistory.splice(index, 1);
-                            localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
-                        }
                     }
                 } else {
-                    // আংশিক রিটার্ন - নতুন লেনদেন তৈরি করা
+                    // আংশিক রিটার্ন - নতুন লেনদেন তৈরি
+                    console.log('✏️ আংশিক রিটার্ন - নতুন লেনদেন তৈরি');
                     const newQuantity = historyItem.quantity - returnQty;
                     const newFinalPrice = newQuantity * historyItem.unit_price;
                     
-                    // পুরনো লেনদেন ডিলিট
                     if (currentUser) {
                         await database.ref(`users/${currentUser.uid}/sale_history/${historyItem.__backendId}`).remove();
                     }
                     
-                    // নতুন লেনদেন তৈরি (আপডেটেড পরিমাণ সহ)
                     const updatedSale = {
                         ...historyItem,
                         quantity: newQuantity,
@@ -2708,15 +2716,13 @@
                     if (currentUser) {
                         const newRef = await database.ref(`users/${currentUser.uid}/sale_history`).push().set(updatedSale);
                         updatedSale.__backendId = newRef.key;
-                    } else {
-                        updatedSale.__backendId = 'HIST_' + Date.now();
-                        saleHistory.push(updatedSale);
-                        localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
+                        console.log('✅ নতুন লেনদেন তৈরি:', updatedSale.__backendId);
                     }
                 }
                 
-                // বাকি লেনদেন আপডেট (যদি বাকি থাকে)
+                // 4. বাকি লেনদেন আপডেট (যদি থাকে)
                 if (historyItem.payment_type === 'due' && historyItem.customer_id) {
+                    console.log('💰 বাকি লেনদেন আপডেট করা হচ্ছে');
                     const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
                     const data = snapshot.val();
                     if (data) {
@@ -2728,12 +2734,14 @@
                                 
                                 if (returnQty === historyItem.quantity) {
                                     await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
+                                    console.log('🗑️ বাকি লেনদেন ডিলিট');
                                 } else {
                                     const newDueAmount = (historyItem.final_price / historyItem.quantity) * (historyItem.quantity - returnQty);
                                     await database.ref(`users/${currentUser.uid}/data/${key}`).update({
                                         amount: Math.round(newDueAmount),
                                         note: value.note ? `${value.note} (আংশিক রিটার্ন: ${returnQty}টি)` : `আংশিক রিটার্ন: ${returnQty}টি`
                                     });
+                                    console.log('✏️ বাকি লেনদেন আপডেট:', Math.round(newDueAmount));
                                 }
                                 break;
                             }
@@ -2741,13 +2749,15 @@
                     }
                 }
                 
-                // লোকাল অ্যারেতে আপডেট
+                // 5. লোকাল অ্যারেতে আপডেট
                 const localIndex = saleHistory.findIndex(h => h.__backendId === historyItem.__backendId);
                 if (localIndex > -1 && returnQty === historyItem.quantity) {
                     saleHistory.splice(localIndex, 1);
+                    console.log('🗑️ লোকাল অ্যারে থেকে ডিলিট');
                 }
                 
-                // UI আপডেট
+                // 6. UI আপডেট
+                console.log('🔄 UI আপডেট করা হচ্ছে');
                 renderHistory();
                 renderProfit();
                 renderProducts();
@@ -2757,9 +2767,10 @@
                 updateChart(currentChartPeriod);
                 
                 showToast(`✅ ${returnQty}টি "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
+                console.log('✅ রিটার্ন সম্পন্ন!');
                 
             } catch (error) {
-                console.error('রিটার্ন ব্যর্থ:', error);
+                console.error('❌ রিটার্ন ব্যর্থ:', error);
                 showToast('❌ রিটার্ন ব্যর্থ: ' + error.message, 'error');
             }
             
@@ -2768,7 +2779,10 @@
 
         // Return modal close on click outside
         document.getElementById('return-modal')?.addEventListener('click', function(e) {
-            if (e.target === this) { closeReturnModal(); }
+            if (e.target === this) { 
+                console.log('🔴 বাইরে ক্লিক, মডাল বন্ধ');
+                closeReturnModal(); 
+            }
         });
 
         // Enter key on return input
@@ -2776,6 +2790,7 @@
             if (e.key === 'Enter') {
                 e.preventDefault();
                 if (!document.getElementById('return-confirm-btn').disabled) {
+                    console.log('⌨️ Enter key pressed, confirming return');
                     confirmReturn();
                 }
             }
