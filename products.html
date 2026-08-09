@@ -2577,9 +2577,11 @@
         }
 
         // ============================================
-        // ⭐ RETURN WITH QUANTITY SELECTION (NEW)
+        // ⭐ RETURN WITH QUANTITY SELECTION (FIXED)
         // ============================================
         function openReturnModal(historyId) {
+            console.log('🔄 রিটার্ন মডাল ওপেন করা হচ্ছে:', historyId);
+            
             if (!currentUser) { 
                 showToast('রিটার্ন করতে লগইন করুন!', 'error'); 
                 return; 
@@ -2636,7 +2638,12 @@
         }
 
         async function confirmReturn() {
-            if (!returnHistoryItem) return;
+            console.log('✅ রিটার্ন কনফার্ম করা হচ্ছে');
+            
+            if (!returnHistoryItem) {
+                showToast('❌ কোনো পণ্য নির্বাচন করা নেই!', 'error');
+                return;
+            }
             
             const input = document.getElementById('return-qty-input');
             const returnQty = parseInt(input.value) || 0;
@@ -2694,8 +2701,7 @@
                         ...historyItem,
                         quantity: newQuantity,
                         final_price: newFinalPrice,
-                        created_at: new Date().toISOString(),
-                        __backendId: historyItem.__backendId
+                        created_at: new Date().toISOString()
                     };
                     delete updatedSale.__backendId;
                     
@@ -2721,10 +2727,8 @@
                                 value.date === historyItem.date) {
                                 
                                 if (returnQty === historyItem.quantity) {
-                                    // পুরো রিটার্ন - পুরো বাকি মুছে ফেলুন
                                     await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
                                 } else {
-                                    // আংশিক রিটার্ন - বাকির পরিমাণ আপডেট করুন
                                     const newDueAmount = (historyItem.final_price / historyItem.quantity) * (historyItem.quantity - returnQty);
                                     await database.ref(`users/${currentUser.uid}/data/${key}`).update({
                                         amount: Math.round(newDueAmount),
@@ -2741,8 +2745,6 @@
                 const localIndex = saleHistory.findIndex(h => h.__backendId === historyItem.__backendId);
                 if (localIndex > -1 && returnQty === historyItem.quantity) {
                     saleHistory.splice(localIndex, 1);
-                } else if (localIndex > -1 && returnQty < historyItem.quantity) {
-                    // লোকাল অ্যারেতেও আপডেট - রিলোডের জন্য অপেক্ষা করুন
                 }
                 
                 // UI আপডেট
