@@ -858,7 +858,6 @@
                 font-size: 18px;
             }
         }
-        /* নতুন স্টাইল - লাস্ট সেল টাইম */
         .last-sale-time {
             font-size: 11px;
             font-weight: 500;
@@ -889,6 +888,118 @@
         [data-theme="dark"] .last-sale-old {
             background: #78350f;
             color: #fbbf24;
+        }
+        /* Return Modal Styles */
+        .return-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .return-modal.active {
+            display: flex;
+        }
+        .return-modal-content {
+            max-width: 400px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            animation: popIn 0.3s ease;
+        }
+        .return-modal-content h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #dc2626;
+            margin-bottom: 8px;
+        }
+        .return-modal-content p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        .return-modal-content .product-info {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+        .return-modal-content .product-info .name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .return-modal-content .product-info .detail {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .return-modal-content input[type="number"] {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+        .return-modal-content input[type="number"]:focus {
+            border-color: #0d9488;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2);
+        }
+        .return-modal-content .btn-group-return {
+            display: flex;
+            gap: 10px;
+        }
+        .return-modal-content .btn-group-return button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .return-modal-content .btn-group-return .btn-cancel {
+            background: var(--bg-input);
+            color: var(--text-secondary);
+        }
+        .return-modal-content .btn-group-return .btn-cancel:hover {
+            background: var(--border-color);
+        }
+        .return-modal-content .btn-group-return .btn-confirm-return {
+            background: #dc2626;
+            color: white;
+        }
+        .return-modal-content .btn-group-return .btn-confirm-return:hover {
+            background: #b91c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+        .return-modal-content .btn-group-return .btn-confirm-return:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .return-modal-content .error-msg {
+            color: #dc2626;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+        .return-modal-content .error-msg.show {
+            display: block;
         }
     </style>
 </head>
@@ -921,6 +1032,24 @@
         <div class="invoice-content">
             <button onclick="closeInvoice()" class="invoice-close-btn">✕</button>
             <div id="invoice-body"></div>
+        </div>
+    </div>
+
+    <!-- RETURN MODAL -->
+    <div id="return-modal" class="return-modal">
+        <div class="return-modal-content">
+            <h3>↩️ পণ্য রিটার্ন</h3>
+            <p id="return-modal-desc">কতটি পণ্য রিটার্ন করতে চান?</p>
+            <div class="product-info">
+                <div class="name" id="return-product-name">পণ্যের নাম</div>
+                <div class="detail" id="return-product-detail">পরিমাণ: ০টি</div>
+            </div>
+            <input type="number" id="return-qty-input" min="1" value="1" oninput="validateReturnQty()">
+            <div id="return-error-msg" class="error-msg">❌ পরিমাণ সঠিক নয়</div>
+            <div class="btn-group-return">
+                <button class="btn-cancel" onclick="closeReturnModal()">বাতিল</button>
+                <button class="btn-confirm-return" id="return-confirm-btn" onclick="confirmReturn()">✅ রিটার্ন</button>
+            </div>
         </div>
     </div>
 
@@ -1029,7 +1158,6 @@
                             <th class="text-right p-2 font-semibold text-gray-700 hidden sm:table-cell">ক্রয়</th>
                             <th class="text-right p-2 font-semibold text-gray-700">বিক্রয়</th>
                             <th class="text-right p-2 font-semibold text-gray-700">স্টক</th>
-                            <!-- নতুন কলাম: শেষ বিক্রি -->
                             <th class="text-center p-2 font-semibold text-gray-700">শেষ বিক্রি</th>
                             <th class="text-center p-2 font-semibold text-gray-700">অ্যাকশন</th>
                         </tr>
@@ -1499,6 +1627,10 @@
         let chartInstance = null;
         let currentChartPeriod = 'week';
         let selectedStockProduct = null;
+
+        // Return Modal Variables
+        let returnHistoryItem = null;
+        let returnMaxQty = 0;
 
         // ============================================
         // AUTH
@@ -2445,6 +2577,209 @@
         }
 
         // ============================================
+        // ⭐ RETURN WITH QUANTITY SELECTION (NEW)
+        // ============================================
+        function openReturnModal(historyId) {
+            if (!currentUser) { 
+                showToast('রিটার্ন করতে লগইন করুন!', 'error'); 
+                return; 
+            }
+            
+            const historyItem = saleHistory.find(h => h.__backendId === historyId);
+            if (!historyItem) { 
+                showToast('লেনদেন পাওয়া যায়নি!', 'error'); 
+                return; 
+            }
+            
+            returnHistoryItem = historyItem;
+            returnMaxQty = historyItem.quantity;
+            
+            document.getElementById('return-product-name').textContent = `📦 ${historyItem.product_name}`;
+            document.getElementById('return-product-detail').textContent = 
+                `মোট বিক্রি: ${historyItem.quantity}টি | মূল্য: ৳${historyItem.unit_price.toFixed(2)} | তারিখ: ${historyItem.date}`;
+            document.getElementById('return-modal-desc').textContent = 
+                `"${historyItem.product_name}" এর মধ্যে কতটি রিটার্ন করতে চান? (সর্বোচ্চ ${returnMaxQty}টি)`;
+            
+            const input = document.getElementById('return-qty-input');
+            input.value = returnMaxQty;
+            input.max = returnMaxQty;
+            input.min = 1;
+            
+            document.getElementById('return-error-msg').classList.remove('show');
+            document.getElementById('return-confirm-btn').disabled = false;
+            
+            document.getElementById('return-modal').classList.add('active');
+        }
+
+        function closeReturnModal() {
+            document.getElementById('return-modal').classList.remove('active');
+            returnHistoryItem = null;
+            returnMaxQty = 0;
+        }
+
+        function validateReturnQty() {
+            const input = document.getElementById('return-qty-input');
+            const val = parseInt(input.value) || 0;
+            const errorMsg = document.getElementById('return-error-msg');
+            const confirmBtn = document.getElementById('return-confirm-btn');
+            
+            if (val < 1 || val > returnMaxQty) {
+                errorMsg.textContent = `❌ দয়া করে ১ থেকে ${returnMaxQty} এর মধ্যে একটি সংখ্যা দিন`;
+                errorMsg.classList.add('show');
+                confirmBtn.disabled = true;
+                return false;
+            }
+            
+            errorMsg.classList.remove('show');
+            confirmBtn.disabled = false;
+            return true;
+        }
+
+        async function confirmReturn() {
+            if (!returnHistoryItem) return;
+            
+            const input = document.getElementById('return-qty-input');
+            const returnQty = parseInt(input.value) || 0;
+            
+            if (returnQty < 1 || returnQty > returnMaxQty) {
+                showToast('❌ সঠিক পরিমাণ দিন!', 'error');
+                return;
+            }
+            
+            if (!confirm(`"${returnHistoryItem.product_name}" এর ${returnQty}টি রিটার্ন করতে চান?`)) {
+                return;
+            }
+            
+            showLoading('রিটার্ন প্রক্রিয়াকরণ...');
+            closeReturnModal();
+            
+            try {
+                const historyItem = returnHistoryItem;
+                const product = allProducts.find(p => p.__backendId === historyItem.product_id);
+                
+                // রিটার্নের পরিমাণ অনুযায়ী স্টক আপডেট
+                if (product) {
+                    const updated = { 
+                        ...product, 
+                        stock: (Number(product.stock) || 0) + returnQty,
+                        total_sold: Math.max(0, (Number(product.total_sold) || 0) - returnQty),
+                        last_updated: new Date().toISOString() 
+                    };
+                    await updateProduct(updated);
+                }
+                
+                // যদি পুরো পরিমাণ রিটার্ন হয় তাহলে পুরো লেনদেন ডিলিট
+                if (returnQty === historyItem.quantity) {
+                    if (currentUser) {
+                        await database.ref(`users/${currentUser.uid}/sale_history/${historyItem.__backendId}`).remove();
+                    } else {
+                        const index = saleHistory.findIndex(h => h.__backendId === historyItem.__backendId);
+                        if (index > -1) { 
+                            saleHistory.splice(index, 1);
+                            localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
+                        }
+                    }
+                } else {
+                    // আংশিক রিটার্ন - নতুন লেনদেন তৈরি করা
+                    const newQuantity = historyItem.quantity - returnQty;
+                    const newFinalPrice = newQuantity * historyItem.unit_price;
+                    
+                    // পুরনো লেনদেন ডিলিট
+                    if (currentUser) {
+                        await database.ref(`users/${currentUser.uid}/sale_history/${historyItem.__backendId}`).remove();
+                    }
+                    
+                    // নতুন লেনদেন তৈরি (আপডেটেড পরিমাণ সহ)
+                    const updatedSale = {
+                        ...historyItem,
+                        quantity: newQuantity,
+                        final_price: newFinalPrice,
+                        created_at: new Date().toISOString(),
+                        __backendId: historyItem.__backendId
+                    };
+                    delete updatedSale.__backendId;
+                    
+                    if (currentUser) {
+                        const newRef = await database.ref(`users/${currentUser.uid}/sale_history`).push().set(updatedSale);
+                        updatedSale.__backendId = newRef.key;
+                    } else {
+                        updatedSale.__backendId = 'HIST_' + Date.now();
+                        saleHistory.push(updatedSale);
+                        localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory));
+                    }
+                }
+                
+                // বাকি লেনদেন আপডেট (যদি বাকি থাকে)
+                if (historyItem.payment_type === 'due' && historyItem.customer_id) {
+                    const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
+                    const data = snapshot.val();
+                    if (data) {
+                        for (const [key, value] of Object.entries(data)) {
+                            if (value.type === 'due' && 
+                                value.customer_id === historyItem.customer_id && 
+                                value.amount === historyItem.final_price && 
+                                value.date === historyItem.date) {
+                                
+                                if (returnQty === historyItem.quantity) {
+                                    // পুরো রিটার্ন - পুরো বাকি মুছে ফেলুন
+                                    await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
+                                } else {
+                                    // আংশিক রিটার্ন - বাকির পরিমাণ আপডেট করুন
+                                    const newDueAmount = (historyItem.final_price / historyItem.quantity) * (historyItem.quantity - returnQty);
+                                    await database.ref(`users/${currentUser.uid}/data/${key}`).update({
+                                        amount: Math.round(newDueAmount),
+                                        note: value.note ? `${value.note} (আংশিক রিটার্ন: ${returnQty}টি)` : `আংশিক রিটার্ন: ${returnQty}টি`
+                                    });
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // লোকাল অ্যারেতে আপডেট
+                const localIndex = saleHistory.findIndex(h => h.__backendId === historyItem.__backendId);
+                if (localIndex > -1 && returnQty === historyItem.quantity) {
+                    saleHistory.splice(localIndex, 1);
+                } else if (localIndex > -1 && returnQty < historyItem.quantity) {
+                    // লোকাল অ্যারেতেও আপডেট - রিলোডের জন্য অপেক্ষা করুন
+                }
+                
+                // UI আপডেট
+                renderHistory();
+                renderProfit();
+                renderProducts();
+                updateStats();
+                updateTodaySummary();
+                renderTodayDetails();
+                updateChart(currentChartPeriod);
+                
+                showToast(`✅ ${returnQty}টি "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
+                
+            } catch (error) {
+                console.error('রিটার্ন ব্যর্থ:', error);
+                showToast('❌ রিটার্ন ব্যর্থ: ' + error.message, 'error');
+            }
+            
+            hideLoading();
+        }
+
+        // Return modal close on click outside
+        document.getElementById('return-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) { closeReturnModal(); }
+        });
+
+        // Enter key on return input
+        document.getElementById('return-qty-input')?.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!document.getElementById('return-confirm-btn').disabled) {
+                    confirmReturn();
+                }
+            }
+        });
+
+        // ============================================
         // STOCK SEARCH
         // ============================================
         function filterStockSearch(value) {
@@ -2529,7 +2864,6 @@
                 return false;
             }
 
-            // ইমেজ আপলোড
             if (selectedImageFile) {
                 const url = await uploadImage();
                 if (url) {
@@ -2540,7 +2874,7 @@
 
             const backendId = data.__backendId;
             const updateData = { ...data };
-            delete updateData.__backendId; // 🔥 Firebase এ save না হয়
+            delete updateData.__backendId;
 
             try {
                 await database.ref(`users/${currentUser.uid}/products/${backendId}`).update(updateData);
@@ -2561,7 +2895,7 @@
         }
 
         // ============================================
-        // SAVE SALE HISTORY - buy_price সংরক্ষণ
+        // SAVE SALE HISTORY
         // ============================================
         async function saveSaleHistory(saleData) {
             const product = allProducts.find(p => p.__backendId === saleData.product_id);
@@ -2742,16 +3076,14 @@
         }
 
         // ============================================
-        // 📊 GET LAST SALE TIME - নতুন ফাংশন
+        // GET LAST SALE TIME
         // ============================================
         function getLastSaleTime(productId) {
-            // পণ্যের সব বিক্রি খুঁজে বের করা
             const sales = saleHistory.filter(h => h.product_id === productId);
             if (sales.length === 0) {
                 return { text: 'এখনো বিক্রি হয়নি', class: 'last-sale-never' };
             }
 
-            // সর্বশেষ বিক্রি খুঁজে বের করা (তারিখ ও সময় অনুযায়ী)
             const sorted = sales.sort((a, b) => {
                 const dateA = new Date(a.date + 'T' + (a.time || '00:00'));
                 const dateB = new Date(b.date + 'T' + (b.time || '00:00'));
@@ -2796,7 +3128,6 @@
                 className = 'last-sale-old';
             }
 
-            // যদি ৩০ দিনের বেশি আগে হয় তাহলে পুরনো রঙ
             if (diffDay > 30) {
                 className = 'last-sale-old';
             }
@@ -2805,7 +3136,7 @@
         }
 
         // ============================================
-        // RENDER PRODUCTS - আপডেটেড (শেষ বিক্রি যোগ)
+        // RENDER PRODUCTS
         // ============================================
         function renderProducts() {
             const tbody = document.getElementById('product-tbody');
@@ -2828,7 +3159,6 @@
                 if (p.stock === 0) { stockBadge = `<span class="badge-out-stock">শেষ</span>`; } else if (p.stock <=
                     5) { stockBadge = `<span class="badge-low-stock">কম</span>`; }
 
-                // 🔥 নতুন: শেষ বিক্রির তথ্য
                 const lastSale = getLastSaleTime(p.__backendId);
                 const lastSaleHtml = `<span class="last-sale-time ${lastSale.class}">${lastSale.text}</span>`;
 
@@ -2851,7 +3181,6 @@
                                 <td class="hidden sm:table-cell text-right p-2">৳${(p.buy_price||0).toLocaleString('bn-BD')}</td>
                                 <td class="text-right p-2 font-medium">৳${(p.sell_price||0).toLocaleString('bn-BD')}</td>
                                 <td class="text-right p-2 ${stockClass}">${p.stock||0} ${p.unit||''} ${stockBadge}</td>
-                                <!-- নতুন কলাম: শেষ বিক্রি -->
                                 <td class="text-center p-2">${lastSaleHtml}</td>
                                 <td class="text-center p-2" onclick="event.stopPropagation();">
                                     <div class="three-dot-menu">
@@ -2860,7 +3189,7 @@
                                     </div>
                                 </td>
                             </tr>`;
-            }).join();
+            }).join('');
             updateBulkSellBar();
         }
 
@@ -2907,7 +3236,7 @@
         }
 
         // ============================================
-        // 🔥 EDIT PRODUCT - ফিক্সড
+        // EDIT PRODUCT
         // ============================================
         function editProduct(id) {
             console.log('✏️ editProduct কল হয়েছে:', id);
@@ -2920,8 +3249,6 @@
                 showToast('❌ পণ্য পাওয়া যায়নি!', 'error');
                 return;
             }
-
-            console.log('✏️ এডিট করা পণ্য:', p);
 
             document.querySelectorAll('.three-dot-menu-content').forEach(el => { el.classList.remove('show'); });
 
@@ -3006,7 +3333,7 @@
         }
 
         // ============================================
-        // HISTORY FILTER BUTTONS - ফিক্সড (গতকাল যোগ)
+        // HISTORY FILTER BUTTONS
         // ============================================
         document.querySelectorAll('.filter-btn-history').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3032,7 +3359,7 @@
         }
 
         // ============================================
-        // RENDER HISTORY - সম্পূর্ণ ফিক্সড (গতকাল + সময় অনুযায়ী সাজানো)
+        // RENDER HISTORY
         // ============================================
         function renderHistory() {
             const container = document.getElementById('history-list');
@@ -3077,7 +3404,6 @@
             }
             empty.classList.add('hidden');
 
-            // 🔥 সময় অনুযায়ী সাজানো (শেষেরটা উপরে)
             const sorted = filtered.sort((a, b) => {
                 const dateA = new Date(a.date + 'T' + (a.time || '00:00'));
                 const dateB = new Date(b.date + 'T' + (b.time || '00:00'));
@@ -3121,7 +3447,7 @@
                                 <div class="text-xs text-gray-400">${h.quantity}টি × ৳${h.unit_price.toLocaleString()}</div>
                                 <div class="flex gap-1 mt-1 justify-end">
                                     <button onclick="showReceiptPreview('${h.__backendId}')" class="receipt-preview-btn">🧾 রশিদ</button>
-                                    <button onclick="returnSale('${h.__backendId}')" class="action-btn action-btn-warning action-btn-sm">↩️</button>
+                                    <button onclick="openReturnModal('${h.__backendId}')" class="action-btn action-btn-warning action-btn-sm">↩️</button>
                                 </div>
                             </div>
                         </div>`;
@@ -3129,60 +3455,7 @@
         }
 
         // ============================================
-        // RETURN SALE
-        // ============================================
-        async function returnSale(historyId) {
-            if (!currentUser) { showToast('রিটার্ন করতে লগইন করুন!', 'error'); return; }
-            const historyItem = saleHistory.find(h => h.__backendId === historyId);
-            if (!historyItem) { showToast('লেনদেন পাওয়া যায়নি!', 'error'); return; }
-            if (!confirm(`"${historyItem.product_name}" (${historyItem.quantity}টি) রিটার্ন করতে চান?`)) { return; }
-            showToast('⏳ রিটার্ন প্রক্রিয়াকরণ...', 'info');
-            try {
-                const product = allProducts.find(p => p.__backendId === historyItem.product_id);
-                if (product) {
-                    const updated = { ...product, stock: (Number(product.stock) || 0) + historyItem.quantity,
-                        total_sold: Math.max(0, (Number(product.total_sold) || 0) - historyItem.quantity),
-                        last_updated: new Date().toISOString() };
-                    await updateProduct(updated);
-                }
-                if (currentUser) {
-                    await database.ref(`users/${currentUser.uid}/sale_history/${historyId}`).remove();
-                } else {
-                    const index = saleHistory.findIndex(h => h.__backendId === historyId);
-                    if (index > -1) { saleHistory.splice(index, 1);
-                        localStorage.setItem('guest_sale_history', JSON.stringify(saleHistory)); }
-                }
-                if (historyItem.payment_type === 'due' && historyItem.customer_id) {
-                    const snapshot = await database.ref(`users/${currentUser.uid}/data`).once('value');
-                    const data = snapshot.val();
-                    if (data) {
-                        for (const [key, value] of Object.entries(data)) {
-                            if (value.type === 'due' && value.customer_id === historyItem.customer_id && value
-                                .amount === historyItem.final_price && value.date === historyItem.date) {
-                                await database.ref(`users/${currentUser.uid}/data/${key}`).remove();
-                                break;
-                            }
-                        }
-                    }
-                }
-                const localIndex = saleHistory.findIndex(h => h.__backendId === historyId);
-                if (localIndex > -1) { saleHistory.splice(localIndex, 1); }
-                renderHistory();
-                renderProfit();
-                renderProducts();
-                updateStats();
-                updateTodaySummary();
-                renderTodayDetails();
-                updateChart(currentChartPeriod);
-                showToast(`✅ "${historyItem.product_name}" রিটার্ন সম্পন্ন!`, 'success');
-            } catch (error) {
-                console.error('রিটার্ন ব্যর্থ:', error);
-                showToast('❌ রিটার্ন ব্যর্থ: ' + error.message, 'error');
-            }
-        }
-
-        // ============================================
-        // PROFIT FILTER BUTTONS - ফিক্সড (গতকাল যোগ)
+        // PROFIT FILTER BUTTONS
         // ============================================
         document.querySelectorAll('.filter-btn-profit').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -3208,7 +3481,7 @@
         }
 
         // ============================================
-        // RENDER PROFIT - সম্পূর্ণ ফিক্সড (ডিলিট করলেও প্রফিট ঠিক থাকবে)
+        // RENDER PROFIT
         // ============================================
         function renderProfit() {
             const container = document.getElementById('profit-list');
@@ -3217,10 +3490,6 @@
             let filtered = [...saleHistory];
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            // 🔥 ফিক্স: ডিলিট করা পণ্যের হিস্ট্রি থেকেও প্রফিট দেখাবো
-            // কোনো ফিল্টার না করে সব হিস্ট্রি রাখবো
-            // কিন্তু পণ্যের নাম দেখানোর সময় চেক করবো
 
             if (profitFilter === 'today') {
                 filtered = filtered.filter(h => new Date(h.date) >= today);
@@ -3274,10 +3543,8 @@
                 const sellPricePerUnit = h.final_price / h.quantity;
                 const profit = (sellPricePerUnit - buyPrice) * h.quantity;
 
-                // 🔥 পণ্য আইডি দিয়ে গ্রুপিং
                 const productId = h.product_id || 'deleted';
                 if (!profitMap[productId]) {
-                    // 🔥 পণ্যের নাম চেক করুন (ডিলিট করা হলে দেখাবো "ডিলিট করা পণ্য")
                     const productName = allProducts.find(p => p.__backendId === h.product_id)?.name || 
                                        h.product_name || 'ডিলিট করা পণ্য';
                     profitMap[productId] = {
@@ -3303,7 +3570,6 @@
             container.innerHTML = sorted.map(p => {
                 const profitClass = p.totalProfit >= 0 ? 'profit-positive' : 'profit-negative';
                 const avgBuyPrice = p.buyPrice || 0;
-                // 🔥 ডিলিট করা পণ্যের জন্য আলাদা স্টাইল
                 const deletedClass = p.isDeleted ? 'text-gray-400 italic' : '';
                 const deletedBadge = p.isDeleted ? ' <span class="text-xs text-red-500">(ডিলিট)</span>' : '';
                 return `<div class="flex justify-between items-center border-b border-gray-100 py-2">
@@ -3351,7 +3617,7 @@
         }
 
         // ============================================
-        // BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
+        // BULK SELL
         // ============================================
         function openBulkSellModal() {
             if (selectedProducts.size === 0) { showToast('কোনো পণ্য সিলেক্ট করেনি', 'warning'); return; }
@@ -3474,7 +3740,7 @@
         }
 
         // ============================================
-        // CONFIRM BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
+        // CONFIRM BULK SELL
         // ============================================
         async function confirmBulkSell() {
             showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
@@ -3593,15 +3859,12 @@
                 totalRevenue += Math.round(finalPricePerProduct);
             }
 
-            // 🔥 ইনভয়েস দেখান
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
 
-            // 🔥 সিলেক্টেড পণ্য সম্পূর্ণ ক্লিয়ার
             selectedProducts.clear();
 
-            // ফর্ম রিসেট
             document.getElementById('bulk-customer-name').value = '';
             document.getElementById('bulk-customer-mobile').value = '';
             document.getElementById('bulk-customer-address').value = '';
@@ -3610,7 +3873,6 @@
             document.querySelector('input[name="payment-type"][value="cash"]').checked = true;
             document.getElementById('customer-select-container').classList.add('hidden');
 
-            // UI আপডেট
             updateBulkSellBar();
             renderAll();
             renderHistory();
@@ -3623,20 +3885,14 @@
             showMsg(msgEl, `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 'green');
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
 
-            // 🔥 মডাল বন্ধ করুন - ইমিডিয়েটলি
             closeBulkSellModal();
-
             hideLoading();
         }
 
-        // ============================================
-        // CLOSE BULK SELL MODAL - ফিক্সড
-        // ============================================
         function closeBulkSellModal() {
             const modal = document.getElementById('bulk-sell-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                // ফোর্স বন্ধ করতে
                 modal.style.display = 'none';
                 document.body.style.overflow = '';
                 setTimeout(() => {
@@ -3693,7 +3949,6 @@
                 err.classList.remove('hidden');
                 hideLoading(); return; }
             if (editingProduct) {
-                // 🔥 created_at রেখে আপডেট
                 data.__backendId = editingProduct.__backendId;
                 data.created_at = editingProduct.created_at || editingProduct.added_date;
                 data.added_date = editingProduct.added_date || editingProduct.created_at;
@@ -3716,7 +3971,7 @@
         }
 
         // ============================================
-        // DELETE - ফিক্সড (প্রফিট আপডেট)
+        // DELETE
         // ============================================
         function confirmDelete(id) {
             if (!currentUser) { showToast('লগইন করুন!', 'error'); return; }
@@ -3737,7 +3992,6 @@
             document.getElementById('delete-modal').classList.add('hidden');
             deletingProduct = null;
 
-            // 🔥 সব রিলোড - প্রফিট ঠিক থাকবে
             renderAll();
             renderHistory();
             renderProfit();
