@@ -858,6 +858,38 @@
                 font-size: 18px;
             }
         }
+        /* নতুন স্টাইল - লাস্ট সেল টাইম */
+        .last-sale-time {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .last-sale-never {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        .last-sale-recent {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .last-sale-old {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        [data-theme="dark"] .last-sale-never {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+        [data-theme="dark"] .last-sale-recent {
+            background: #065f46;
+            color: #6ee7b7;
+        }
+        [data-theme="dark"] .last-sale-old {
+            background: #78350f;
+            color: #fbbf24;
+        }
     </style>
 </head>
 <body>
@@ -997,6 +1029,8 @@
                             <th class="text-right p-2 font-semibold text-gray-700 hidden sm:table-cell">ক্রয়</th>
                             <th class="text-right p-2 font-semibold text-gray-700">বিক্রয়</th>
                             <th class="text-right p-2 font-semibold text-gray-700">স্টক</th>
+                            <!-- নতুন কলাম: শেষ বিক্রি -->
+                            <th class="text-center p-2 font-semibold text-gray-700">শেষ বিক্রি</th>
                             <th class="text-center p-2 font-semibold text-gray-700">অ্যাকশন</th>
                         </tr>
                     </thead>
@@ -2708,7 +2742,70 @@
         }
 
         // ============================================
-        // RENDER PRODUCTS
+        // 📊 GET LAST SALE TIME - নতুন ফাংশন
+        // ============================================
+        function getLastSaleTime(productId) {
+            // পণ্যের সব বিক্রি খুঁজে বের করা
+            const sales = saleHistory.filter(h => h.product_id === productId);
+            if (sales.length === 0) {
+                return { text: 'এখনো বিক্রি হয়নি', class: 'last-sale-never' };
+            }
+
+            // সর্বশেষ বিক্রি খুঁজে বের করা (তারিখ ও সময় অনুযায়ী)
+            const sorted = sales.sort((a, b) => {
+                const dateA = new Date(a.date + 'T' + (a.time || '00:00'));
+                const dateB = new Date(b.date + 'T' + (b.time || '00:00'));
+                return dateB - dateA;
+            });
+
+            const lastSale = sorted[0];
+            const lastDate = new Date(lastSale.date + 'T' + (lastSale.time || '00:00'));
+            const now = new Date();
+
+            const diffMs = now - lastDate;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            const diffMonth = Math.floor(diffDay / 30);
+            const diffYear = Math.floor(diffDay / 365);
+
+            let text = '';
+            let className = 'last-sale-recent';
+
+            if (diffSec < 60) {
+                text = 'এখনই';
+                className = 'last-sale-recent';
+            } else if (diffMin < 60) {
+                text = `${diffMin} মিনিট আগে`;
+                className = 'last-sale-recent';
+            } else if (diffHour < 24) {
+                text = `${diffHour} ঘন্টা আগে`;
+                className = 'last-sale-recent';
+            } else if (diffDay < 7) {
+                text = `${diffDay} দিন আগে`;
+                className = 'last-sale-recent';
+            } else if (diffDay < 30) {
+                text = `${Math.floor(diffDay / 7)} সপ্তাহ আগে`;
+                className = 'last-sale-old';
+            } else if (diffDay < 365) {
+                text = `${diffMonth} মাস আগে`;
+                className = 'last-sale-old';
+            } else {
+                text = `${diffYear} বছর আগে`;
+                className = 'last-sale-old';
+            }
+
+            // যদি ৩০ দিনের বেশি আগে হয় তাহলে পুরনো রঙ
+            if (diffDay > 30) {
+                className = 'last-sale-old';
+            }
+
+            return { text, class: className };
+        }
+
+        // ============================================
+        // RENDER PRODUCTS - আপডেটেড (শেষ বিক্রি যোগ)
         // ============================================
         function renderProducts() {
             const tbody = document.getElementById('product-tbody');
@@ -2731,6 +2828,10 @@
                 if (p.stock === 0) { stockBadge = `<span class="badge-out-stock">শেষ</span>`; } else if (p.stock <=
                     5) { stockBadge = `<span class="badge-low-stock">কম</span>`; }
 
+                // 🔥 নতুন: শেষ বিক্রির তথ্য
+                const lastSale = getLastSaleTime(p.__backendId);
+                const lastSaleHtml = `<span class="last-sale-time ${lastSale.class}">${lastSale.text}</span>`;
+
                 const menuItems = currentUser ? `
                                 <button onclick="showProductDetail('${p.__backendId}')">📄 বিস্তারিত</button>
                                 <button onclick="editProduct('${p.__backendId}')">✏️ এডিট</button>
@@ -2750,6 +2851,8 @@
                                 <td class="hidden sm:table-cell text-right p-2">৳${(p.buy_price||0).toLocaleString('bn-BD')}</td>
                                 <td class="text-right p-2 font-medium">৳${(p.sell_price||0).toLocaleString('bn-BD')}</td>
                                 <td class="text-right p-2 ${stockClass}">${p.stock||0} ${p.unit||''} ${stockBadge}</td>
+                                <!-- নতুন কলাম: শেষ বিক্রি -->
+                                <td class="text-center p-2">${lastSaleHtml}</td>
                                 <td class="text-center p-2" onclick="event.stopPropagation();">
                                     <div class="three-dot-menu">
                                         <button onclick="toggleThreeDotMenu(event, this)" class="action-btn action-btn-secondary action-btn-sm" style="padding: 4px 10px; font-size: 16px; line-height: 1;">⋮</button>
@@ -2757,7 +2860,7 @@
                                     </div>
                                 </td>
                             </tr>`;
-            }).join('');
+            }).join();
             updateBulkSellBar();
         }
 
