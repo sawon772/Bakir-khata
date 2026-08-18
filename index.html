@@ -6426,11 +6426,10 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     async function addTransaction(e, type) {
   e.preventDefault();
   
-  if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
-    showToast(currentLanguage === 'bn' ? 'সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!' : 'Maximum transaction limit reached!', 'error');
-    playSound('error');
-    return;
-  }
+// if (allData.filter(d => d.type === 'due' || d.type === 'payment').length >= 998) {
+//     showToast('সর্বোচ্চ লেনদেন সীমা পৌঁছে গেছে!', 'error');
+//     return;
+// }
 
   const btn = document.getElementById('submit-transaction-btn');
   btn.disabled = true;
