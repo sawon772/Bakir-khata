@@ -4562,11 +4562,37 @@ function loadProductsData() {
       } else {
         allProducts = [];
       }
+      
       updateStockBalanceStats();
+      
+      // 🔥 সবচেয়ে গুরুত্বপূর্ণ অংশ: প্রোডাক্ট লোড হওয়ার পর স্টক ফিল্ড আপডেট
+      setTimeout(() => {
+        // প্রথমে পুরনো ফিল্ড ডিলিট করে নতুন করে রেন্ডার করি
+        renderCategoryInputs();
+        
+        // তারপরও সরাসরি মান সেট করি (নিশ্চিত করার জন্য)
+        setTimeout(() => {
+          const stockInputs = document.querySelectorAll('.category-amount[data-cat-name="পণ্য স্টক ব্যালেন্স"]');
+          const totalStockValue = allProducts.reduce((sum, p) => {
+            return sum + ((Number(p.buy_price) || 0) * (Number(p.stock) || 0));
+          }, 0);
+          
+          stockInputs.forEach(input => {
+            input.value = totalStockValue;
+          });
+          
+          if (typeof calculateTotalAndProfit === 'function') {
+            calculateTotalAndProfit();
+          }
+          
+          console.log('✅ স্টক ফিল্ড আপডেট:', totalStockValue, '| ফিল্ড সংখ্যা:', stockInputs.length);
+        }, 300);
+        
+      }, 500);
+      
       console.log('✅ প্রোডাক্ট লোড হয়েছে:', allProducts.length);
     });
   } else {
-    // গেস্ট মোড
     const guestProducts = localStorage.getItem('guest_products_data');
     if (guestProducts) {
       try {
@@ -4578,6 +4604,21 @@ function loadProductsData() {
       allProducts = [];
     }
     updateStockBalanceStats();
+    setTimeout(() => {
+      renderCategoryInputs();
+      setTimeout(() => {
+        const stockInputs = document.querySelectorAll('.category-amount[data-cat-name="পণ্য স্টক ব্যালেন্স"]');
+        const totalStockValue = allProducts.reduce((sum, p) => {
+          return sum + ((Number(p.buy_price) || 0) * (Number(p.stock) || 0));
+        }, 0);
+        stockInputs.forEach(input => {
+          input.value = totalStockValue;
+        });
+        if (typeof calculateTotalAndProfit === 'function') {
+          calculateTotalAndProfit();
+        }
+      }, 300);
+    }, 500);
   }
 }
 
