@@ -7396,12 +7396,17 @@ function renderHistorySummary() {
             ${timeDiffHtml}
           </div>
           <div class="flex items-center gap-2 flex-shrink-0">
-            <span class="text-xs text-blue-500 hidden sm:inline">বিস্তারিত ▼</span>
-            <button onclick="event.stopPropagation(); deleteAccountHistory('${itemId}')" 
-              class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all flex items-center gap-1">
-              🗑️
-            </button>
-          </div>
+  <span class="text-xs text-blue-500 hidden sm:inline">বিস্তারিত ▼</span>
+  <button onclick="event.stopPropagation(); loadHistoryToFields('${itemId}')" 
+    class="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded transition-all flex items-center gap-1"
+    title="পুরনো হিসাব আবার ফিল্ডে আনুন">
+    📥 হিসাব সেলে উঠান
+  </button>
+  <button onclick="event.stopPropagation(); deleteAccountHistory('${itemId}')" 
+    class="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-all flex items-center gap-1">
+    🗑️
+  </button>
+</div>
         </div>
         <!-- বিস্তারিত অংশ -->
         <div id="history-detail-${itemId}" class="hidden mt-2 pt-2 border-t border-gray-100">
@@ -7432,6 +7437,98 @@ function toggleHistoryDetail(id) {
   }
 }
 
+// ============================================
+// 📥 পুরনো হিসাব আবার ফিল্ডে লোড করা
+// ============================================
+function loadHistoryToFields(historyId) {
+  console.log('📥 loadHistoryToFields called with:', historyId);
+  
+  // ১. সেই হিসাবটি খুঁজে বের করুন
+  const historyItem = accountHistory.find(h => h.id === historyId || h.timestamp == historyId);
+  
+  if (!historyItem) {
+    showToast('❌ হিসাবটি খুঁজে পাওয়া যায়নি!', 'error');
+    return;
+  }
+  
+  // ২. চেক করুন বর্তমান ফিল্ডে কোনো মান আছে কি না
+  let hasCurrentData = false;
+  document.querySelectorAll('.category-amount').forEach(input => {
+    const val = parseFloat(input.value);
+    if (val && val > 0 && !input.readOnly) {
+      hasCurrentData = true;
+    }
+  });
+  
+  // ৩. আগের মান থাকলে confirm চান
+  if (hasCurrentData) {
+    if (!confirm('⚠️ বর্তমান ফিল্ডে মান আছে। নতুন হিসাব লোড করলে আগের মান মুছে যাবে।\n\nচালিয়ে যেতে চান?')) {
+      return;
+    }
+  }
+  
+  // ৪. বর্তমান ফিল্ডগুলো খালি করুন (readonly বাদে)
+  document.querySelectorAll('.category-amount').forEach(input => {
+    if (!input.readOnly) {
+      input.value = '';
+    }
+  });
+  
+  // ৫. পুরনো হিসাবের ক্যাটাগরি ভ্যালু লোড করুন
+  let loadedCount = 0;
+  let skippedCount = 0;
+  const deletedCategories = [];
+  
+  if (historyItem.categoriesData) {
+    Object.entries(historyItem.categoriesData).forEach(([catName, value]) => {
+      // সেই নামের ফিল্ড আছে কি না খুঁজুন
+      const input = document.querySelector(`.category-amount[data-cat-name="${catName}"]`);
+      
+      if (input) {
+        // readonly ফিল্ড হলে বাদ দিন
+        if (input.readOnly) {
+          skippedCount++;
+          return;
+        }
+        
+        // মান বসান
+        input.value = value;
+        loadedCount++;
+        console.log(`✅ ${catName}: ${value}`);
+      } else {
+        // ফিল্ড নেই = ক্যাটাগরি ডিলিট করা হয়েছে
+        deletedCategories.push(catName);
+        console.log(`⚠️ ক্যাটাগরি নেই: ${catName}`);
+      }
+    });
+  }
+  
+  // ৬. ক্যালকুলেশন রিফ্রেশ
+  if (typeof calculateTotalAndProfit === 'function') {
+    calculateTotalAndProfit();
+  }
+  
+  // ৭. রেজাল্ট মেসেজ দেখান
+  let message = `✅ ${loadedCount}টি ক্যাটাগরি লোড হয়েছে`;
+  
+  if (deletedCategories.length > 0) {
+    message += `\n⚠️ ${deletedCategories.length}টি ক্যাটাগরি ডিলিট করা হয়েছে: ${deletedCategories.join(', ')}`;
+  }
+  
+  if (skippedCount > 0) {
+    message += `\n📌 ${skippedCount}টি অটো ফিল্ড বাদ দেওয়া হয়েছে`;
+  }
+  
+  showToast(message, 'success', 5000);
+  playSound('success');
+  
+  console.log('📥 হিসাব লোড সম্পন্ন:', {
+    loaded: loadedCount,
+    skipped: skippedCount,
+    deletedCategories: deletedCategories
+  });
+}
+    
   // হিসাব ইতিহাস ডিলিট করার ফাংশন
 async function deleteAccountHistory(id) {
   if (!confirm('এই হিসাবটি ডিলিট করতে চান? ডিলিট করলে ফিরানো যাবে না।')) {
