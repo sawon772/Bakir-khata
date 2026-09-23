@@ -7086,19 +7086,51 @@ function renderCategoryInputs() {
   if (!container) return;
   
   if (accountCategories.length === 0) {
-    accountCategories = [{ id: 1, name: 'বাকি' }];
+    accountCategories = [
+      { id: 1, name: 'বাকি' },
+      { id: 2, name: 'পণ্য স্টক ব্যালেন্স' }
+    ];
+    saveCategoriesToBackend();
+  }
+  
+  // পুরনো ইউজারদের জন্য "পণ্য স্টক ব্যালেন্স" ক্যাটাগরি অটো যোগ
+  const hasStockBalance = accountCategories.some(c => c.name === 'পণ্য স্টক ব্যালেন্স');
+  if (!hasStockBalance && accountCategories.length > 0) {
+    accountCategories.push({ 
+      id: Date.now(), 
+      name: 'পণ্য স্টক ব্যালেন্স' 
+    });
     saveCategoriesToBackend();
   }
   
   // টোটাল বাকি বের করুন
   const totalDue = getTotalDue();
   
+  // পণ্য স্টক মূল্য বের করুন
+  const totalStockValue = allProducts.reduce((sum, p) => {
+    return sum + ((Number(p.buy_price) || 0) * (Number(p.stock) || 0));
+  }, 0);
+  
   container.innerHTML = accountCategories.map(cat => {
-    // শুধু "বাকি" ক্যাটাগরির জন্য totalDue দেখাবে
     const isDefaultDue = cat.name === 'বাকি';
-    const defaultValue = isDefaultDue ? totalDue : '';
-    const readOnlyAttr = isDefaultDue ? 'readonly' : '';
-    const bgColor = isDefaultDue ? 'bg-gray-100' : 'bg-white';
+    const isStockBalance = cat.name === 'পণ্য স্টক ব্যালেন্স';
+    
+    let defaultValue = '';
+    let readOnlyAttr = '';
+    let bgColor = 'bg-white';
+    let autoBadge = '';
+    
+    if (isDefaultDue) {
+      defaultValue = totalDue;
+      readOnlyAttr = 'readonly';
+      bgColor = 'bg-gray-100';
+      autoBadge = '<span class="text-xs text-gray-400 hidden sm:block">(অটো)</span>';
+    } else if (isStockBalance) {
+      defaultValue = totalStockValue;
+      readOnlyAttr = 'readonly';
+      bgColor = 'bg-gray-100';
+      autoBadge = '<span class="text-xs text-gray-400 hidden sm:block">(অটো)</span>';
+    }
     
     return `
     <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 ${bgColor} p-2 rounded-lg">
@@ -7106,7 +7138,7 @@ function renderCategoryInputs() {
       <input type="number" class="category-amount w-full sm:flex-1 px-3 py-2 border rounded-lg text-base sm:text-sm" 
         data-cat-id="${cat.id}" data-cat-name="${cat.name}" 
         placeholder="টাকার পরিমাণ" value="${defaultValue}" ${readOnlyAttr}>
-      ${isDefaultDue ? `<span class="text-xs text-gray-400 hidden sm:block">(অটো)</span>` : ''}
+      ${autoBadge}
     </div>
   `}).join('');
   
