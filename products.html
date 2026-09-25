@@ -858,10 +858,100 @@
                 font-size: 18px;
             }
         }
+    
+    /* ============================================
+   🛒 Floating Bulk Sell Button Animation
+   ============================================ */
+@keyframes bounceSlow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.animate-bounce-slow {
+    animation: bounceSlow 2s ease-in-out infinite;
+}
+
+/* ফ্লোটিং বাটনের ভিতরে red dot badge */
+#floating-bulk-sell-btn button {
+    position: relative;
+}
+    
+    /* ============================================
+   🛡️ Pull-to-Refresh বন্ধ (Android)
+   ============================================ */
+html, body {
+  overscroll-behavior: none !important;
+  overscroll-behavior-y: none !important;
+  overscroll-behavior-x: none !important;
+}
+
+body {
+  overscroll-behavior: none !important;
+}
+
+main,
+.max-w-6xl,
+#tab-products,
+#tab-add,
+#tab-buy-sell,
+#tab-stock-update,
+#tab-reports,
+#tab-history,
+#tab-profit,
+#tab-today-details,
+#tab-customers,
+#tab-categories,
+.custom-scroll {
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
     </style>
 </head>
 <body>
-
+<!-- 🛡️ Pull-to-Refresh Protection -->
+<script>
+(function() {
+  document.documentElement.style.overscrollBehavior = 'none';
+  document.body.style.overscrollBehavior = 'none';
+  
+  let _lastTouchY = 0;
+  let _isAtTop = false;
+  
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    
+    _lastTouchY = e.touches[0].clientY;
+    
+    // products.html এ main এলিমেন্টে স্ক্রল হয়
+    const mainEl = e.target.closest('main') || 
+                   e.target.closest('.custom-scroll') ||
+                   document.scrollingElement;
+    
+    const scrollTop = mainEl ? mainEl.scrollTop : 0;
+    const windowScrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+    
+    _isAtTop = (scrollTop <= 0) && (windowScrollTop <= 0);
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', function(e) {
+    if (e.touches.length !== 1) return;
+    if (!_isAtTop) return;
+    
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - _lastTouchY;
+    
+    if (deltaY > 0) {
+      if (e.cancelable) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    
+    _lastTouchY = currentY;
+  }, { passive: false });
+  
+  console.log('🛡️ Pull-to-Refresh protection active (products.html)');
+})();
+</script>
     <!-- LOADING OVERLAY -->
     <div id="global-loading" class="loading-overlay">
         <div class="loading-box">
@@ -1089,7 +1179,7 @@
                         <select id="sell-product" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white"></select>
                         <div class="grid grid-cols-2 gap-2">
                             <input id="sell-qty" type="number" min="1" placeholder="পরিমাণ" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
-                            <input id="sell-price" type="number" min="0" step="0.01" placeholder="মূল্য" required class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
+                            <input id="sell-price" type="number" min="0" step="0.01" placeholder="মূল্য"class="px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-teal-400 focus:border-transparent outline-none transition bg-white">
                         </div>
                         <div id="sell-stock-info" class="text-xs text-gray-400"></div>
                         <div class="mt-2">
@@ -1357,6 +1447,17 @@
         </div>
     </div>
 
+    <!-- 🛒 FLOATING BULK SELL BUTTON -->
+<div id="floating-bulk-sell-btn" class="hidden fixed bottom-20 right-4 z-[100] animate-bounce-slow">
+    <button onclick="openBulkSellModal()" 
+        class="bg-gradient-to-br from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white rounded-full shadow-2xl flex flex-col items-center justify-center p-4 transition-all active:scale-95"
+        style="min-width: 70px; min-height: 70px;">
+        <span class="text-2xl">💰</span>
+        <span class="text-[10px] font-bold mt-0.5">বিক্রি</span>
+        <span id="floating-bulk-count" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white shadow-lg">0</span>
+    </button>
+</div>
+    
     <!-- TOAST -->
     <div id="toast-container" class="fixed top-16 right-3 z-50 space-y-1.5 max-w-xs w-full"></div>
 
@@ -1913,7 +2014,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: { color: textColor, font: { size: 10 }, callback: function(value) { return '৳0'; } },
+                                ticks: { color: textColor, font: { size: 10 }, callback: function(value) { return '৳' + value.toLocaleString(); } },
                                 grid: { color: gridColor }
                             },
                             x: {
@@ -2537,7 +2638,8 @@
             }
 
             if (currentUser) {
-                const newRef = await database.ref(`users/${currentUser.uid}/sale_history`).push().set(saleData);
+                const newRef = database.ref(`users/${currentUser.uid}/sale_history`).push();
+                await newRef.set(saleData);
                 saleData.__backendId = newRef.key;
             } else {
                 saleData.__backendId = 'HIST_' + Date.now();
@@ -2669,23 +2771,38 @@
         // CHECK LOW STOCK
         // ============================================
         function checkLowStock() {
-            const low = allProducts.filter(p => p.stock > 0 && p.stock <= 5);
-            const out = allProducts.filter(p => p.stock === 0);
-            if (out.length) {
-                showToast(`❌ ${out.length}টি স্টক শেষ!`, 'error', 5000);
-                if (Notification.permission === 'granted') {
-                    new Notification('স্টক শেষ!', { body: `${out.length}টি পণ্যের স্টক শেষ হয়েছে।`, icon: '📦' });
-                }
-            } else if (low.length) {
-                showToast(`⚠️ ${low.length}টি স্টক কম!`, 'warning', 5000);
-                if (Notification.permission === 'granted') {
-                    new Notification('স্টক কম!', { body: `${low.length}টি পণ্যের স্টক কম (${low.map(p => p.name).join(', ')})`,
-                        icon: '⚠️' });
-                }
-            }
+    // 🔥 সেশন স্টোরেজ চেক - এই সেশনে দেখানো হয়েছে কি না
+    const alreadyShown = sessionStorage.getItem('low_stock_shown_' + new Date().toDateString());
+    if (alreadyShown === 'true') return;
+    
+    const low = allProducts.filter(p => p.stock > 0 && p.stock <= 5);
+    const out = allProducts.filter(p => p.stock === 0);
+    
+    if (out.length > 0) {
+        showToast(`❌ ${out.length}টি স্টক শেষ!`, 'error', 5000);
+        if (Notification.permission === 'granted') {
+            new Notification('স্টক শেষ!', { 
+                body: `${out.length}টি পণ্যের স্টক শেষ হয়েছে।`, 
+                icon: '📦' 
+            });
         }
-        if ('Notification' in window && Notification.permission === 'default') { Notification.requestPermission(); }
+    } else if (low.length > 0) {
+        showToast(`⚠️ ${low.length}টি স্টক কম!`, 'warning', 5000);
+        if (Notification.permission === 'granted') {
+            new Notification('স্টক কম!', { 
+                body: `${low.length}টি পণ্যের স্টক কম (${low.map(p => p.name).join(', ')})`,
+                icon: '⚠️' 
+            });
+        }
+    }
+    
+    // 🔥 এই সেশনে দেখানো হয়েছে বলে সেভ করুন
+    sessionStorage.setItem('low_stock_shown_' + new Date().toDateString(), 'true');
+}
 
+if ('Notification' in window && Notification.permission === 'default') { 
+    Notification.requestPermission(); 
+}
         // ============================================
         // GENERATE CODE
         // ============================================
@@ -3241,11 +3358,37 @@
         }
 
         function updateBulkSellBar() {
-            const bar = document.getElementById('bulk-sell-bar');
-            const count = document.getElementById('selected-count');
-            if (selectedProducts.size > 0) { bar.classList.remove('hidden');
-                count.textContent = selectedProducts.size; } else { bar.classList.add('hidden'); }
+    const bar = document.getElementById('bulk-sell-bar');
+    const count = document.getElementById('selected-count');
+    const floatingBtn = document.getElementById('floating-bulk-sell-btn');
+    const floatingCount = document.getElementById('floating-bulk-count');
+    
+    // 🔥 মোট আইটেম সংখ্যা (qty গুনে) বের করুন
+    let totalQty = 0;
+    for (const [id, data] of selectedProducts) {
+        totalQty += data.qty || 1;
+    }
+    
+    if (selectedProducts.size > 0) {
+        // উপরে বার দেখান
+        bar.classList.remove('hidden');
+        count.textContent = selectedProducts.size;
+        
+        // 🔥 ফ্লোটিং বাটন দেখান
+        if (floatingBtn) {
+            floatingBtn.classList.remove('hidden');
+            if (floatingCount) floatingCount.textContent = totalQty;
         }
+    } else {
+        // উপরে বার লুকান
+        bar.classList.add('hidden');
+        
+        // 🔥 ফ্লোটিং বাটন লুকান
+        if (floatingBtn) {
+            floatingBtn.classList.add('hidden');
+        }
+    }
+}
 
         // ============================================
         // BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
@@ -3373,71 +3516,102 @@
         // ============================================
         // CONFIRM BULK SELL - সম্পূর্ণ ফিক্সড (মডাল বন্ধ + ইনভয়েস)
         // ============================================
-        async function confirmBulkSell() {
-            showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
-            const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
-            const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
-            const customerId = document.getElementById('due-customer-select').value;
-            const comment = document.getElementById('bulk-comment').value.trim();
+        
+    async function confirmBulkSell() {
+    showLoading('বাল্ক বিক্রি প্রক্রিয়াকরণ');
+    const { totalWithCustomPrice, finalPrice, totalItems, discountAmount } = calculateBulkTotal();
+    const paymentType = document.querySelector('input[name="payment-type"]:checked').value;
+    const customerId = document.getElementById('due-customer-select').value;
+    const comment = document.getElementById('bulk-comment').value.trim();
 
-            const customerName = document.getElementById('bulk-customer-name').value.trim() || '';
-            const customerMobile = document.getElementById('bulk-customer-mobile').value.trim() || '';
-            const customerAddress = document.getElementById('bulk-customer-address').value.trim() || '';
+    const customerName = document.getElementById('bulk-customer-name').value.trim() || '';
+    const customerMobile = document.getElementById('bulk-customer-mobile').value.trim() || '';
+    const customerAddress = document.getElementById('bulk-customer-address').value.trim() || '';
 
-            if (finalPrice <= 0) { 
-                showMsg(document.getElementById('bulk-msg'), 'মূল্য ০ হতে পারে না!', 'red');
-                hideLoading(); 
-                return; 
-            }
-            
-            if (paymentType === 'due' && !customerId) { 
-                showMsg(document.getElementById('bulk-msg'), 'বাকি কাস্টমার নির্বাচন করুন!', 'red');
-                hideLoading(); 
-                return; 
-            }
-            
-            if (!currentUser) { 
-                showMsg(document.getElementById('bulk-msg'), 'বিক্রি করতে লগইন করুন!', 'red');
-                hideLoading(); 
-                return; 
-            }
+    // ============================================
+    // 🔍 ভ্যালিডেশন
+    // ============================================
+    if (finalPrice <= 0) { 
+        showMsg(document.getElementById('bulk-msg'), 'মূল্য ০ হতে পারে না!', 'red');
+        hideLoading(); 
+        return; 
+    }
+    
+    if (paymentType === 'due' && !customerId) { 
+        showMsg(document.getElementById('bulk-msg'), 'বাকি কাস্টমার নির্বাচন করুন!', 'red');
+        hideLoading(); 
+        return; 
+    }
+    
+    if (!currentUser) { 
+        showMsg(document.getElementById('bulk-msg'), 'বিক্রি করতে লগইন করুন!', 'red');
+        hideLoading(); 
+        return; 
+    }
 
-            let finalCustomerName = customerName || 'অজানা';
-            let finalCustomerId = customerId || '';
+    let finalCustomerName = customerName || 'অজানা';
+    let finalCustomerId = customerId || '';
 
-            if (paymentType === 'due' && customerId) {
-                try {
-                    const found = allCustomers.find(c => (c.customer_id === customerId || c.__backendId === customerId));
-                    if (found) { 
-                        finalCustomerName = found.customer_name || found.name || 'অজানা'; 
-                    } else {
-                        const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
-                        if (snap.exists()) { 
-                            const data = snap.val();
-                            finalCustomerName = data.customer_name || data.name || 'অজানা'; 
-                        }
-                    }
-                } catch (e) { 
-                    console.error('কাস্টমার খোঁজা ব্যর্থ:', e); 
+    if (paymentType === 'due' && customerId) {
+        try {
+            const found = allCustomers.find(c => (c.customer_id === customerId || c.__backendId === customerId));
+            if (found) { 
+                finalCustomerName = found.customer_name || found.name || 'অজানা'; 
+            } else {
+                const snap = await database.ref(`users/${currentUser.uid}/data/${customerId}`).once('value');
+                if (snap.exists()) { 
+                    const data = snap.val();
+                    finalCustomerName = data.customer_name || data.name || 'অজানা'; 
                 }
             }
+        } catch (e) { 
+            console.error('কাস্টমার খোঁজা ব্যর্থ:', e); 
+        }
+    }
 
-            let soldCount = 0, totalRevenue = 0;
-            const allSales = [];
+    // ============================================
+    // 🔥 ধাপ ১: প্রথমে সব প্রোডাক্ট চেক করুন
+    // (কোনো সমস্যা থাকলে কিছুই সেভ হবে না)
+    // ============================================
+    for (const [productId, data] of selectedProducts) {
+        const product = allProducts.find(p => p.__backendId === productId);
+        
+        if (!product) {
+            showMsg(document.getElementById('bulk-msg'), `❌ একটি পণ্য পাওয়া যায়নি!`, 'red');
+            hideLoading(); 
+            return;
+        }
+        
+        if (product.stock < data.qty) {
+            showMsg(
+                document.getElementById('bulk-msg'), 
+                `❌ "${product.name}" এর স্টক কম! (আছে: ${product.stock}, দরকার: ${data.qty})`, 
+                'red'
+            );
+            hideLoading(); 
+            return;
+        }
+    }
 
-            for (const [productId, data] of selectedProducts) {
-                const product = allProducts.find(p => p.__backendId === productId);
-                if (!product || product.stock < data.qty) { 
-                    showMsg(document.getElementById('bulk-msg'), `${product?.name || 'পণ্য'} এর স্টক কম!`, 'red');
-                    hideLoading(); 
-                    return; 
-                }
-                
-                const unitPrice = data.price || product.sell_price || 0;
-                const totalPrice = unitPrice * data.qty;
-                const proportionalDiscount = totalWithCustomPrice > 0 ? (totalPrice / totalWithCustomPrice) * discountAmount : 0;
-                const finalPricePerProduct = Math.max(0, totalPrice - proportionalDiscount);
-                
+    // ============================================
+    // 🔥 ধাপ ২: এখন সব প্রোডাক্ট সেভ করুন
+    // ============================================
+    let soldCount = 0;
+    let totalRevenue = 0;
+    const allSales = [];
+    const failedProducts = [];
+
+    try {
+        for (const [productId, data] of selectedProducts) {
+            const product = allProducts.find(p => p.__backendId === productId);
+            
+            const unitPrice = data.price || product.sell_price || 0;
+            const totalPrice = unitPrice * data.qty;
+            const proportionalDiscount = totalWithCustomPrice > 0 ? (totalPrice / totalWithCustomPrice) * discountAmount : 0;
+            const finalPricePerProduct = Math.max(0, totalPrice - proportionalDiscount);
+            
+            try {
+                // ১. প্রোডাক্টের স্টক আপডেট
                 const updated = { 
                     ...product, 
                     stock: product.stock - data.qty, 
@@ -3446,6 +3620,7 @@
                 };
                 await updateProduct(updated);
                 
+                // ২. Sale History সেভ
                 const saleData = {
                     product_id: product.__backendId,
                     product_name: product.name,
@@ -3466,6 +3641,7 @@
                 await saveSaleHistory(saleData);
                 allSales.push(saleData);
                 
+                // ৩. বাকি হলে Customer এর কাছে due যোগ
                 if (paymentType === 'due' && finalCustomerId) {
                     const transactionData = { 
                         type: 'due', 
@@ -3477,28 +3653,41 @@
                         created_at: new Date().toISOString(),
                         timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) 
                     };
-                    try { 
-                        await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData); 
-                    } catch (e) { 
-                        console.error('❌ বাকি লেনদেন সেভ ব্যর্থ:', e);
-                        showMsg(document.getElementById('bulk-msg'), 'বাকি লেনদেন সেভ ব্যর্থ!', 'red');
-                        hideLoading(); 
-                        return; 
-                    }
+                    await database.ref(`users/${currentUser.uid}/data`).push().set(transactionData);
                 }
+                
                 soldCount += data.qty;
                 totalRevenue += Math.round(finalPricePerProduct);
+                
+            } catch (innerError) {
+                console.error(`❌ "${product.name}" সেভ ব্যর্থ:`, innerError);
+                failedProducts.push(product.name);
             }
-
-            // 🔥 ইনভয়েস দেখান
+        }
+        
+        // ============================================
+        // 🔥 ধাপ ৩: ফলাফল দেখান
+        // ============================================
+        
+        // কিছু প্রোডাক্ট ব্যর্থ হলে
+        if (failedProducts.length > 0) {
+            showMsg(
+                document.getElementById('bulk-msg'), 
+                `⚠️ ${failedProducts.length}টি পণ্য সেভ হয়নি: ${failedProducts.join(', ')}`, 
+                'red'
+            );
+            showToast(`⚠️ ${failedProducts.length}টি পণ্য সেভ হয়নি!`, 'warning', 5000);
+        }
+        
+        // সফল হলে
+        if (soldCount > 0) {
+            // ইনভয়েস দেখান
             if (allSales.length > 0) {
                 showInvoice(allSales);
             }
-
-            // 🔥 সিলেক্টেড পণ্য সম্পূর্ণ ক্লিয়ার
-            selectedProducts.clear();
-
+            
             // ফর্ম রিসেট
+            selectedProducts.clear();
             document.getElementById('bulk-customer-name').value = '';
             document.getElementById('bulk-customer-mobile').value = '';
             document.getElementById('bulk-customer-address').value = '';
@@ -3506,7 +3695,7 @@
             document.getElementById('bulk-discount').value = '0';
             document.querySelector('input[name="payment-type"][value="cash"]').checked = true;
             document.getElementById('customer-select-container').classList.add('hidden');
-
+            
             // UI আপডেট
             updateBulkSellBar();
             renderAll();
@@ -3515,16 +3704,32 @@
             updateTodaySummary();
             renderTodayDetails();
             updateChart(currentChartPeriod);
-
+            
+            // সফল মেসেজ
             const msgEl = document.getElementById('bulk-msg');
-            showMsg(msgEl, `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 'green');
+            showMsg(
+                msgEl, 
+                `✅ ${soldCount}টি পণ্য বিক্রি হয়েছে! মোট: ৳${totalRevenue.toLocaleString('bn-BD')}${paymentType === 'due' ? ' (বাকি সেভ হয়েছে)' : ''}`, 
+                'green'
+            );
             showToast(`✅ ${soldCount}টি পণ্য বিক্রি হয়েছে!`, 'success');
-
-            // 🔥 মডাল বন্ধ করুন - ইমিডিয়েটলি
+            
+            // মডাল বন্ধ
             closeBulkSellModal();
-
-            hideLoading();
         }
+        
+    } catch (error) {
+        console.error('❌ বাল্ক সেল সম্পূর্ণ ব্যর্থ:', error);
+        showMsg(
+            document.getElementById('bulk-msg'), 
+            `❌ বাল্ক সেল ব্যর্থ: ${error.message}`, 
+            'red'
+        );
+        showToast('❌ বাল্ক সেল ব্যর্থ!', 'error', 5000);
+    } finally {
+        hideLoading();
+    }
+}
 
         // ============================================
         // CLOSE BULK SELL MODAL - ফিক্সড
