@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>অ্যাডমিন প্যানেল - বাকির খাতা</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        .tab-active { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; }
+        .tab-btn { transition: all 0.2s; }
+        .tab-btn:hover { background-color: #f3f4f6; }
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+    </style>
+</head>
+<body class="bg-gray-100 p-3 sm:p-4">
+
+    <!-- 🛡️ লগইন স্ক্রিন -->
+    <div id="loginScreen" class="fixed inset-0 bg-gray-800 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl relative z-50">
+            <h2 class="text-xl font-bold text-center mb-2 text-gray-800">🔒 অ্যাডমিন লগইন</h2>
+            <p class="text-xs text-gray-500 text-center mb-4">শুধুমাত্র অনুমোদিত অ্যাডমিন অ্যাকাউন্ট দিয়ে লগইন করুন</p>
+            <form onsubmit="adminLogin(event)" class="w-full relative z-50">
+                <input type="email" id="adminEmail" inputmode="email" placeholder="আপনার ইমেইল" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-3 text-sm relative z-50" style="position: relative; z-index: 9999;">
+                <input type="password" id="adminPassword" inputmode="text" placeholder="পাসওয়ার্ড" class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none mb-3 text-sm relative z-50" style="position: relative; z-index: 9999;">
+                <button type="submit" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-medium hover:bg-emerald-700 transition-all mb-2 relative z-50">লগইন করুন</button>
+            </form>
+            <p id="loginError" class="text-red-500 text-xs text-center hidden mt-2"></p>
+        </div>
+    </div>
+
+    <!-- ✅ মূল অ্যাডমিন প্যানেল -->
+    <div id="adminPanel" class="hidden max-w-4xl mx-auto">
+        <!-- হেডার -->
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-lg sm:text-xl font-bold text-gray-800">🛡️ অ্যাডমিন প্যানেল</h1>
+            <button onclick="adminLogout()" class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-full font-medium">🚪 লগআউট</button>
+        </div>
+
+        <!-- 📡 API ব্যালেন্স কার্ড -->
+        <div class="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-500 mb-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-xs sm:text-sm font-bold text-gray-600">📡 BulkSMSBD API ব্যালেন্স</h2>
+                <p id="api-balance-display" class="text-xl sm:text-2xl font-bold text-gray-400 mt-1">লোড হচ্ছে...</p>
+                <p class="text-[10px] text-gray-400 mt-1" id="api-balance-source"></p>
+            </div>
+            <button onclick="fetchApiBalance()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all">🔄 রিফ্রেশ</button>
+        </div>
+
+        <!-- ⚠️ Maintenance Mode Banner -->
+        <div id="maintenanceBanner" class="hidden bg-yellow-100 border border-yellow-400 text-yellow-800 p-3 rounded-xl mb-4 text-sm">
+            ⚠️ <b>Maintenance Mode চালু আছে!</b> ইউজার অ্যাপে সতর্কবার্তা দেখানো হচ্ছে।
+        </div>
+
+        <!-- 📑 Tab Navigation -->
+        <div class="bg-white rounded-xl p-1 shadow mb-4 overflow-x-auto">
+            <div class="flex gap-1 min-w-max">
+                <button onclick="switchTab('dashboard')" id="tabbtn-dashboard" class="tab-btn tab-active px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap">📊 ড্যাশবোর্ড</button>
+                <button onclick="switchTab('pending')" id="tabbtn-pending" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">⏳ পেন্ডিং</button>
+                <button onclick="switchTab('history')" id="tabbtn-history" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">📜 হিস্টোরি</button>
+                <button onclick="switchTab('users')" id="tabbtn-users" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">👥 ইউজার</button>
+                <button onclick="switchTab('packages')" id="tabbtn-packages" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">📦 প্যাকেজ</button>
+                <button onclick="switchTab('payment')" id="tabbtn-payment" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">💳 পেমেন্ট</button>
+                <button onclick="switchTab('broadcast')" id="tabbtn-broadcast" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">📢 ব্রডকাস্ট</button>
+                <button onclick="switchTab('settings')" id="tabbtn-settings" class="tab-btn px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap text-gray-600">⚙️ সেটিংস</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="space-y-4">
+            <!-- 📊 Dashboard Tab -->
+            <div id="tab-dashboard" class="tab-content space-y-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-xl p-4">
+                        <p class="text-xs opacity-90">💰 মোট আয়</p>
+                        <p id="stat-total-revenue" class="text-2xl font-bold mt-1">৳০</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white rounded-xl p-4">
+                        <p class="text-xs opacity-90">📅 আজকের সেলস</p>
+                        <p id="stat-today-revenue" class="text-2xl font-bold mt-1">৳০</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-500 to-pink-600 text-white rounded-xl p-4">
+                        <p class="text-xs opacity-90">👥 মোট ইউজার</p>
+                        <p id="stat-total-users" class="text-2xl font-bold mt-1">০</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-xl p-4">
+                        <p class="text-xs opacity-90">📱 বিক্রি হয়েছে</p>
+                        <p id="stat-total-sms-sold" class="text-2xl font-bold mt-1">০ SMS</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">📈 মাসিক সেলস চার্ট (শেষ ৬ মাস)</h3>
+                    <canvas id="salesChart" style="max-height: 250px;"></canvas>
+                </div>
+
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">📊 সারসংক্ষেপ</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between py-2 border-b"><span class="text-gray-600">এই মাসের আয়</span><span id="stat-month-revenue" class="font-bold text-emerald-600">৳০</span></div>
+                        <div class="flex justify-between py-2 border-b"><span class="text-gray-600">মোট Approved অর্ডার</span><span id="stat-total-orders" class="font-bold text-blue-600">০</span></div>
+                        <div class="flex justify-between py-2 border-b"><span class="text-gray-600">মোট Pending অর্ডার</span><span id="stat-pending-orders" class="font-bold text-yellow-600">০</span></div>
+                        <div class="flex justify-between py-2 border-b"><span class="text-gray-600">মোট Denied অর্ডার</span><span id="stat-denied-orders" class="font-bold text-red-600">০</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ⏳ Pending Tab -->
+            <div id="tab-pending" class="tab-content hidden">
+                <div id="loadingStatus" class="text-center text-gray-500 mb-4">লোড হচ্ছে...</div>
+                <div id="paymentList" class="space-y-4"></div>
+            </div>
+
+            <!-- 📜 History Tab -->
+            <div id="tab-history" class="tab-content hidden space-y-3">
+                <div class="bg-white rounded-xl p-3 shadow">
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <button onclick="filterHistory('all')" id="hfilter-all" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">সব</button>
+                        <button onclick="filterHistory('approved')" id="hfilter-approved" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">✅ Approved</button>
+                        <button onclick="filterHistory('denied')" id="hfilter-denied" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">❌ Denied</button>
+                    </div>
+                    <input type="text" id="history-search" oninput="renderHistory()" placeholder="🔍 ইমেইল, TrxID বা নাম দিয়ে খুঁজুন..." class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm">
+                </div>
+                <div id="historyList" class="space-y-2"></div>
+            </div>
+
+            <!-- 👥 Users Tab -->
+            <div id="tab-users" class="tab-content hidden space-y-3">
+                <div class="bg-white rounded-xl p-3 shadow">
+                    <input type="text" id="user-search" oninput="renderUsersList()" placeholder="🔍 Shop name বা User ID দিয়ে খুঁজুন..." class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm">
+                </div>
+                <div id="usersList" class="space-y-2">
+                    <div class="text-center text-gray-500 py-4">লোড হচ্ছে...</div>
+                </div>
+            </div>
+
+            <!-- 📦 Packages Tab -->
+            <div id="tab-packages" class="tab-content hidden space-y-3">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded-xl text-xs text-blue-800">
+                    ℹ️ <b>নোট:</b> এখানে প্যাকেজ পরিবর্তন করলে ইউজার অ্যাপে অটো আপডেট হবে।
+                </div>
+                <button onclick="addNewPackage()" class="w-full bg-emerald-600 text-white py-2.5 rounded-xl font-medium text-sm">+ নতুন প্যাকেজ যোগ করুন</button>
+                <div id="packagesList" class="space-y-2"></div>
+            </div>
+
+            <!-- 💳 Payment Methods Tab (নতুন) -->
+            <div id="tab-payment" class="tab-content hidden space-y-3">
+                <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-l-4 border-amber-500 p-3 rounded-xl text-xs text-amber-800">
+                    💳 <b>পেমেন্ট মেথড:</b> এখানে নাম্বার যোগ করলে ইউজার অ্যাপে অটো আপডেট হবে। লোগো আপলোড করলে নাম্বারের পাশে দেখাবে।
+                </div>
+                <button onclick="openPaymentMethodModal()" class="w-full bg-gradient-to-r from-amber-500 to-yellow-600 text-white py-2.5 rounded-xl font-medium text-sm shadow-md">+ নতুন পেমেন্ট মেথড যোগ করুন</button>
+                <div id="paymentMethodsList" class="space-y-2"></div>
+            </div>
+
+            <!-- 📢 Broadcast Tab -->
+            <div id="tab-broadcast" class="tab-content hidden space-y-3">
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">📢 নতুন ব্রডকাস্ট মেসেজ</h3>
+                    <textarea id="broadcast-message" rows="3" placeholder="সব ইউজারের জন্য মেসেজ লিখুন..." class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm mb-3"></textarea>
+                    <div class="flex gap-2">
+                        <input type="text" id="broadcast-title" placeholder="শিরোনাম (যেমন: ঈদ অফার)" class="flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm">
+                        <button onclick="sendBroadcast()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium">📢 পাঠান</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <h3 class="font-bold text-gray-800 mb-3">📜 পাঠানো ব্রডকাস্ট</h3>
+                    <div id="broadcastHistory" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- ⚙️ Settings Tab -->
+            <div id="tab-settings" class="tab-content hidden space-y-3">
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-gray-800">🛠️ Maintenance Mode</h3>
+                            <p class="text-xs text-gray-500 mt-1">চালু করলে ইউজার অ্যাপ বন্ধ হয়ে যাবে</p>
+                        </div>
+                        <button onclick="toggleMaintenance()" id="maintenance-toggle" class="px-4 py-2 rounded-full text-sm font-medium bg-gray-300 text-gray-700">অফ</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow">
+                    <h3 class="font-bold text-gray-800 mb-2">📢 Maintenance Message</h3>
+                    <textarea id="maintenance-message" rows="2" class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-emerald-400 focus:outline-none text-sm" placeholder="আমরা কিছু আপডেট কাজ করছি, অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।"></textarea>
+                    <button onclick="saveMaintenanceMessage()" class="mt-2 bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-medium">💾 সেভ করুন</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 💳 Payment Method Modal -->
+    <div id="payment-method-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="payment-modal-title" class="text-lg font-bold text-gray-800">➕ নতুন পেমেন্ট মেথড</h2>
+                <button onclick="closePaymentMethodModal()" class="text-gray-400 text-2xl hover:text-gray-600">&times;</button>
+            </div>
+
+            <!-- লোগো প্রিভিউ -->
+            <div class="flex justify-center mb-4">
+                <div class="relative">
+                    <div id="logo-preview-container" class="w-20 h-20 rounded-2xl bg-amber-50 border-2 border-dashed border-amber-300 flex items-center justify-center overflow-hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 8h.01" />
+                            <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z" />
+                            <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
+                            <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" />
+                        </svg>
+                    </div>
+                    <label for="logo-upload-input" class="absolute -bottom-1 -right-1 w-7 h-7 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center cursor-pointer shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                    </label>
+                    <input type="file" id="logo-upload-input" accept="image/*" class="hidden" onchange="handleLogoUpload(event)">
+                </div>
+            </div>
+            <p class="text-center text-[10px] text-gray-400 mb-4">লোগো আপলোড করুন (PNG/JPG)</p>
+
+            <!-- ফর্ম -->
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-medium text-gray-700 block mb-1">💳 মেথডের নাম *</label>
+                    <input type="text" id="pm-name" placeholder="যেমন: bKash, Nagad, Rocket" class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm">
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-gray-700 block mb-1">📱 নাম্বার *</label>
+                    <input type="tel" id="pm-number" placeholder="01XXXXXXXXX" class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm">
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-gray-700 block mb-1">🏷️ টাইপ *</label>
+                    <select id="pm-type" class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm">
+                        <option value="send-money">💸 Send Money</option>
+                        <option value="cash-out">💰 Cash Out</option>
+                        <option value="payment">💳 Payment</option>
+                        <option value="personal">👤 Personal</option>
+                        <option value="agent">🏪 Agent</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 block mb-1">🔢 অর্ডার</label>
+                        <input type="number" id="pm-order" value="1" min="1" class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-gray-700 block mb-1">✅ স্ট্যাটাস</label>
+                        <select id="pm-active" class="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 focus:border-amber-400 focus:outline-none text-sm">
+                            <option value="true">🟢 Active</option>
+                            <option value="false">⚫ Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-2 mt-5">
+                <button onclick="closePaymentMethodModal()" class="flex-1 py-2.5 rounded-lg border-2 border-gray-200 text-gray-700 font-medium text-sm">বাতিল</button>
+                <button onclick="savePaymentMethod()" id="pm-save-btn" class="flex-1 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-medium text-sm">💾 সেভ করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ============================================
+        // 🔥 Firebase Configuration
+        // ============================================
+        const firebaseConfig = {
+          apiKey: "AIzaSyBIlO1I012tDbTfERJa9woj9B0qzQ4ZlzI",
+          authDomain: "bakir-khara.firebaseapp.com",
+          databaseURL: "https://bakir-khara-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "bakir-khara",
+          storageBucket: "bakir-khara.firebasestorage.app",
+          messagingSenderId: "42792295226",
+          appId: "1:42792295226:web:b7425942b241736df88e03",
+          measurementId: "G-3136LXB5SK"
+        };
+
+        // Cloudinary Configuration (লোগো আপলোডের জন্য)
+        const CLOUDINARY_CONFIG = {
+            cloud_name: 'dtep7yhzl',
+            upload_preset: 'bakir_khata_preset'
+        };
+
+        if (typeof firebase === 'undefined') {
+            alert('❌ Firebase লোড হয়নি! ইন্টারনেট চেক করুন এবং পেজ রিফ্রেশ দিন।');
+        } else {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        const ADMIN_EMAIL = "hossainsawon772@gmail.com";
+        const API_KEY = 'uYhBuYuxGyqbipbEEjMu';
+
+        // Global State
+        let allPaymentRequests = {};
+        let allUsers = {};
+        let allPackages = {};
+        let allBroadcasts = {};
+        let allPaymentMethods = {};
+        let currentHistoryFilter = 'all';
+        let salesChartInstance = null;
+        let maintenanceEnabled = false;
+        let editingPaymentMethodId = null;
+        let uploadedLogoUrl = null;
+
+        // ============================================
+        // 🔐 Admin Login
+        // ============================================
+        function adminLogin(event) {
+            if (event) event.preventDefault();
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const errorEl = document.getElementById('loginError');
+            errorEl.classList.add('hidden');
+            
+            if (!email || !password) {
+                errorEl.textContent = 'ইমেইল এবং পাসওয়ার্ড দিন';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            if (email !== ADMIN_EMAIL) {
+                errorEl.textContent = '❌ আপনি অ্যাডমিন নন!';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => console.log('✅ Admin login successful'))
+                .catch((error) => {
+                    errorEl.textContent = '❌ ভুল পাসওয়ার্ড!';
+                    errorEl.classList.remove('hidden');
+                });
+        }
+
+        function adminLogout() {
+            auth.signOut().then(() => location.reload());
+        }
+
+        // ============================================
+        // 👤 Auth State Listener
+        // ============================================
+        auth.onAuthStateChanged((user) => {
+            if (user && user.email === ADMIN_EMAIL) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                
+                loadAllData();
+                fetchApiBalance();
+                setupPaymentListener();
+                setupPackagesListener();
+                setupBroadcastListener();
+                setupMaintenanceListener();
+                setupPaymentMethodsListener();
+            } else if (user) {
+                alert('❌ আপনি অ্যাডমিন নন!');
+                auth.signOut();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('adminPanel').classList.add('hidden');
+            }
+        });
+
+        // ============================================
+        // 📑 Tab Navigation
+        // ============================================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('tab-active');
+                el.classList.add('text-gray-600');
+            });
+            const tabContent = document.getElementById('tab-' + tabName);
+            if (tabContent) tabContent.classList.remove('hidden');
+            
+            const btn = document.getElementById('tabbtn-' + tabName);
+            if (btn) {
+                btn.classList.add('tab-active');
+                btn.classList.remove('text-gray-600');
+            }
+        }
+
+        // ============================================
+        // 📡 API Balance Fetch — FIXED
+        // ============================================
+        async function fetchApiBalance() {
+            const display = document.getElementById('api-balance-display');
+            const sourceEl = document.getElementById('api-balance-source');
+            if (!display) return;
+            
+            display.textContent = 'লোড হচ্ছে...';
+            display.className = 'text-xl sm:text-2xl font-bold text-gray-400 mt-1';
+            if (sourceEl) sourceEl.textContent = '';
+
+            let balance = null;
+            let source = '';
+
+            // ============================================
+            // ১) প্রথমে Node.js সার্ভার (Render) ট্রাই
+            // ============================================
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 15000);
+                
+                const response = await fetch(`https://bakir-khata-sms.onrender.com/api/balance`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+                
+                const data = await response.json();
+                console.log('Server response:', data);
+                
+                if (data.response_code === 200 || data.balance !== undefined) {
+                    balance = parseFloat(data.balance || 0);
+                    source = '✅ Render সার্ভার থেকে';
+                }
+            } catch (err) {
+                console.log('❌ Render সার্ভার failed:', err.message);
+            }
+
+            // ============================================
+            // ২) CORS Proxy দিয়ে সরাসরি BulkSMSBD API
+            // ============================================
+            if (balance === null) {
+                try {
+                    const apiUrl = `https://bulksmsbd.net/api/getBalanceApi?api_key=${API_KEY}`;
+                    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(apiUrl)}`;
+                    
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    console.log('Proxy response:', data);
+                    
+                    if (data.response_code === 200 || data.balance !== undefined) {
+                        balance = parseFloat(data.balance || 0);
+                        source = '🌐 CORS Proxy থেকে';
+                    }
+                } catch (err) {
+                    console.log('❌ Proxy failed:', err.message);
+                }
+            }
+
+            // ============================================
+            // ৩) আরেকটা CORS Proxy (fallback)
+            // ============================================
+            if (balance === null) {
+                try {
+                    const apiUrl = `https://bulksmsbd.net/api/getBalanceApi?api_key=${API_KEY}`;
+                    const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(apiUrl)}`;
+                    
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+                    console.log('Corsproxy response:', data);
+                    
+                    if (data.response_code === 200 || data.balance !== undefined) {
+                        balance = parseFloat(data.balance || 0);
+                        source = '🌐 CORS Proxy #2 থেকে';
+                    }
+                } catch (err) {
+                    console.log('❌ Proxy #2 failed:', err.message);
+                }
+            }
+
+            // ============================================
+            // ফলাফল দেখানো
+            // ============================================
+            if (balance !== null && !isNaN(balance)) {
+                display.textContent = '৳ ' + balance.toFixed(2);
+                display.className = 'text-xl sm:text-2xl font-bold text-green-600 mt-1';
+                if (sourceEl) sourceEl.textContent = source;
+                
+                if (balance < 500) {
+                    setTimeout(() => alert('⚠️ সতর্কতা: API ব্যালেন্স ৫০০ টাকার নিচে!'), 500);
+                }
+            } else {
+                display.innerHTML = '❌ ব্যালেন্স লোড করা যায়নি';
+                display.className = 'text-base font-bold text-red-500 mt-1';
+                if (sourceEl) {
+                    sourceEl.innerHTML = '💡 সমাধান: <br>১. ইন্টারনেট চেক করুন<br>২. Render সার্ভার চালু আছে কিনা দেখুন<br>৩. কিছুক্ষণ পর আবার চেষ্টা করুন';
+                    sourceEl.className = 'text-[10px] text-red-500 mt-1 leading-relaxed';
+                }
+            }
+        }
+
+        // ============================================
+        // 💾 Load All Data
+        // ============================================
+        function loadAllData() {
+            database.ref('payment_requests').once('value', (snap) => {
+                allPaymentRequests = snap.val() || {};
+                renderPending();
+                renderHistory();
+                updateDashboardStats();
+                renderSalesChart();
+            }).catch(err => console.error("Error loading payments:", err));
+
+            database.ref('users').once('value', (snap) => {
+                allUsers = {};
+                snap.forEach(userSnap => {
+                    allUsers[userSnap.key] = {
+                        shop_name: userSnap.child('shop_name').val() || 'নাম নেই',
+                        sms_balance: userSnap.child('sms_balance').val() || { balance: 0, totalPurchased: 0, totalUsed: 0 }
+                    };
+                });
+                renderUsersList();
+                const userCountEl = document.getElementById('stat-total-users');
+                if (userCountEl) userCountEl.textContent = Object.keys(allUsers).length;
+            }).catch(err => console.error("Error loading users:", err));
+        }
+
+        // ============================================
+        // ⏳ Pending Payments Listener
+        // ============================================
+        function setupPaymentListener() {
+            database.ref('payment_requests').on('value', (snap) => {
+                allPaymentRequests = snap.val() || {};
+                renderPending();
+                renderHistory();
+                updateDashboardStats();
+                renderSalesChart();
+            }, (error) => {
+                console.error("Payment listener error:", error);
+            });
+        }
+
+        function renderPending() {
+            const listDiv = document.getElementById('paymentList');
+            const statusDiv = document.getElementById('loadingStatus');
+            if (!listDiv) return;
+            listDiv.innerHTML = '';
+            let pendingCount = 0;
+
+            Object.entries(allPaymentRequests).forEach(([key, data]) => {
+                if (data.status === 'pending') {
+                    pendingCount++;
+                    listDiv.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl shadow border-l-4 border-yellow-500">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium">⏳ পেন্ডিং</span>
+                                <span class="text-xs text-gray-400">${data.date || ''}</span>
+                            </div>
+                            <p class="text-sm mb-1"><b>👤 ইউজার:</b> ${data.userEmail || 'N/A'}</p>
+                            <p class="text-xs text-gray-400 mb-1 break-all"><b>🆔 আইডি:</b> ${data.userId}</p>
+                            <p class="text-sm mb-1"><b>📦 প্যাকেজ:</b> ${data.packageName} - ${data.smsAmount} SMS (${data.price} টাকা)</p>
+                            <p class="text-sm text-blue-600 mb-1"><b>💳 TrxID:</b> ${data.trxId}</p>
+                            ${data.userPhone ? `<p class="text-xs text-gray-600 mb-1"><b>📱 বিকাশ:</b> ${data.userPhone}</p>` : ''}
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="approvePayment('${key}', '${data.userId}', ${data.smsAmount})" class="flex-1 bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700">✅ Approve</button>
+                                <button onclick="denyPayment('${key}')" class="flex-1 bg-red-500 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-600">❌ Deny</button>
+                                <button onclick="deletePayment('${key}')" class="bg-gray-300 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-400">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (pendingCount === 0) {
+                listDiv.innerHTML = '<div class="text-center py-10"><p class="text-4xl mb-2">📭</p><p class="text-gray-500">কোনো পেন্ডিং রিকোয়েস্ট নেই।</p></div>';
+                if (statusDiv) statusDiv.innerText = '';
+            } else {
+                if (statusDiv) {
+                    statusDiv.innerText = `মোট ${pendingCount} টি পেন্ডিং রিকোয়েস্ট।`;
+                    statusDiv.className = 'text-center text-green-600 mb-4 font-medium';
+                }
+            }
+        }
+
+        // ============================================
+        // ✅ Approve Payment
+        // ============================================
+        function approvePayment(requestId, userId, smsAmount) {
+            if (!confirm(`আপনি কি নিশ্চিত? ${smsAmount} টি SMS যোগ করতে চান?`)) return;
+
+            const smsBalanceRef = database.ref(`users/${userId}/sms_balance`);
+            smsBalanceRef.transaction((currentData) => {
+                if (currentData) {
+                    currentData.balance = (currentData.balance || 0) + smsAmount;
+                    currentData.totalPurchased = (currentData.totalPurchased || 0) + smsAmount;
+                    if (typeof currentData.totalUsed === 'undefined') currentData.totalUsed = 0;
+                } else {
+                    currentData = { balance: smsAmount, totalPurchased: smsAmount, totalUsed: 0 };
+                }
+                return currentData;
+            })
+            .then((result) => {
+                if (result.committed) {
+                    return database.ref(`payment_requests/${requestId}`).update({
+                        status: 'approved',
+                        approvedAt: new Date().toLocaleString('bn-BD')
+                    });
+                } else {
+                    throw new Error("Transaction ব্যর্থ!");
+                }
+            })
+            .then(() => alert("✅ SMS যোগ হয়েছে!"))
+            .catch((error) => alert("❌ সমস্যা: " + error.message));
+        }
+
+        function denyPayment(requestId) {
+            if (!confirm("⚠️ বাতিল করতে চান?")) return;
+            database.ref(`payment_requests/${requestId}`).update({
+                status: 'denied',
+                deniedAt: new Date().toLocaleString('bn-BD')
+            }).then(() => alert("❌ বাতিল হয়েছে।"));
+        }
+
+        function deletePayment(requestId) {
+            if (!confirm("⚠️ ডিলিট করতে চান? ফিরে পাওয়া যাবে না।")) return;
+            database.ref(`payment_requests/${requestId}`).remove()
+                .then(() => alert("🗑️ ডিলিট হয়েছে।"));
+        }
+
+        // ============================================
+        // 📜 History
+        // ============================================
+        function filterHistory(filter) {
+            currentHistoryFilter = filter;
+            ['all', 'approved', 'denied'].forEach(f => {
+                const btn = document.getElementById('hfilter-' + f);
+                if (btn) {
+                    if (f === filter) {
+                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700';
+                    }
+                }
+            });
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const listDiv = document.getElementById('historyList');
+            if (!listDiv) return;
+            
+            const searchInput = document.getElementById('history-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            
+            const entries = Object.entries(allPaymentRequests)
+                .filter(([key, data]) => data.status !== 'pending')
+                .filter(([key, data]) => currentHistoryFilter === 'all' || data.status === currentHistoryFilter)
+                .filter(([key, data]) => {
+                    if (!search) return true;
+                    return (data.userEmail || '').toLowerCase().includes(search) ||
+                           (data.trxId || '').toLowerCase().includes(search) ||
+                           (data.packageName || '').toLowerCase().includes(search);
+                })
+                .sort((a, b) => new Date(b[1].approvedAt || b[1].deniedAt || 0) - new Date(a[1].approvedAt || a[1].deniedAt || 0));
+
+            if (entries.length === 0) {
+                listDiv.innerHTML = '<div class="text-center py-6 text-gray-500 text-sm">কোনো রেকর্ড নেই</div>';
+                return;
+            }
+
+            listDiv.innerHTML = entries.map(([key, data]) => {
+                const isApproved = data.status === 'approved';
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow border-l-4 ${isApproved ? 'border-green-500' : 'border-red-500'}">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="text-sm"><b>${data.userEmail || 'N/A'}</b></p>
+                                <p class="text-xs text-gray-500 mt-1">📦 ${data.packageName} - ${data.smsAmount} SMS (৳${data.price})</p>
+                                <p class="text-xs text-gray-400">💳 ${data.trxId}</p>
+                                <p class="text-xs text-gray-400">🕐 ${data.approvedAt || data.deniedAt || data.date || ''}</p>
+                            </div>
+                            <span class="text-xs px-2 py-0.5 rounded-full ${isApproved ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">
+                                ${isApproved ? '✅ Approved' : '❌ Denied'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ============================================
+        // 👥 Users Management
+        // ============================================
+        function renderUsersList() {
+            const listDiv = document.getElementById('usersList');
+            if (!listDiv) return;
+            
+            const searchInput = document.getElementById('user-search');
+            const search = searchInput ? searchInput.value.toLowerCase() : '';
+            
+            const entries = Object.entries(allUsers).filter(([userId, user]) => {
+                if (!search) return true;
+                return userId.toLowerCase().includes(search) ||
+                       (user.shop_name || '').toLowerCase().includes(search);
+            });
+
+            if (entries.length === 0) {
+                listDiv.innerHTML = '<div class="text-center py-6 text-gray-500 text-sm">কোনো ইউজার নেই</div>';
+                return;
+            }
+
+            listDiv.innerHTML = entries.map(([userId, user]) => {
+                const bal = user.sms_balance || { balance: 0, totalPurchased: 0, totalUsed: 0 };
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <p class="font-bold text-sm text-gray-800">🏪 ${user.shop_name || 'নাম নেই'}</p>
+                                <p class="text-xs text-gray-400 break-all mt-1">🆔 ${userId}</p>
+                                <div class="flex gap-3 mt-2 text-xs">
+                                    <span class="text-emerald-600">ব্যালেন্স: <b>${bal.balance || 0}</b></span>
+                                    <span class="text-blue-600">কেনা: <b>${bal.totalPurchased || 0}</b></span>
+                                    <span class="text-red-600">ব্যবহার: <b>${bal.totalUsed || 0}</b></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 mt-3">
+                            <button onclick="adjustBalance('${userId}', 1)" class="flex-1 bg-green-100 text-green-700 py-2 rounded-lg text-xs font-medium hover:bg-green-200">+ ১ SMS</button>
+                            <button onclick="adjustBalance('${userId}', -1)" class="flex-1 bg-red-100 text-red-700 py-2 rounded-lg text-xs font-medium hover:bg-red-200">- ১ SMS</button>
+                            <button onclick="customAdjust('${userId}')" class="flex-1 bg-blue-100 text-blue-700 py-2 rounded-lg text-xs font-medium hover:bg-blue-200">✏️ কাস্টম</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function adjustBalance(userId, amount) {
+            const ref = database.ref(`users/${userId}/sms_balance`);
+            ref.transaction((current) => {
+                if (!current) current = { balance: 0, totalPurchased: 0, totalUsed: 0 };
+                const newBalance = Math.max(0, (current.balance || 0) + amount);
+                current.balance = newBalance;
+                if (amount > 0) current.totalPurchased = (current.totalPurchased || 0) + amount;
+                return current;
+            }).then(() => {
+                alert(`✅ ব্যালেন্স ${amount > 0 ? '+' : ''}${amount} আপডেট হয়েছে!`);
+                loadAllData();
+            });
+        }
+
+        function customAdjust(userId) {
+            const input = prompt('কত SMS যোগ/বিয়োগ করতে চান? (মাইনাস দিলে কমবে)\nউদাহরণ: 50 বা -20');
+            if (input === null) return;
+            const amount = parseInt(input);
+            if (isNaN(amount) || amount === 0) {
+                alert('সঠিক সংখ্যা দিন!');
+                return;
+            }
+            adjustBalance(userId, amount);
+        }
+
+        // ============================================
+        // 📊 Dashboard Stats
+        // ============================================
+        function updateDashboardStats() {
+            let totalRevenue = 0, todayRevenue = 0, monthRevenue = 0;
+            let totalSmsSold = 0;
+            let totalOrders = 0, pendingOrders = 0, deniedOrders = 0;
+            
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            Object.values(allPaymentRequests).forEach(req => {
+                if (req.status === 'approved') {
+                    totalRevenue += parseFloat(req.price) || 0;
+                    totalSmsSold += parseInt(req.smsAmount) || 0;
+                    totalOrders++;
+                    
+                    const approvedDate = new Date(req.approvedAt || 0);
+                    if (approvedDate.toDateString() === now.toDateString()) {
+                        todayRevenue += parseFloat(req.price) || 0;
+                    }
+                    if (approvedDate.getMonth() === currentMonth && approvedDate.getFullYear() === currentYear) {
+                        monthRevenue += parseFloat(req.price) || 0;
+                    }
+                } else if (req.status === 'pending') {
+                    pendingOrders++;
+                } else if (req.status === 'denied') {
+                    deniedOrders++;
+                }
+            });
+
+            const setEl = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val;
+            };
+
+            setEl('stat-total-revenue', '৳' + totalRevenue.toLocaleString('en-IN'));
+            setEl('stat-today-revenue', '৳' + todayRevenue.toLocaleString('en-IN'));
+            setEl('stat-month-revenue', '৳' + monthRevenue.toLocaleString('en-IN'));
+            setEl('stat-total-sms-sold', totalSmsSold + ' SMS');
+            setEl('stat-total-orders', totalOrders);
+            setEl('stat-pending-orders', pendingOrders);
+            setEl('stat-denied-orders', deniedOrders);
+        }
+
+        // ============================================
+        // 📈 Sales Chart
+        // ============================================
+        function renderSalesChart() {
+            if (typeof Chart === 'undefined') return;
+            const ctx = document.getElementById('salesChart');
+            if (!ctx) return;
+
+            const months = [];
+            const data = [];
+            const now = new Date();
+
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const monthName = d.toLocaleString('bn-BD', { month: 'short' });
+                months.push(monthName);
+                
+                let monthTotal = 0;
+                Object.values(allPaymentRequests).forEach(req => {
+                    if (req.status === 'approved') {
+                        const approvedDate = new Date(req.approvedAt || 0);
+                        if (approvedDate.getMonth() === d.getMonth() && approvedDate.getFullYear() === d.getFullYear()) {
+                            monthTotal += parseFloat(req.price) || 0;
+                        }
+                    }
+                });
+                data.push(monthTotal);
+            }
+
+            if (salesChartInstance) salesChartInstance.destroy();
+
+            salesChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: months,
+                    datasets: [{
+                        label: 'আয় (৳)',
+                        data: data,
+                        backgroundColor: 'rgba(5, 150, 105, 0.7)',
+                        borderColor: '#059669',
+                        borderWidth: 1.5,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => '৳' + ctx.raw.toLocaleString('en-IN')
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { callback: (v) => '৳' + v }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============================================
+        // 📦 Packages Management
+        // ============================================
+        function setupPackagesListener() {
+            database.ref('config/packages').on('value', (snap) => {
+                allPackages = snap.val() || {};
+                renderPackages();
+            });
+        }
+
+        function renderPackages() {
+            const listDiv = document.getElementById('packagesList');
+            if (!listDiv) return;
+            const entries = Object.entries(allPackages);
+
+            if (entries.length === 0) {
+                listDiv.innerHTML = '<div class="text-center py-6 text-gray-500 text-sm">কোনো প্যাকেজ নেই। ডিফল্ট প্যাকেজ তৈরি করা হচ্ছে...</div>';
+                createDefaultPackages();
+                return;
+            }
+
+            listDiv.innerHTML = entries.map(([id, pkg]) => `
+                <div class="bg-white p-3 rounded-xl shadow">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm">📦 ${pkg.name} ${pkg.popular ? '<span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full ml-1">জনপ্রিয়</span>' : ''}</p>
+                            <p class="text-xs text-gray-500 mt-1">${pkg.smsCount} SMS → ৳${pkg.price}</p>
+                        </div>
+                        <div class="flex gap-1">
+                            <button onclick="editPackage('${id}')" class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">✏️</button>
+                            <button onclick="deletePackage('${id}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createDefaultPackages() {
+            const defaults = {
+                starter: { name: 'Starter', smsCount: 20, price: 10, popular: false, order: 1 },
+                standard: { name: 'Standard', smsCount: 50, price: 20, popular: false, order: 2 },
+                business: { name: 'Business', smsCount: 60, price: 25, popular: true, order: 3 },
+                pro: { name: 'Pro', smsCount: 100, price: 50, popular: false, order: 4 }
+            };
+            database.ref('config/packages').set(defaults);
+        }
+
+        function addNewPackage() {
+            const name = prompt('প্যাকেজের নাম (যেমন: Starter):');
+            if (!name) return;
+            const smsCount = parseInt(prompt('কতটি SMS?:'));
+            if (!smsCount || smsCount <= 0) return alert('সঠিক SMS সংখ্যা দিন!');
+            const price = parseFloat(prompt('দাম কত টাকা?:'));
+            if (!price || price <= 0) return alert('সঠিক দাম দিন!');
+            
+            const id = 'pkg_' + Date.now();
+            database.ref(`config/packages/${id}`).set({
+                name: name, smsCount: smsCount, price: price, popular: false, order: Date.now()
+            }).then(() => alert('✅ প্যাকেজ যোগ হয়েছে!'));
+        }
+
+        function editPackage(id) {
+            const pkg = allPackages[id];
+            if (!pkg) return;
+            const name = prompt('নাম:', pkg.name);
+            if (!name) return;
+            const smsCount = parseInt(prompt('SMS সংখ্যা:', pkg.smsCount));
+            const price = parseFloat(prompt('দাম:', pkg.price));
+            
+            database.ref(`config/packages/${id}`).update({
+                name: name, smsCount: smsCount, price: price
+            }).then(() => alert('✅ আপডেট হয়েছে!'));
+        }
+
+        function deletePackage(id) {
+            if (!confirm('প্যাকেজ ডিলিট করতে চান?')) return;
+            database.ref(`config/packages/${id}`).remove().then(() => alert('🗑️ ডিলিট হয়েছে!'));
+        }
+
+        // ============================================
+        // 💳 Payment Methods Management (নতুন)
+        // ============================================
+        function setupPaymentMethodsListener() {
+            database.ref('config/payment_methods').on('value', (snap) => {
+                allPaymentMethods = snap.val() || {};
+                renderPaymentMethods();
+            });
+        }
+
+        function renderPaymentMethods() {
+            const listDiv = document.getElementById('paymentMethodsList');
+            if (!listDiv) return;
+
+            const entries = Object.entries(allPaymentMethods)
+                .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+
+            if (entries.length === 0) {
+                listDiv.innerHTML = `
+                    <div class="text-center py-8 bg-white rounded-xl shadow">
+                        <p class="text-4xl mb-2">💳</p>
+                        <p class="text-gray-500 text-sm">কোনো পেমেন্ট মেথড নেই</p>
+                        <p class="text-xs text-gray-400 mt-1">উপরের বাটনে ক্লিক করে যোগ করুন</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const typeLabels = {
+                'send-money': { text: 'Send Money', color: 'bg-emerald-100 text-emerald-700' },
+                'cash-out': { text: 'Cash Out', color: 'bg-red-100 text-red-700' },
+                'payment': { text: 'Payment', color: 'bg-blue-100 text-blue-700' },
+                'personal': { text: 'Personal', color: 'bg-slate-100 text-slate-700' },
+                'agent': { text: 'Agent', color: 'bg-purple-100 text-purple-700' }
+            };
+
+            listDiv.innerHTML = entries.map(([id, m]) => {
+                const typeInfo = typeLabels[m.type] || typeLabels['payment'];
+                const logoHtml = m.logo 
+                    ? `<img src="${m.logo}" class="w-12 h-12 rounded-xl object-contain bg-amber-50 p-1 border border-amber-200" onerror="this.style.display='none'">`
+                    : `<div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center border border-amber-200"><span class="text-lg font-bold text-amber-700">${(m.name || '?').charAt(0)}</span></div>`;
+                
+                return `
+                    <div class="bg-white p-3 rounded-xl shadow border-l-4 ${m.active !== false ? 'border-emerald-500' : 'border-gray-300'}">
+                        <div class="flex items-start gap-3">
+                            ${logoHtml}
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <p class="font-bold text-sm">${m.name || 'নাম নেই'}</p>
+                                    <span class="text-[9px] font-bold ${typeInfo.color} px-1.5 py-0.5 rounded-full uppercase">${typeInfo.text}</span>
+                                    ${m.active !== false ? '<span class="text-[9px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-bold">ACTIVE</span>' : '<span class="text-[9px] bg-gray-400 text-white px-1.5 py-0.5 rounded-full font-bold">OFF</span>'}
+                                </div>
+                                <p class="text-sm font-bold text-amber-700 mt-1">${m.number || 'নাম্বার নেই'}</p>
+                                <p class="text-[10px] text-gray-400 mt-0.5">অর্ডার: ${m.order || 0}</p>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <button onclick="editPaymentMethod('${id}')" class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs hover:bg-yellow-200">✏️</button>
+                                <button onclick="deletePaymentMethod('${id}')" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs hover:bg-red-200">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openPaymentMethodModal(editId = null) {
+            editingPaymentMethodId = editId;
+            uploadedLogoUrl = null;
+            
+            const modal = document.getElementById('payment-method-modal');
+            const title = document.getElementById('payment-modal-title');
+            const nameInput = document.getElementById('pm-name');
+            const numberInput = document.getElementById('pm-number');
+            const typeInput = document.getElementById('pm-type');
+            const orderInput = document.getElementById('pm-order');
+            const activeInput = document.getElementById('pm-active');
+            const preview = document.getElementById('logo-preview-container');
+            const saveBtn = document.getElementById('pm-save-btn');
+
+            if (editId && allPaymentMethods[editId]) {
+                const m = allPaymentMethods[editId];
+                title.textContent = '✏️ পেমেন্ট মেথড এডিট';
+                nameInput.value = m.name || '';
+                numberInput.value = m.number || '';
+                typeInput.value = m.type || 'send-money';
+                orderInput.value = m.order || 1;
+                activeInput.value = (m.active !== false).toString();
+                saveBtn.textContent = '💾 আপডেট করুন';
+                
+                if (m.logo) {
+                    uploadedLogoUrl = m.logo;
+                    preview.innerHTML = `<img src="${m.logo}" class="w-full h-full object-contain p-1" onerror="this.style.display='none'">`;
+                } else {
+                    preview.innerHTML = getLogoPlaceholder();
+                }
+            } else {
+                title.textContent = '➕ নতুন পেমেন্ট মেথড';
+                nameInput.value = '';
+                numberInput.value = '';
+                typeInput.value = 'send-money';
+                orderInput.value = (Object.keys(allPaymentMethods).length + 1);
+                activeInput.value = 'true';
+                saveBtn.textContent = '💾 সেভ করুন';
+                preview.innerHTML = getLogoPlaceholder();
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function getLogoPlaceholder() {
+            return `
+                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 8h.01" />
+                    <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z" />
+                    <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
+                    <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" />
+                </svg>
+            `;
+        }
+
+        function closePaymentMethodModal() {
+            document.getElementById('payment-method-modal').classList.add('hidden');
+            editingPaymentMethodId = null;
+            uploadedLogoUrl = null;
+        }
+
+        // লোগো আপলোড (Cloudinary)
+        async function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert('❌ ছবির সাইজ ৫MB এর কম হতে হবে!');
+                return;
+            }
+
+            const preview = document.getElementById('logo-preview-container');
+            preview.innerHTML = `<div class="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>`;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_CONFIG.upload_preset);
+            formData.append('cloud_name', CLOUDINARY_CONFIG.cloud_name);
+
+            try {
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CONFIG.cloud_name}/image/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.secure_url) {
+                    uploadedLogoUrl = data.secure_url;
+                    preview.innerHTML = `<img src="${data.secure_url}" class="w-full h-full object-contain p-1">`;
+                } else {
+                    throw new Error('আপলোড ব্যর্থ');
+                }
+            } catch (err) {
+                console.error('Logo upload error:', err);
+                alert('❌ লোগো আপলোড ব্যর্থ: ' + err.message);
+                preview.innerHTML = getLogoPlaceholder();
+            }
+            
+            event.target.value = '';
+        }
+
+        async function savePaymentMethod() {
+            const name = document.getElementById('pm-name').value.trim();
+            const number = document.getElementById('pm-number').value.trim();
+            const type = document.getElementById('pm-type').value;
+            const order = parseInt(document.getElementById('pm-order').value) || 1;
+            const active = document.getElementById('pm-active').value === 'true';
+
+            if (!name) {
+                alert('❌ মেথডের নাম দিন!');
+                return;
+            }
+            if (!number) {
+                alert('❌ নাম্বার দিন!');
+                return;
+            }
+
+            const methodData = {
+                name: name,
+                number: number,
+                type: type,
+                order: order,
+                active: active,
+                logo: uploadedLogoUrl || null
+            };
+
+            try {
+                if (editingPaymentMethodId) {
+                    await database.ref(`config/payment_methods/${editingPaymentMethodId}`).update(methodData);
+                    alert('✅ আপডেট হয়েছে!');
+                } else {
+                    await database.ref('config/payment_methods').push(methodData);
+                    alert('✅ যোগ হয়েছে!');
+                }
+                closePaymentMethodModal();
+            } catch (err) {
+                alert('❌ সেভ ব্যর্থ: ' + err.message);
+            }
+        }
+
+        function editPaymentMethod(id) {
+            openPaymentMethodModal(id);
+        }
+
+        function deletePaymentMethod(id) {
+            if (!confirm('⚠️ এই পেমেন্ট মেথড ডিলিট করতে চান?')) return;
+            database.ref(`config/payment_methods/${id}`).remove()
+                .then(() => alert('🗑️ ডিলিট হয়েছে!'))
+                .catch((err) => alert('❌ ডিলিট ব্যর্থ: ' + err.message));
+        }
+
+        // ============================================
+        // 📢 Broadcast
+        // ============================================
+        function setupBroadcastListener() {
+            database.ref('config/broadcasts').on('value', (snap) => {
+                allBroadcasts = snap.val() || {};
+                renderBroadcastHistory();
+            });
+        }
+
+        function sendBroadcast() {
+            const titleInput = document.getElementById('broadcast-title');
+            const messageInput = document.getElementById('broadcast-message');
+            if (!titleInput || !messageInput) return;
+            
+            const title = titleInput.value.trim();
+            const message = messageInput.value.trim();
+            if (!message) return alert('মেসেজ লিখুন!');
+
+            database.ref('config/broadcasts').push({
+                title: title || 'নোটিশ',
+                message: message,
+                createdAt: new Date().toISOString(),
+                active: true
+            }).then(() => {
+                alert('✅ ব্রডকাস্ট পাঠানো হয়েছে!');
+                titleInput.value = '';
+                messageInput.value = '';
+            });
+        }
+
+        function renderBroadcastHistory() {
+            const div = document.getElementById('broadcastHistory');
+            if (!div) return;
+            const entries = Object.entries(allBroadcasts)
+                .sort((a, b) => new Date(b[1].createdAt) - new Date(a[1].createdAt));
+
+            if (entries.length === 0) {
+                div.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">কোনো ব্রডকাস্ট নেই</p>';
+                return;
+            }
+
+            div.innerHTML = entries.map(([id, b]) => `
+                <div class="bg-gray-50 p-3 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-sm">📢 ${b.title}</p>
+                            <p class="text-sm text-gray-700 mt-1">${b.message}</p>
+                            <p class="text-xs text-gray-400 mt-1">🕐 ${new Date(b.createdAt).toLocaleString('bn-BD')}</p>
+                        </div>
+                        <button onclick="deleteBroadcast('${id}')" class="text-red-500 text-sm ml-2">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteBroadcast(id) {
+            if (!confirm('ডিলিট করতে চান?')) return;
+            database.ref(`config/broadcasts/${id}`).remove();
+        }
+
+        // ============================================
+        // ⚙️ Maintenance Mode
+        // ============================================
+        function setupMaintenanceListener() {
+            database.ref('config/maintenance').on('value', (snap) => {
+                const data = snap.val() || {};
+                maintenanceEnabled = data.enabled === true;
+                updateMaintenanceUI();
+                
+                const msgEl = document.getElementById('maintenance-message');
+                if (msgEl) msgEl.value = data.message || 'আমরা কিছু আপডেট কাজ করছি, অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।';
+            });
+        }
+
+        function updateMaintenanceUI() {
+            const btn = document.getElementById('maintenance-toggle');
+            const banner = document.getElementById('maintenanceBanner');
+            
+            if (btn) {
+                if (maintenanceEnabled) {
+                    btn.textContent = 'অন';
+                    btn.className = 'px-4 py-2 rounded-full text-sm font-medium bg-red-600 text-white';
+                } else {
+                    btn.textContent = 'অফ';
+                    btn.className = 'px-4 py-2 rounded-full text-sm font-medium bg-gray-300 text-gray-700';
+                }
+            }
+            if (banner) {
+                if (maintenanceEnabled) banner.classList.remove('hidden');
+                else banner.classList.add('hidden');
+            }
+        }
+
+        function toggleMaintenance() {
+            const newState = !maintenanceEnabled;
+            if (newState && !confirm('⚠️ Maintenance Mode চালু করলে সব ইউজার অ্যাপ বন্ধ হয়ে যাবে! নিশ্চিত?')) return;
+            
+            database.ref('config/maintenance').update({ enabled: newState })
+                .then(() => {
+                    maintenanceEnabled = newState;
+                    updateMaintenanceUI();
+                    alert(newState ? '🛠️ Maintenance Mode চালু হয়েছে!' : '✅ Maintenance Mode বন্ধ হয়েছে!');
+                });
+        }
+
+        function saveMaintenanceMessage() {
+            const msgEl = document.getElementById('maintenance-message');
+            if (!msgEl) return;
+            const msg = msgEl.value.trim();
+            database.ref('config/maintenance').update({ message: msg })
+                .then(() => alert('✅ মেসেজ সেভ হয়েছে!'));
+        }
+    </script>
+</body>
+</html>
