@@ -1,0 +1,745 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#059669">
+<title>দোকান | বাকির খাতা</title>
+<meta name="description" content="সব পণ্য দেখুন, অর্ডার করুন সহজে।">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+<style>
+:root {
+  --primary: #059669;
+  --primary-dark: #047857;
+  --primary-50: #ecfdf5;
+  --primary-100: #d1fae5;
+  --accent: #f59e0b;
+  --danger: #ef4444;
+  --danger-50: #fef2f2;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #9ca3af;
+  --bg: #ffffff;
+  --bg-subtle: #f9fafb;
+  --bg-muted: #f3f4f6;
+  --border: #e5e7eb;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 12px 28px rgba(0,0,0,0.08);
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-full: 9999px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Hind Siliguri', 'Inter', -apple-system, sans-serif;
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+a { color: inherit; text-decoration: none; }
+
+/* LOADING */
+.loading-screen {
+  position: fixed; inset: 0; background: white; z-index: 9999;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 20px;
+}
+.loading-spinner {
+  width: 50px; height: 50px;
+  border: 4px solid var(--primary-100);
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+
+/* ERROR */
+.error-screen {
+  position: fixed; inset: 0; background: white; z-index: 9999;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 24px; text-align: center; gap: 16px;
+}
+.error-screen.show { display: flex; }
+.error-icon {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--danger-50);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--danger);
+}
+.error-title { font-size: 20px; font-weight: 700; }
+.error-desc { font-size: 14px; color: var(--text-secondary); max-width: 300px; line-height: 1.6; }
+.error-btn {
+  margin-top: 8px; padding: 12px 24px; border-radius: var(--r-md);
+  background: var(--primary); color: white; font-weight: 600; font-size: 14px;
+}
+
+/* MAIN */
+.main-content { display: none; }
+.main-content.ready { display: block; }
+
+/* HEADER */
+.shop-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.shop-header-inner {
+  max-width: 1080px; margin: 0 auto; padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.shop-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.shop-logo {
+  width: 44px; height: 44px; border-radius: var(--r-md);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex; align-items: center; justify-content: center;
+  color: white; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(5,150,105,0.28);
+  overflow: hidden;
+}
+.shop-logo img { width: 100%; height: 100%; object-fit: cover; }
+.shop-name {
+  font-size: 16px; font-weight: 700; line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;
+}
+.shop-verified {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--primary); font-weight: 600; margin-top: 2px;
+}
+
+/* HERO BANNER */
+.hero-banner {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 32px 16px 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::before {
+  content: ''; position: absolute;
+  top: -50px; right: -50px; width: 200px; height: 200px;
+  background: rgba(255,255,255,0.1); border-radius: 50%;
+}
+.hero-banner::after {
+  content: ''; position: absolute;
+  bottom: -80px; left: -40px; width: 180px; height: 180px;
+  background: rgba(255,255,255,0.08); border-radius: 50%;
+}
+.hero-content { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; }
+.hero-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.3px; }
+.hero-subtitle { font-size: 13px; opacity: 0.9; margin-bottom: 4px; }
+.hero-stats {
+  display: inline-flex; gap: 16px; margin-top: 14px;
+  padding: 8px 20px; background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
+  border-radius: var(--r-full); font-size: 13px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* CONTAINER */
+.container { max-width: 1080px; margin: 0 auto; padding: 16px; }
+
+/* TOOLBAR */
+.toolbar {
+  background: white; border-radius: var(--r-lg);
+  padding: 12px; margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.search-wrap { position: relative; }
+.search-icon {
+  position: absolute; left: 14px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-tertiary); pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: 12px 14px 12px 42px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md); font-size: 14px;
+  background: var(--bg-subtle); outline: none;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.search-input:focus {
+  border-color: var(--primary);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(5,150,105,0.1);
+}
+.categories {
+  display: flex; gap: 6px; overflow-x: auto;
+  padding-bottom: 4px; scrollbar-width: none;
+}
+.categories::-webkit-scrollbar { display: none; }
+.cat-chip {
+  flex-shrink: 0; padding: 7px 14px;
+  border-radius: var(--r-full);
+  background: var(--bg-muted); color: var(--text-secondary);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: all 0.2s; white-space: nowrap;
+  font-family: inherit;
+}
+.cat-chip:hover { background: var(--primary-50); color: var(--primary-dark); }
+.cat-chip.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(5,150,105,0.25);
+}
+
+/* GRID */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+@media (min-width: 640px) { .products-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; } }
+@media (min-width: 1024px) { .products-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.product-card {
+  background: white; border-radius: var(--r-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--border);
+}
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary-100);
+}
+.product-img {
+  width: 100%; aspect-ratio: 1 / 1;
+  background: var(--bg-muted);
+  position: relative; overflow: hidden;
+}
+.product-img img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.4s;
+}
+.product-card:hover .product-img img { transform: scale(1.06); }
+.product-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px;
+  background: linear-gradient(135deg, #f0fdfa, #ccfbf1);
+}
+.product-discount {
+  position: absolute; top: 8px; left: 8px;
+  background: linear-gradient(135deg, var(--danger), #b91c1c);
+  color: white; font-size: 10px; font-weight: 800;
+  padding: 4px 8px; border-radius: var(--r-full);
+  box-shadow: 0 3px 8px rgba(239,68,68,0.35);
+}
+.product-out-stock {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 13px;
+  backdrop-filter: blur(2px);
+}
+.product-body { padding: 10px; display: flex; flex-direction: column; flex: 1; }
+.product-cat {
+  font-size: 10px; color: var(--text-tertiary);
+  font-weight: 600; margin-bottom: 4px;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.product-title {
+  font-size: 13px; font-weight: 600; line-height: 1.35;
+  margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+  min-height: 36px;
+}
+.product-price-row {
+  display: flex; align-items: baseline; gap: 6px;
+  flex-wrap: wrap; margin-top: auto; margin-bottom: 8px;
+}
+.product-price {
+  font-size: 16px; font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: -0.3px;
+}
+.product-price-old {
+  font-size: 11px; color: var(--text-tertiary);
+  text-decoration: line-through;
+}
+.product-btn {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.product-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(5,150,105,0.3);
+}
+
+/* EMPTY */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-tertiary);
+}
+.empty-icon { font-size: 64px; margin-bottom: 12px; opacity: 0.5; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+.empty-desc { font-size: 13px; line-height: 1.6; }
+
+/* SKELETON */
+.skeleton-card {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--r-lg);
+  aspect-ratio: 0.75 / 1;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* FOOTER */
+.footer {
+  text-align: center; padding: 32px 16px 24px;
+  color: var(--text-tertiary); font-size: 12px; line-height: 1.6;
+}
+.footer-brand {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--primary); font-weight: 700; font-size: 13px;
+  margin-bottom: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loadingScreen">
+  <div class="loading-spinner"></div>
+  <p class="loading-text">দোকান লোড হচ্ছে...</p>
+</div>
+
+<!-- ERROR -->
+<div class="error-screen" id="errorScreen">
+  <div class="error-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 8v4" />
+      <path d="M12 16h.01" />
+    </svg>
+  </div>
+  <h2 class="error-title" id="errorTitle">দোকান পাওয়া যায়নি</h2>
+  <p class="error-desc" id="errorDesc">এই লিংকটি সঠিক নয়।</p>
+  <a href="/" class="error-btn">← হোমে যান</a>
+</div>
+
+<!-- MAIN -->
+<div class="main-content" id="mainContent">
+
+  <!-- HEADER -->
+  <header class="shop-header">
+    <div class="shop-header-inner">
+      <div class="shop-brand">
+        <div class="shop-logo" id="shopLogo">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4m0 1a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-14a1 1 0 0 1 -1 -1z" />
+            <path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" />
+            <path d="M12 12v5" />
+            <path d="M9 15h6" />
+          </svg>
+        </div>
+        <div>
+          <div class="shop-name" id="shopName">দোকান</div>
+          <div class="shop-verified">
+            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12l5 5l9 -9" />
+            </svg>
+            ভেরিফাইড সেলার
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero-banner">
+    <div class="hero-content">
+      <h1 class="hero-title" id="heroTitle">সব পণ্য</h1>
+      <p class="hero-subtitle">পছন্দের পণ্য বেছে নিন, অর্ডার করুন সহজে</p>
+      <div class="hero-stats">
+        <span>📦 <span id="heroCount">০</span>টি পণ্য</span>
+        <span>✅ ভেরিফাইড</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- TOOLBAR -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-3.5-3.5" />
+          </svg>
+        </span>
+        <input type="text" class="search-input" id="searchInput" placeholder="পণ্য খুঁজুন..." autocomplete="off">
+      </div>
+      <div class="categories" id="categoriesContainer"></div>
+    </div>
+
+    <!-- PRODUCTS GRID -->
+    <div class="products-grid" id="productsGrid"></div>
+
+    <!-- EMPTY -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-icon">🔍</div>
+      <div class="empty-title">কোনো পণ্য পাওয়া যায়নি</div>
+      <p class="empty-desc">অন্য কিছু দিয়ে খুঁজে দেখুন</p>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-brand">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4m0 1a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-14a1 1 0 0 1 -1 -1z" />
+        <path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" />
+        <path d="M12 12v5" />
+        <path d="M9 15h6" />
+      </svg>
+      বাকির খাতা দিয়ে তৈরি
+    </div>
+    <div>© <span id="footerYear"></span> সর্বস্বত্ব সংরক্ষিত।</div>
+  </footer>
+</div>
+
+<script>
+// ============================================
+// 🔥 FIREBASE
+// ============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBIlO1I012tDbTfERJa9woj9B0qzQ4ZlzI",
+  authDomain: "bakir-khara.firebaseapp.com",
+  databaseURL: "https://bakir-khara-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bakir-khara",
+  storageBucket: "bakir-khara.firebasestorage.app",
+  messagingSenderId: "42792295226",
+  appId: "1:42792295226:web:b7425942b241736df88e03"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// ============================================
+// 🌐 STATE
+// ============================================
+let SHOP_UID = '';
+let SHOP_NAME = 'দোকান';
+let ALL_PRODUCTS = [];
+let FILTERED_PRODUCTS = [];
+let ACTIVE_CATEGORY = '';
+let SEARCH_QUERY = '';
+
+// ============================================
+// 🚀 INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('footerYear').textContent = new Date().getFullYear();
+  
+  const params = new URLSearchParams(window.location.search);
+  SHOP_UID = params.get('shop') || '';
+  
+  if (!SHOP_UID) {
+    showError('লিংক অসম্পূর্ণ', 'এই লিংকে দোকানের তথ্য নেই।');
+    return;
+  }
+  
+  loadShop();
+});
+
+// ============================================
+// 📡 Load Shop
+// ============================================
+async function loadShop() {
+  try {
+    // ১. Shop name লোড
+    try {
+      const shopSnap = await database.ref(`users/${SHOP_UID}/shop_name`).once('value');
+      SHOP_NAME = shopSnap.val() || 'দোকান';
+    } catch (e) {}
+    
+    // ২. সব public_products লোড করে এই shop এর ফিল্টার করি
+    const snap = await database.ref('public_products').once('value');
+    const data = snap.val() || {};
+    
+    ALL_PRODUCTS = Object.keys(data)
+      .map(key => ({ ...data[key], id: key }))
+      .filter(p => {
+        // Owner uid ম্যাচ
+        if (p.owner_uid === SHOP_UID) return true;
+        return false;
+      })
+      .filter(p => {
+        // শুধু active পণ্য
+        if (p.is_active === false || p.is_active === 'false') return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const tA = new Date(a.created_at || a.updated_at || 0).getTime();
+        const tB = new Date(b.created_at || b.updated_at || 0).getTime();
+        return tB - tA;
+      });
+    
+    // Shop name from product (fallback)
+    if (SHOP_NAME === 'দোকান' && ALL_PRODUCTS.length > 0) {
+      SHOP_NAME = ALL_PRODUCTS[0].shop_name || 'দোকান';
+    }
+    
+    renderShopInfo();
+    renderCategories();
+    FILTERED_PRODUCTS = [...ALL_PRODUCTS];
+    renderProducts();
+    attachEvents();
+    
+    document.getElementById('loadingScreen').style.display = 'none';
+    document.getElementById('mainContent').classList.add('ready');
+    document.title = SHOP_NAME + ' | বাকির খাতা';
+    
+  } catch (error) {
+    console.error('Load error:', error);
+    showError('সংযোগ সমস্যা', 'ইন্টারনেট চেক করে আবার চেষ্টা করুন।');
+  }
+}
+
+// ============================================
+// 🎨 Render Shop Info
+// ============================================
+function renderShopInfo() {
+  document.getElementById('shopName').textContent = SHOP_NAME;
+  document.getElementById('heroTitle').textContent = SHOP_NAME;
+  document.getElementById('heroCount').textContent = toBn(ALL_PRODUCTS.length);
+}
+
+// ============================================
+// 🏷️ Categories
+// ============================================
+function renderCategories() {
+  const container = document.getElementById('categoriesContainer');
+  if (!container) return;
+  
+  const cats = [...new Set(
+    ALL_PRODUCTS
+      .map(p => (p.category || '').trim())
+      .filter(Boolean)
+  )].sort();
+  
+  if (cats.length <= 1) {
+    container.style.display = 'none';
+    return;
+  }
+  
+  container.style.display = 'flex';
+  
+  let html = `<button class="cat-chip active" data-cat="">সব (${toBn(ALL_PRODUCTS.length)})</button>`;
+  
+  cats.forEach(cat => {
+    const count = ALL_PRODUCTS.filter(p => (p.category || '').trim() === cat).length;
+    html += `<button class="cat-chip" data-cat="${escapeHtml(cat)}">${escapeHtml(cat)} (${toBn(count)})</button>`;
+  });
+  
+  container.innerHTML = html;
+  
+  container.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      container.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      ACTIVE_CATEGORY = chip.dataset.cat || '';
+      applyFilters();
+    });
+  });
+}
+
+// ============================================
+// 🔍 Filters
+// ============================================
+function applyFilters() {
+  let filtered = [...ALL_PRODUCTS];
+  
+  if (ACTIVE_CATEGORY) {
+    filtered = filtered.filter(p => (p.category || '').trim() === ACTIVE_CATEGORY);
+  }
+  
+  if (SEARCH_QUERY) {
+    const q = SEARCH_QUERY.toLowerCase();
+    filtered = filtered.filter(p => {
+      const title = (p.title || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      const desc = (p.description || '').toLowerCase();
+      return title.includes(q) || cat.includes(q) || desc.includes(q);
+    });
+  }
+  
+  FILTERED_PRODUCTS = filtered;
+  renderProducts();
+}
+
+// ============================================
+// 🎨 Render Products
+// ============================================
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  const empty = document.getElementById('emptyState');
+  if (!grid) return;
+  
+  if (ALL_PRODUCTS.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    document.querySelector('.empty-icon').textContent = '📦';
+    document.querySelector('.empty-title').textContent = 'এই দোকানে এখনো কোনো পণ্য নেই';
+    document.querySelector('.empty-desc').textContent = 'খুব শীঘ্রই পণ্য যোগ করা হবে';
+    return;
+  }
+  
+  if (FILTERED_PRODUCTS.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    document.querySelector('.empty-icon').textContent = '🔍';
+    document.querySelector('.empty-title').textContent = 'কোনো পণ্য পাওয়া যায়নি';
+    document.querySelector('.empty-desc').textContent = 'অন্য কিছু দিয়ে খুঁজে দেখুন';
+    return;
+  }
+  
+  empty.style.display = 'none';
+  
+  grid.innerHTML = FILTERED_PRODUCTS.map(p => {
+    const price = Number(p.price) || 0;
+    const discountPrice = Number(p.discount_price) || price;
+    const discountPercent = Number(p.discount_percent) || 0;
+    const hasDiscount = discountPrice < price && discountPrice > 0;
+    const finalPrice = hasDiscount ? discountPrice : price;
+    const stock = Number(p.stock) || 0;
+    const isOutOfStock = stock === 0;
+    
+    const imgUrl = p.main_image || '';
+    const imgHtml = imgUrl
+      ? `<img src="${imgUrl}" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'product-placeholder\\'>📦</div>'">`
+      : `<div class="product-placeholder">📦</div>`;
+    
+    const discountBadge = hasDiscount && discountPercent > 0
+      ? `<span class="product-discount">🔥 ${toBn(discountPercent)}%</span>`
+      : '';
+    
+    const outOfStockOverlay = isOutOfStock
+      ? `<div class="product-out-stock">স্টক শেষ</div>`
+      : '';
+    
+    const catHtml = p.category
+      ? `<div class="product-cat">${escapeHtml(p.category)}</div>`
+      : '';
+    
+    const url = `./shop/?id=${encodeURIComponent(p.id)}`;
+    
+    return `
+      <div class="product-card">
+        <a href="${url}">
+          <div class="product-img">
+            ${discountBadge}
+            ${imgHtml}
+            ${outOfStockOverlay}
+          </div>
+        </a>
+        <div class="product-body">
+          ${catHtml}
+          <div class="product-title">${escapeHtml(p.title || 'পণ্য')}</div>
+          <div class="product-price-row">
+            <span class="product-price">${formatCurrency(finalPrice)}</span>
+            ${hasDiscount ? `<span class="product-price-old">${formatCurrency(price)}</span>` : ''}
+          </div>
+          <a href="${url}" class="product-btn" ${isOutOfStock ? 'style="opacity:0.5;pointer-events:none;"' : ''}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8" cy="21" r="1" />
+              <circle cx="19" cy="21" r="1" />
+              <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+            </svg>
+            ${isOutOfStock ? 'স্টক শেষ' : 'অর্ডার করুন'}
+          </a>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================
+// 📎 Events
+// ============================================
+function attachEvents() {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      SEARCH_QUERY = e.target.value.trim();
+      applyFilters();
+    });
+  }
+}
+
+// ============================================
+// 🚨 Error
+// ============================================
+function showError(title, desc) {
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorDesc').textContent = desc;
+  document.getElementById('errorScreen').classList.add('show');
+}
+
+// ============================================
+// 🎨 Helpers
+// ============================================
+function formatCurrency(amount) {
+  return '৳' + Number(amount || 0).toLocaleString('en-IN');
+}
+
+function toBn(num) {
+  const bn = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+  return String(num).replace(/\d/g, d => bn[d]);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+</script>
+
+</body>
+</html>
