@@ -135,6 +135,167 @@
       box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
     }
     
+    /* ============================================
+   🎤 ভয়েস মাইক বাটন - সুন্দর ডিজাইন
+   ============================================ */
+.voice-mic-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+.voice-mic-btn:hover {
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.5);
+}
+
+.voice-mic-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* মাইক আইকন - সাদা স্ট্রোক */
+.voice-mic-icon {
+  width: 18px;
+  height: 18px;
+  stroke: white;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  transition: transform 0.2s;
+  z-index: 2;
+  position: relative;
+}
+
+.voice-mic-btn:hover .voice-mic-icon {
+  transform: scale(1.1);
+}
+
+/* রিপল অ্যানিমেশন (রেকর্ডিং এর সময় দেখাবে) */
+.voice-mic-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(5, 150, 105, 0.4);
+  display: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.voice-mic-ripple-2 {
+  background: rgba(5, 150, 105, 0.25);
+}
+
+/* ভয়েস রেকর্ডিং অবস্থা - লাল হয়ে যাবে ও রিপল দেখাবে */
+.voice-mic-btn.recording {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.6);
+  animation: micPulse 1.2s ease-in-out infinite;
+}
+
+.voice-mic-btn.recording .voice-mic-ripple {
+  display: block;
+  animation: rippleExpand 1.5s ease-out infinite;
+}
+
+.voice-mic-btn.recording .voice-mic-ripple-2 {
+  animation-delay: 0.4s;
+}
+
+.voice-mic-btn.recording .voice-mic-icon {
+  animation: micShake 1s ease-in-out infinite;
+}
+
+@keyframes micPulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.6);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.05);
+    box-shadow: 0 6px 22px rgba(220, 38, 38, 0.8);
+  }
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@keyframes micShake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(8deg); }
+}
+
+/* ডার্ক মোডে মাইক */
+.dark-mode .voice-mic-btn {
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+    
+    /* অ্যাভাটার পিকার ট্যাব */
+.avatar-tab-btn {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  background: #f3f4f6;
+  color: #4b5563;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid transparent;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.avatar-tab-btn:hover {
+  background: #e5e7eb;
+}
+.avatar-tab-btn.active {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+  border-color: #047857;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
+}
+.avatar-item-btn {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  background: #f9fafb;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.avatar-item-btn:hover {
+  background: #ecfdf5;
+  border-color: #059669;
+  transform: scale(1.08);
+}
+.avatar-item-btn:active {
+  transform: scale(0.9);
+}
+    
     /* অ্যাকশন বাটন গ্রুপ */
     .action-btns-group {
       display: flex;
@@ -1051,6 +1212,92 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
 });
 </script>
   
+  <!-- ═══════════════════════════════════════════
+     🎬 SPLASH VIDEO OVERLAY
+     ═══════════════════════════════════════════ -->
+<div id="splash-video-overlay" style="
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.5s ease;
+">
+    <!-- ভিডিও -->
+    <video id="splash-video" 
+           autoplay 
+           muted 
+           playsinline 
+           style="
+               width: 100%;
+               height: 100%;
+               object-fit: cover;
+           ">
+        <source src="splash.mp4" type="video/mp4">
+    </video>
+    
+    <!-- Skip বাটন -->
+    <button id="skip-splash-btn" onclick="closeSplashVideo()" style="
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255,255,255,0.25);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(255,255,255,0.4);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: 'Hind Siliguri', sans-serif;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+        z-index: 10;
+    "
+    onmouseover="this.style.background='rgba(255,255,255,0.4)'"
+    onmouseout="this.style.background='rgba(255,255,255,0.25)'">
+        <span>Skip</span>
+        <span>→</span>
+    </button>
+    
+    <!-- Loading dots (ভিডিও লোড না হলে) -->
+    <div id="splash-loading" style="
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 8px;
+    ">
+        <span style="width:8px;height:8px;border-radius:50%;background:white;animation:splashDot 1.4s infinite;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:white;animation:splashDot 1.4s infinite 0.2s;"></span>
+        <span style="width:8px;height:8px;border-radius:50%;background:white;animation:splashDot 1.4s infinite 0.4s;"></span>
+    </div>
+</div>
+
+<style>
+    @keyframes splashDot {
+        0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
+        40% { opacity: 1; transform: scale(1.3); }
+    }
+    
+    /* ভিডিও লোড না হলে background দেখাবে */
+    #splash-video {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+    
+    /* ফেড আউট অ্যানিমেশন */
+    #splash-video-overlay.fade-out {
+        opacity: 0;
+        pointer-events: none;
+    }
+</style>
+  
   <!-- App Loader Element -->
   <div id="app-global-loader" class="app-loader-overlay hidden">
     <div class="app-loader-spinner"></div>
@@ -1087,6 +1334,85 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
         </div>
       </div>
     </div>
+    
+    <!-- 🎨 Avatar Picker Modal -->
+<div id="avatar-picker-modal" class="fixed inset-0 modal-overlay z-[210] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl">
+    
+    <!-- হেডার -->
+    <div class="sticky top-0 z-10 bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-4 flex items-center justify-between rounded-t-2xl">
+      <h2 class="text-base font-bold text-white flex items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+          <path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+          <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"/>
+        </svg>
+        ছবি বা অ্যাভাটার
+      </h2>
+      <button onclick="closeAvatarPicker()" class="text-white/80 hover:text-white text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors">&times;</button>
+    </div>
+    
+    <!-- নিজের ছবি যোগ -->
+    <div class="p-4 border-b border-gray-100 bg-gray-50">
+      <p class="text-xs font-bold text-gray-600 mb-2 flex items-center gap-1">
+        <span>📷</span> নিজের ছবি যোগ করুন
+      </p>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="openCameraFromPicker()" 
+            class="flex items-center justify-center gap-2 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 7h2l2 -3h6l2 3h2a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/>
+            <path d="M12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+          </svg>
+          ক্যামেরা
+        </button>
+        <button onclick="openGalleryFromPicker()" 
+            class="flex items-center justify-center gap-2 bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3 rounded-xl font-semibold text-sm transition-all active:scale-95 shadow-md">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="3"/>
+            <circle cx="9" cy="9" r="2"/>
+            <path d="M21 15l-5 -5l-9 9"/>
+          </svg>
+          গ্যালারি
+        </button>
+      </div>
+    </div>
+    
+    <!-- অথবা ডিভাইডার -->
+    <div class="relative py-3 px-4">
+      <div class="absolute inset-0 flex items-center px-4">
+        <div class="w-full border-t border-gray-200"></div>
+      </div>
+      <div class="relative flex justify-center">
+        <span class="px-3 bg-white text-xs text-gray-400 font-medium">অথবা অ্যাভাটার বাছাই করুন</span>
+      </div>
+    </div>
+    
+    <!-- ক্যাটাগরি ট্যাব -->
+    <div class="px-4 pb-2">
+      <div class="flex gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
+        <button onclick="showAvatarCategory('plant')" data-cat="plant" class="avatar-tab-btn active"><span>🌱</span> গাছ</button>
+        <button onclick="showAvatarCategory('animal')" data-cat="animal" class="avatar-tab-btn"><span>🐶</span> পশু</button>
+        <button onclick="showAvatarCategory('human')" data-cat="human" class="avatar-tab-btn"><span>👤</span> মানুষ</button>
+        <button onclick="showAvatarCategory('toy')" data-cat="toy" class="avatar-tab-btn"><span>🧸</span> খেলনা</button>
+        <button onclick="showAvatarCategory('symbol')" data-cat="symbol" class="avatar-tab-btn"><span>⭐</span> বিশেষ</button>
+      </div>
+    </div>
+    
+    <!-- অ্যাভাটার গ্রিড -->
+    <div class="px-4 pb-4">
+      <div id="avatar-grid" class="grid grid-cols-6 gap-1.5"></div>
+    </div>
+    
+    <!-- বন্ধ করার বাটন -->
+    <div class="px-4 pb-4">
+      <button onclick="closeAvatarPicker()" class="w-full py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 font-medium text-sm hover:bg-gray-50 transition-colors">
+        বাতিল
+      </button>
+    </div>
+    
+  </div>
+</div>
 
     <!-- Shop Name Change Modal -->
     <div id="shop-name-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
@@ -2114,8 +2440,8 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
             </button>
             <div id="setting-expense" class="setting-accordion-content" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease;">
                 <div class="px-4 pb-3">
-                    <button onclick="openExpenseModal()"
-                            class="w-full flex items-center gap-2 bg-white hover:bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5 transition-colors text-left">
+    <button onclick="toggleMainMenu(); showTab('expense');"
+            class="w-full flex items-center gap-2 bg-white hover:bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5 transition-colors text-left">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
                              fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M17 8v-3a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1 -1v-3" />
@@ -2220,6 +2546,66 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
                 </div>
             </div>
         </div>
+        
+        <!-- 💬 WhatsApp সেটিংস -->
+<div>
+    <button onclick="toggleSettingAccordion('setting-whatsapp')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 active:bg-slate-100 transition-colors">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#25D366">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.17-3.12.82.83-3.04-.2-.31a8.194 8.194 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24"/>
+                </svg>
+            </div>
+            <div class="text-left">
+                <p class="text-[13px] font-semibold text-slate-800 leading-tight">WhatsApp</p>
+                <p class="text-[10px] text-slate-400 leading-tight mt-0.5">WhatsApp Integration</p>
+            </div>
+        </div>
+        <svg id="arrow-setting-whatsapp" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-300">
+            <path d="M6 9l6 6l6 -6" />
+        </svg>
+    </button>
+    <div id="setting-whatsapp" class="setting-accordion-content" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease;">
+        <div class="px-4 pb-3 space-y-2">
+            <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                <div>
+                    <p class="text-[12px] font-semibold text-slate-800">WhatsApp সিস্টেম</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">চালু থাকলে মেসেজ পাঠানো যাবে</p>
+                </div>
+                <button onclick="toggleWhatsAppFeature()" id="whatsapp-toggle-btn" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-emerald-500 focus:outline-none flex-shrink-0">
+                    <span id="whatsapp-toggle-icon" class="translate-x-6 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300"></span>
+                </button>
+            </div>
+            <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                <div>
+                    <p class="text-[12px] font-semibold text-slate-800">অটো রিমাইন্ডার</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">বাকি/পেমেন্টের পর জিজ্ঞেস করবে</p>
+                </div>
+                <button onclick="toggleWhatsAppAutoReminder()" id="whatsapp-auto-btn" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-emerald-500 focus:outline-none flex-shrink-0">
+                    <span id="whatsapp-auto-icon" class="translate-x-6 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300"></span>
+                </button>
+            </div>
+            <button onclick="openWhatsAppTemplateEditor()" class="w-full flex items-center gap-2 bg-white hover:bg-green-50 border border-green-200 rounded-lg px-3 py-2.5 transition-colors text-left">
+                <span class="text-lg">📝</span>
+                <div class="flex-1">
+                    <p class="text-[12px] font-semibold text-slate-800">মেসেজ টেমপ্লেট</p>
+                    <p class="text-[10px] text-slate-400">রিমাইন্ডার মেসেজ কাস্টমাইজ করুন</p>
+                </div>
+            </button>
+            <button onclick="testWhatsAppMessage()" class="w-full flex items-center gap-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg px-3 py-2.5 transition-colors text-left">
+                <span class="text-lg">🧪</span>
+                <div class="flex-1">
+                    <p class="text-[12px] font-semibold text-slate-800">টেস্ট মেসেজ</p>
+                    <p class="text-[10px] text-slate-400">নিজের নম্বরে টেস্ট করুন</p>
+                </div>
+            </button>
+            <div class="flex items-start gap-2 bg-green-50 border border-green-100 rounded-lg p-2">
+                <span class="text-xs mt-0.5">ℹ️</span>
+                <p class="text-[10px] text-green-700 leading-relaxed">WhatsApp মেসেজ পাঠাতে কাস্টমারের মোবাইল নম্বর থাকতে হবে।</p>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- 🔄 অ্যাপ রিফ্রেশ -->
         <div>
@@ -3632,9 +4018,9 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
     <span class="text-[9px] font-normal leading-none opacity-80">Fund</span>
 </button>
         
-     <button onclick="openExpenseModal()" 
-        class="tab-btn flex-1 py-1.5 px-2 rounded-lg text-sm font-medium transition-all text-rose-600 hover:bg-rose-50 whitespace-nowrap flex flex-col items-center justify-center gap-0.5"
-        title="খরচ">
+<button onclick="showTab('expense')" id="tab-expense" 
+   class="tab-btn flex-1 py-1.5 px-2 rounded-lg text-sm font-medium transition-all text-gray-600 whitespace-nowrap flex flex-col items-center justify-center gap-0.5"
+   title="খরচ">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" 
          fill="none" stroke="currentColor" stroke-width="2" 
          stroke-linecap="round" stroke-linejoin="round"
@@ -3717,13 +4103,19 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
       </button>
       
       <!-- ভয়েস সার্চ বাটন -->
-      <button id="voice-search-btn" onclick="startVoiceSearch()" 
-              class="absolute right-2 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-emerald-600 transition-colors"
-              title="ভয়েস দিয়ে খুঁজুন">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.915A7.002 7.002 0 0016 8a1 1 0 00-2 0 5 5 0 11-10 0 1 1 0 00-2 0 7.002 7.002 0 006 6.915V18H6a1 1 0 100 2h8a1 1 0 100-2h-3v-1.085z" clip-rule="evenodd" />
-        </svg>
-      </button>
+<!-- 🎤 ভয়েস সার্চ বাটন - নতুন সুন্দর ডিজাইন -->
+<button id="voice-search-btn" onclick="startVoiceSearch()" 
+        class="voice-mic-btn absolute right-2 top-1/2 transform -translate-y-1/2"
+        title="ভয়েস দিয়ে খুঁজুন">
+  <span class="voice-mic-ripple"></span>
+  <span class="voice-mic-ripple voice-mic-ripple-2"></span>
+  <svg xmlns="http://www.w3.org/2000/svg" class="voice-mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="12" rx="3"/>
+    <path d="M5 10v1a7 7 0 0 0 14 0v-1"/>
+    <line x1="12" y1="18" x2="12" y2="22"/>
+    <line x1="8" y1="22" x2="16" y2="22"/>
+  </svg>
+</button>
     </div>
 
     <!-- 🔽 ফিল্টার (সাজানোর) বাটন -->
@@ -3923,11 +4315,11 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
     <div class="bg-white rounded-xl p-3 card-shadow mb-3">
         <p class="text-sm font-medium text-gray-700 mb-2">📅 তারিখ অনুযায়ী ফিল্টার</p>
         <div class="flex flex-wrap gap-2">
-            <button onclick="setDateFilter('today')" id="date-filter-today" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">আজ</button>
+            <button onclick="setDateFilter('today')" id="date-filter-today" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">আজ</button>
             <button onclick="setDateFilter('week')" id="date-filter-week" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
             <button onclick="setDateFilter('month')" id="date-filter-month" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
             <button onclick="setDateFilter('year')" id="date-filter-year" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
-            <button onclick="setDateFilter('all')" id="date-filter-all" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-emerald-600 text-white">সব সময়</button>
+            <button onclick="setDateFilter('all')" id="date-filter-all" class="date-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">সব সময়</button>
         </div>
     </div>
     
@@ -4042,6 +4434,138 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
         </div>
       </div>
     </div>
+    
+    <!-- 💰 খরচের হিসাব Tab (নতুন - সরাসরি ট্যাব) -->
+<div id="content-expense" class="space-y-3 hidden">
+  
+ <!-- খরচের সারাংশ — ৩টা কার্ড (কিনারা থেকে সরে আসবে) -->
+<div class="grid grid-cols-3 gap-2 mb-4 px-3 mt-2">
+    <div class="bg-rose-50 rounded-xl p-2 text-center card-shadow">
+        <p class="text-[10px] text-rose-600 font-semibold">মোট খরচ</p>
+        <p id="total-expense-amount" class="text-sm sm:text-base font-bold text-rose-700 leading-tight mt-1">৳০</p>
+    </div>
+    <div class="bg-orange-50 rounded-xl p-2 text-center card-shadow">
+        <p class="text-[10px] text-orange-600 font-semibold">এই মাস</p>
+        <p id="month-expense-amount" class="text-sm sm:text-base font-bold text-orange-700 leading-tight mt-1">৳০</p>
+    </div>
+    <div class="bg-emerald-50 rounded-xl p-2 text-center card-shadow">
+        <p class="text-[10px] text-emerald-600 font-semibold">আজকের</p>
+        <p id="today-expense-amount" class="text-sm sm:text-base font-bold text-emerald-700 leading-tight mt-1">৳০</p>
+    </div>
+</div>
+
+<!-- ফিল্টার বাটন (padding + scroll যোগ করা হয়েছে) -->
+<div class="flex gap-1.5 mb-3 px-3 overflow-x-auto pb-1" style="scrollbar-width: none;">
+    <button onclick="filterExpenses('today')" id="exp-filter-today" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-600 text-white whitespace-nowrap shadow-sm">আজ</button>
+    <button onclick="filterExpenses('week')" id="exp-filter-week" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">এই সপ্তাহ</button>
+    <button onclick="filterExpenses('month')" id="exp-filter-month" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">এই মাস</button>
+    <button onclick="filterExpenses('year')" id="exp-filter-year" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">এই বছর</button>
+    <button onclick="filterExpenses('all')" id="exp-filter-all" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700 whitespace-nowrap">সব সময়</button>
+</div>
+  
+<!-- 🏷️ ক্যাটাগরি ম্যানেজ — অ্যাকর্ডিয়ন (ডিফল্ট বন্ধ) -->
+<div class="bg-white rounded-xl card-shadow mb-3 overflow-hidden mx-3">
+    
+    <!-- ক্লিকযোগ্য হেডার -->
+    <button type="button" onclick="toggleExpenseCategorySection()" 
+            class="w-full flex justify-between items-center p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+        <div class="flex items-center gap-2">
+            <span class="text-base">🏷️</span>
+            <h3 class="font-medium text-gray-800 text-sm">ক্যাটাগরি ব্যবস্থাপনা</h3>
+            <span id="expense-cat-count" 
+                  class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                ০
+            </span>
+        </div>
+        <svg id="expense-cat-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" 
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" 
+             stroke-linecap="round" stroke-linejoin="round" 
+             class="text-gray-400 transition-transform duration-300">
+            <path d="M6 9l6 6l6 -6" />
+        </svg>
+    </button>
+    
+    <!-- কন্টেন্ট -->
+    <div id="expense-category-section" style="max-height:0; overflow:hidden; transition:max-height 0.3s ease;">
+        <div class="px-3 pb-3">
+            
+            <div class="flex justify-end mb-2">
+                <button onclick="showAddCategoryForm()" 
+                        class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    নতুন
+                </button>
+            </div>
+            
+            <div id="expense-categories-list" class="flex flex-wrap gap-2 mb-2"></div>
+            
+            <div id="add-category-form" class="hidden mt-2 flex gap-2">
+                <input type="text" id="new-category-name" placeholder="নতুন ক্যাটাগরি নাম" 
+                       class="flex-1 px-3 py-1.5 rounded-lg border text-sm focus:border-emerald-400 focus:outline-none">
+                <button onclick="addNewCategory()" 
+                        class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-sm font-semibold">যোগ</button>
+                <button onclick="hideAddCategoryForm()" 
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm">বাতিল</button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+  
+  <!-- নতুন খরচ যোগ ফর্ম -->
+  <div class="bg-white rounded-xl p-3 card-shadow mb-3 mx-3">
+    <h3 class="font-medium text-gray-800 mb-2">➕ নতুন খরচ</h3>
+    <div class="space-y-3">
+      <select id="expense-category" class="w-full px-3 py-2 rounded-lg border">
+        <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+      </select>
+      <input type="number" id="expense-amount" placeholder="টাকার পরিমাণ" class="w-full px-3 py-2 rounded-lg border">
+      <input type="text" id="expense-note" placeholder="কি কারনে? (ঐচ্ছিক)" class="w-full px-3 py-2 rounded-lg border">
+      <input type="date" id="expense-date" class="w-full px-3 py-2 rounded-lg border">
+      <button onclick="addExpense()" class="w-full bg-rose-500 text-white py-2 rounded-lg font-medium">খরচ যোগ করুন</button>
+    </div>
+  </div>
+  
+  <!-- 📊 ক্যাটাগরি সামারি + এক্সপোর্ট -->
+  <div class="bg-white rounded-xl p-3 card-shadow mb-3">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-medium text-gray-800 text-sm">📊 এই মাসের ক্যাটাগরি সামারি</h3>
+      <button onclick="exportExpensesCSV()" class="text-[11px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium flex items-center gap-1">
+        📥 CSV
+      </button>
+    </div>
+    <div id="expense-category-summary" class="space-y-1.5 max-h-40 overflow-y-auto"></div>
+    <div id="no-category-summary" class="text-xs text-gray-400 text-center py-2 hidden">এই মাসে কোনো খরচ নেই</div>
+  </div>
+
+  <!-- 🔍 সার্চ ও ক্যাটাগরি ফিল্টার -->
+  <div class="bg-white rounded-xl p-3 card-shadow mb-3 mx-3">
+    <div class="flex gap-2 mb-2">
+      <input type="text" id="expense-search-input" placeholder="🔍 খুঁজুন (নোট/ক্যাটাগরি)" 
+             class="flex-1 px-3 py-2 rounded-lg border text-sm" oninput="handleExpenseSearch(this.value)">
+      <button onclick="clearExpenseSearch()" class="px-3 py-2 bg-gray-100 rounded-lg text-gray-600 text-sm font-medium">✕</button>
+    </div>
+    <select id="expense-category-filter" class="w-full px-3 py-2 rounded-lg border text-sm" onchange="filterByCategory(this.value)">
+      <option value="">🏷️ সব ক্যাটাগরি</option>
+    </select>
+  </div>
+
+  <!-- খরচের তালিকা -->
+ <div class="bg-white rounded-xl p-3 card-shadow mx-3">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="font-medium text-gray-800 text-sm">📋 খরচের তালিকা</h3>
+      <span id="expense-count-badge" class="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">০ টি</span>
+    </div>
+    <div id="expenses-list" class="space-y-2 max-h-96 overflow-y-auto"></div>
+    <div id="no-expenses" class="text-center py-8 text-gray-500 hidden">
+      <p>কোনো খরচ নেই</p>
+    </div>
+  </div>
+  
+</div>
+
 
 <!-- 👇 এখানে account ট্যাব বসবে (মোবাইল রেস্পন্সিভ) -->
 <div id="content-account" class="space-y-4 hidden">
@@ -4085,79 +4609,95 @@ navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerc
   </div>
 </div>
     
-    <!-- Floating Action Buttons -->
-    <div class="fixed bottom-6 right-6 flex flex-col gap-2">
-      <button onclick="openModal('fund-payment')" class="w-12 h-12 bg-indigo-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড পরিশোধ">💸</button>
-      <button onclick="openModal('fund-receive')" class="w-12 h-12 bg-purple-600 text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform" title="ফান্ড গ্রহণ">💰</button>
-      <button onclick="openModal('payment')" class="w-12 h-12 btn-blue text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">💳</button>
-      <button onclick="openModal('due')" class="w-12 h-12 btn-danger text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">📝</button>
-      <button onclick="openModal('customer')" class="w-12 h-12 btn-primary text-white rounded-full card-shadow flex items-center justify-center text-lg hover:scale-110 transition-transform">➕</button>
-    </div>
+  <!-- Floating Action Buttons - সুন্দর ডিজাইন -->
+<div class="fixed bottom-6 right-6 flex flex-col gap-2.5">
+  
+  <!-- ফান্ড পরিশোধ -->
+  <button onclick="openModal('fund-payment')" 
+    class="group relative w-13 h-13 bg-gradient-to-br from-indigo-500 to-blue-600 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl hover:shadow-indigo-500/50 hover:scale-110 active:scale-95 transition-all duration-300" 
+    style="width: 52px; height: 52px;"
+    title="ফান্ড পরিশোধ">
+    <span class="absolute inset-0 rounded-full bg-indigo-400 opacity-0 group-hover:opacity-30 animate-ping"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow">
+      <path d="M12 19V5"/>
+      <path d="M5 12l7 7l7 -7"/>
+    </svg>
+  </button>
+  
+  <!-- ফান্ড গ্রহণ -->
+  <button onclick="openModal('fund-receive')" 
+    class="group relative bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-110 active:scale-95 transition-all duration-300" 
+    style="width: 52px; height: 52px;"
+    title="ফান্ড গ্রহণ">
+    <span class="absolute inset-0 rounded-full bg-purple-400 opacity-0 group-hover:opacity-30 animate-ping"></span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow">
+      <path d="M12 5v14"/>
+      <path d="M5 12l7 -7l7 7"/>
+    </svg>
+  </button>
+  
+  <!-- পেমেন্ট নিন -->
+  <button onclick="openModal('payment')" 
+    class="group relative bg-gradient-to-br from-blue-500 to-cyan-600 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl hover:shadow-blue-500/50 hover:scale-110 active:scale-95 transition-all duration-300" 
+    style="width: 52px; height: 52px;"
+    title="পেমেন্ট নিন">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow">
+      <rect x="2" y="6" width="20" height="12" rx="2"/>
+      <circle cx="12" cy="12" r="2.5"/>
+      <path d="M6 12h.01M18 12h.01"/>
+    </svg>
+  </button>
+  
+  <!-- বাকি দিন -->
+  <button onclick="openModal('due')" 
+    class="group relative bg-gradient-to-br from-red-500 to-rose-600 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl hover:shadow-red-500/50 hover:scale-110 active:scale-95 transition-all duration-300" 
+    style="width: 52px; height: 52px;"
+    title="বাকি দিন">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow">
+      <path d="M14 3v4a1 1 0 0 0 1 1h4"/>
+      <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2"/>
+      <path d="M9 15h6M12 12v6"/>
+    </svg>
+  </button>
+  
+  <!-- নতুন কাস্টমার -->
+  <button onclick="openModal('customer')" 
+    class="group relative bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl hover:shadow-emerald-500/50 hover:scale-110 active:scale-95 transition-all duration-300" 
+    style="width: 56px; height: 56px;"
+    title="নতুন কাস্টমার">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="drop-shadow">
+      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"/>
+      <path d="M16 19h6M19 16v6"/>
+      <path d="M6 21v-2a4 4 0 0 1 4 -4h4"/>
+    </svg>
+  </button>
+  
+</div>
     
-    <!-- খরচের হিসাব Modal -->
-<div id="expense-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+        <!-- ✏️ খরচ এডিট Modal -->
+<div id="edit-expense-modal" class="fixed inset-0 modal-overlay z-[250] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl p-5 max-w-sm w-full">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-xl font-bold text-gray-800">💰 খরচের হিসাব</h2>
-      <button onclick="closeExpenseModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+      <h2 class="text-lg font-bold text-gray-800">✏️ খরচ এডিট</h2>
+      <button onclick="closeEditExpenseModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
     </div>
     
-    <!-- খরচের সারাংশ -->
-    <div class="grid grid-cols-2 gap-3 mb-4">
-      <div class="bg-rose-50 rounded-xl p-3 text-center">
-        <p class="text-xs text-rose-600">মোট খরচ</p>
-        <p id="total-expense-amount" class="text-2xl font-bold text-rose-700">৳০</p>
-      </div>
-      <div class="bg-emerald-50 rounded-xl p-3 text-center">
-        <p class="text-xs text-emerald-600">আজকের খরচ</p>
-        <p id="today-expense-amount" class="text-2xl font-bold text-emerald-700">৳০</p>
-      </div>
+    <div class="space-y-3">
+      <select id="edit-expense-category" class="w-full px-3 py-2 rounded-lg border text-sm">
+        <option value="">ক্যাটাগরি নির্বাচন করুন</option>
+      </select>
+      <input type="number" id="edit-expense-amount" placeholder="টাকার পরিমাণ" class="w-full px-3 py-2 rounded-lg border text-sm">
+      <input type="text" id="edit-expense-note" placeholder="কি কারনে? (ঐচ্ছিক)" class="w-full px-3 py-2 rounded-lg border text-sm">
+      <input type="date" id="edit-expense-date" class="w-full px-3 py-2 rounded-lg border text-sm">
     </div>
     
-    <!-- ফিল্টার বাটন -->
-    <div class="flex flex-wrap gap-2 mb-4">
-      <button onclick="filterExpenses('today')" id="exp-filter-today" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-600 text-white">আজ</button>
-      <button onclick="filterExpenses('week')" id="exp-filter-week" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই সপ্তাহ</button>
-      <button onclick="filterExpenses('month')" id="exp-filter-month" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই মাস</button>
-      <button onclick="filterExpenses('year')" id="exp-filter-year" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">এই বছর</button>
-      <button onclick="filterExpenses('all')" id="exp-filter-all" class="exp-filter-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-200 text-gray-700">সব সময়</button>
-    </div>
-   <!-- ক্যাটাগরি ম্যানেজ -->
-<div class="border rounded-xl p-3 mb-4">
-  <div class="flex justify-between items-center mb-2">
-    <h3 class="font-medium text-gray-800">🏷️ ক্যাটাগরি</h3>
-    <button onclick="showAddCategoryForm()" class="text-xs bg-emerald-500 text-white px-2 py-1 rounded">+ নতুন</button>
-  </div>
-  <div id="expense-categories-list" class="flex flex-wrap gap-2 mb-2"></div>
-  <div id="add-category-form" class="hidden mt-2 flex gap-2">
-    <input type="text" id="new-category-name" placeholder="নতুন ক্যাটাগরি" class="flex-1 px-3 py-1 rounded-lg border text-sm">
-    <button onclick="addNewCategory()" class="bg-emerald-500 text-white px-3 py-1 rounded-lg text-sm">যোগ</button>
-    <button onclick="hideAddCategoryForm()" class="bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-sm">বাতিল</button>
-  </div>
-</div>
-    
-    <!-- নতুন খরচ যোগ ফর্ম -->
-    <div class="border rounded-xl p-3 mb-4">
-      <h3 class="font-medium text-gray-800 mb-2">➕ নতুন খরচ</h3>
-      <div class="space-y-3">
-        <select id="expense-category" class="w-full px-3 py-2 rounded-lg border">
-          <option value="">ক্যাটাগরি নির্বাচন করুন</option>
-        </select>
-        <input type="number" id="expense-amount" placeholder="টাকার পরিমাণ" class="w-full px-3 py-2 rounded-lg border">
-        <input type="text" id="expense-note" placeholder="কি কারনে? (ঐচ্ছিক)" class="w-full px-3 py-2 rounded-lg border">
-        <input type="date" id="expense-date" class="w-full px-3 py-2 rounded-lg border">
-        <button onclick="addExpense()" class="w-full bg-rose-500 text-white py-2 rounded-lg font-medium">খরচ যোগ করুন</button>
-      </div>
-    </div>
-    
-    <!-- খরচের তালিকা -->
-    <h3 class="font-medium text-gray-800 mb-2">📋 খরচের তালিকা</h3>
-    <div id="expenses-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
-    <div id="no-expenses" class="text-center py-8 text-gray-500 hidden">
-      <p>কোনো খরচ নেই</p>
+    <div class="flex gap-2 mt-4">
+      <button onclick="closeEditExpenseModal()" class="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-medium text-sm">বাতিল</button>
+      <button onclick="saveEditedExpense()" class="flex-1 py-2.5 rounded-xl bg-rose-500 text-white font-medium text-sm">💾 সংরক্ষণ</button>
     </div>
   </div>
 </div>
+
     
     <!-- লোকাল ব্যাকআপ ডাটা দেখানোর মডাল -->
 <div id="local-backup-modal" class="fixed inset-0 modal-overlay z-50 hidden flex items-center justify-center p-4">
@@ -4934,7 +5474,7 @@ function updateDayName() {
     let currentTab = 'customers';
     let currentFilter = 'all';
     let currentFundFilter = 'all';
-    let currentDateFilter = 'all'; // নতুন ভ্যারিয়েবল - ডেট ফিল্টারের জন্য
+    let currentDateFilter = 'today'; // নতুন ভ্যারিয়েবল - ডেট ফিল্টারের জন্য
     let currentSortFilter = 'default';  // সর্ট ফিল্টার (ডিফল্ট: সর্বশেষ লেনদেন অনুযায়ী)
     // ============================================
 // 🎛️ AI ডিসপ্লে সেটিংস (ডিফল্ট: সব বন্ধ)
@@ -5087,6 +5627,21 @@ let lastAccountSnapshot = null;
 let expenses = [];
 let expenseCategories = ['খাবার', 'ভাড়া', 'বিল', 'কেনাকাটা', 'পরিবহন', 'চিকিৎসা', 'বিনোদন', 'অন্যান্য'];
 let currentExpenseFilter = 'today';
+
+// ============================================
+// 💬 WhatsApp Integration System
+// ============================================
+let whatsappSettings = {
+  enabled: true,
+  countryCode: '880',
+  autoReminder: true,
+  templates: {
+    due_reminder: `আসসালামু আলাইকুম {customerName},\n\nআপনার কাছে আমাদের দোকানে বাকি রয়েছে:\n\n📝 পূর্বের বাকি: ৳{previousDue}\n💰 নতুন বাকি: ৳{newDue}\n📊 মোট বাকি: ৳{totalDue}\n\n📅 তারিখ: {dueDate}\n🏪 দোকান: {shopName}\n\nঅনুগ্রহ করে দ্রুত পরিশোধ করুন।\nধন্যবাদ!`,
+    payment_thanks: `আসসালামু আলাইকুম {customerName},\n\nআপনার পেমেন্ট পাওয়া গেছে ✅\n\n💰 পরিশোধ: ৳{amount}\n📅 তারিখ: {date}\n📊 বর্তমান বাকি: ৳{totalDue}\n\nধন্যবাদ! আবার আসবেন।\n🏪 {shopName}`,
+    greeting: `আসসালামু আলাইকুম {customerName},\n\nআশা করি ভালো আছেন।\n\nআপনার বর্তমান বাকি: ৳{totalDue}\n📅 তারিখ: {date}\n\nযেকোনো প্রয়োজনে যোগাযোগ করুন।\n🏪 {shopName}`,
+    custom: `আসসালামু আলাইকুম {customerName},\n\n`
+  }
+};
 
     // ============================================
     // নতুন ডেট ফিল্টার ফাংশন
@@ -5807,20 +6362,6 @@ function downloadFundImage(canvas, providerName) {
   showToast('ছবি ডাউনলোড হচ্ছে...', 'success');
 }
   
-  // ============================================
-// খরচের হিসাব - ফাংশনসমূহ
-// ============================================
-
-// খরচ Modal খোলা
-function openExpenseModal() {
-  document.getElementById('expense-modal').classList.remove('hidden');
-  document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
-  loadExpensesData();
-}
-
-function closeExpenseModal() {
-  document.getElementById('expense-modal').classList.add('hidden');
-}
 
 // খরচের ডাটা লোড
 async function loadExpensesData() {
@@ -5949,17 +6490,19 @@ function filterExpenses(filter) {
   updateExpenseStats();
 }
 
-// খরচের তালিকা রেন্ডার
+// খরচের তালিকা রেন্ডার (আপডেটেড - সার্চ ও ক্যাটাগরি ফিল্টার সহ)
 function renderExpensesList() {
   const container = document.getElementById('expenses-list');
   const noExpenses = document.getElementById('no-expenses');
+  const countBadge = document.getElementById('expense-count-badge');
   
   let filtered = [...expenses];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
+  // টাইম ফিল্টার
   if (currentExpenseFilter === 'today') {
-    filtered = expenses.filter(e => {
+    filtered = filtered.filter(e => {
       const expenseDate = new Date(e.date);
       expenseDate.setHours(0, 0, 0, 0);
       return expenseDate.getTime() === today.getTime();
@@ -5967,17 +6510,35 @@ function renderExpensesList() {
   } else if (currentExpenseFilter === 'week') {
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - today.getDay());
-    filtered = expenses.filter(e => new Date(e.date) >= weekStart);
+    filtered = filtered.filter(e => new Date(e.date) >= weekStart);
   } else if (currentExpenseFilter === 'month') {
-    filtered = expenses.filter(e => {
+    filtered = filtered.filter(e => {
       const d = new Date(e.date);
       return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
     });
   } else if (currentExpenseFilter === 'year') {
-    filtered = expenses.filter(e => new Date(e.date).getFullYear() === today.getFullYear());
+    filtered = filtered.filter(e => new Date(e.date).getFullYear() === today.getFullYear());
+  }
+  
+  // ক্যাটাগরি ফিল্টার
+  const catFilter = document.getElementById('expense-category-filter')?.value;
+  if (catFilter) {
+    filtered = filtered.filter(e => e.category === catFilter);
+  }
+  
+  // সার্চ ফিল্টার
+  const searchVal = document.getElementById('expense-search-input')?.value?.toLowerCase().trim();
+  if (searchVal) {
+    filtered = filtered.filter(e => 
+      (e.category && e.category.toLowerCase().includes(searchVal)) ||
+      (e.note && e.note.toLowerCase().includes(searchVal))
+    );
   }
   
   filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  // কাউন্ট ব্যাজ আপডেট
+  if (countBadge) countBadge.textContent = filtered.length + ' টি';
   
   if (filtered.length === 0) {
     container.innerHTML = '';
@@ -5989,60 +6550,189 @@ function renderExpensesList() {
   container.innerHTML = filtered.map(e => `
     <div class="bg-white rounded-xl p-3 card-shadow border-l-4 border-rose-500">
       <div class="flex justify-between items-start">
-        <div class="flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-xs font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded">${e.category}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-xs font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded">${escapeHtml(e.category)}</span>
             <span class="text-xs text-gray-400">${formatDate(e.date)}</span>
           </div>
           <p class="font-bold text-rose-600">${formatCurrency(e.amount)}</p>
-          ${e.note ? `<p class="text-xs text-gray-500 mt-1">📌 ${e.note}</p>` : ''}
+          ${e.note ? `<p class="text-xs text-gray-500 mt-1 break-words">📌 ${escapeHtml(e.note)}</p>` : ''}
         </div>
-        <button onclick="deleteExpense('${e.id}')" class="text-gray-400 hover:text-red-500 p-1">🗑️</button>
+        <div class="flex flex-col gap-1 flex-shrink-0 ml-2">
+          <button onclick="openEditExpenseModal('${e.id}')" class="text-gray-400 hover:text-blue-500 p-1 text-sm" title="এডিট">✏️</button>
+          <button onclick="deleteExpense('${e.id}')" class="text-gray-400 hover:text-red-500 p-1 text-sm" title="ডিলিট">🗑️</button>
+        </div>
       </div>
     </div>
   `).join('');
+  
+  // ক্যাটাগরি সামারি আপডেট
+  renderExpenseCategorySummary();
+}
+
+// 📊 ক্যাটাগরি সামারি (এই মাসের)
+function renderExpenseCategorySummary() {
+  const container = document.getElementById('expense-category-summary');
+  const noSummary = document.getElementById('no-category-summary');
+  if (!container) return;
+  
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  const monthlyExpenses = expenses.filter(e => new Date(e.date) >= monthStart);
+  
+  if (monthlyExpenses.length === 0) {
+    container.innerHTML = '';
+    if (noSummary) noSummary.classList.remove('hidden');
+    return;
+  }
+  
+  if (noSummary) noSummary.classList.add('hidden');
+  
+  // ক্যাটাগরি অনুযায়ী গ্রুপ
+  const catMap = new Map();
+  monthlyExpenses.forEach(e => {
+    catMap.set(e.category, (catMap.get(e.category) || 0) + e.amount);
+  });
+  
+  const sorted = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+  const total = sorted.reduce((sum, [_, amt]) => sum + amt, 0);
+  
+  container.innerHTML = sorted.map(([cat, amount]) => {
+    const pct = ((amount / total) * 100).toFixed(0);
+    return `
+      <div>
+        <div class="flex justify-between items-center text-xs mb-1">
+          <span class="font-medium text-gray-700">${escapeHtml(cat)}</span>
+          <span class="font-bold text-rose-600">${formatCurrency(amount)} <span class="text-gray-400 font-normal">(${pct}%)</span></span>
+        </div>
+        <div class="w-full bg-gray-100 rounded-full h-1.5">
+          <div class="bg-rose-500 h-1.5 rounded-full transition-all" style="width: ${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // পরিসংখ্যান আপডেট
 function updateExpenseStats() {
   let total = 0;
   let todayTotal = 0;
+  let monthTotal = 0;
+  
+  const today = new Date();
   const todayDate = new Date().toISOString().split('T')[0];
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
   
   expenses.forEach(e => {
-    total += e.amount;
+    const amt = Number(e.amount) || 0;
+    total += amt;
+    
+    // আজকের খরচ
     if (e.date === todayDate) {
-      todayTotal += e.amount;
+      todayTotal += amt;
+    }
+    
+    // এই মাসের খরচ
+    const eDate = new Date(e.date);
+    if (eDate.getMonth() === currentMonth && eDate.getFullYear() === currentYear) {
+      monthTotal += amt;
     }
   });
   
-  document.getElementById('total-expense-amount').textContent = formatCurrency(total);
-  document.getElementById('today-expense-amount').textContent = formatCurrency(todayTotal);
-}
-// ক্যাটাগরি সিলেক্ট আপডেট
-function updateCategorySelect() {
-  const select = document.getElementById('expense-category');
-  if (!select) return;
+  // ৩টা কার্ড আপডেট
+  const totalEl = document.getElementById('total-expense-amount');
+  const monthEl = document.getElementById('month-expense-amount');
+  const todayEl = document.getElementById('today-expense-amount');
   
-  select.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
-  expenseCategories.forEach(cat => {
-    select.innerHTML += `<option value="${cat}">${cat}</option>`;
-  });
+  if (totalEl) totalEl.textContent = formatCurrency(total);
+  if (monthEl) monthEl.textContent = formatCurrency(monthTotal);
+  if (todayEl) todayEl.textContent = formatCurrency(todayTotal);
+}
+// ক্যাটাগরি সিলেক্ট আপডেট (ড্রপডাউন + ফিল্টার + এডিট - সব একসাথে)
+function updateCategorySelect() {
+  // ১. মূল ড্রপডাউন
+  const select = document.getElementById('expense-category');
+  if (select) {
+    select.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
+    expenseCategories.forEach(cat => {
+      select.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+  }
+  
+  // ২. ফিল্টার ড্রপডাউন
+  const filterSelect = document.getElementById('expense-category-filter');
+  if (filterSelect) {
+    const currentVal = filterSelect.value;
+    filterSelect.innerHTML = '<option value="">🏷️ সব ক্যাটাগরি</option>';
+    expenseCategories.forEach(cat => {
+      filterSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+    filterSelect.value = currentVal;
+  }
+  
+  // ৩. এডিট ড্রপডাউন
+  const editSelect = document.getElementById('edit-expense-category');
+  if (editSelect) {
+    editSelect.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
+    expenseCategories.forEach(cat => {
+      editSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+    });
+  }
 }
 
 // ক্যাটাগরি লিস্ট রেন্ডার
 function renderCategoriesList() {
   const container = document.getElementById('expense-categories-list');
+  const countBadge = document.getElementById('expense-cat-count');
+  
+  // কাউন্ট ব্যাজ আপডেট
+  if (countBadge) countBadge.textContent = expenseCategories.length;
+  
   if (!container) return;
   
   container.innerHTML = expenseCategories.map(cat => `
-    <span class="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full text-sm">
-      ${cat}
-      <button onclick="deleteCategory('${cat}')" class="text-red-500 hover:text-red-700 text-xs ml-1">✕</button>
+    <span class="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full text-xs transition-colors">
+      ${escapeHtml(cat)}
+      <button onclick="deleteCategory('${cat.replace(/'/g, "\\'")}')" 
+              class="text-red-500 hover:text-red-700 text-[10px] ml-0.5 w-4 h-4 flex items-center justify-center rounded-full hover:bg-red-50" 
+              title="ডিলিট">
+        ✕
+      </button>
     </span>
   `).join('');
 }
 
+  // ============================================
+// 🏷️ ক্যাটাগরি সেকশন — অ্যাকর্ডিয়ন টগল
+// ============================================
+function toggleExpenseCategorySection() {
+    const section = document.getElementById('expense-category-section');
+    const arrow = document.getElementById('expense-cat-arrow');
+    
+    if (!section) return;
+    
+    const isOpen = section.style.maxHeight && section.style.maxHeight !== '0px';
+    
+    if (isOpen) {
+        // বন্ধ করা
+        section.style.maxHeight = '0px';
+        if (arrow) arrow.style.transform = 'rotate(0deg)';
+    } else {
+        // খোলা — scrollHeight দিয়ে exact height বের করা
+        section.style.maxHeight = section.scrollHeight + 'px';
+        if (arrow) arrow.style.transform = 'rotate(180deg)';
+        
+        // নতুন ক্যাটাগরি যোগ হলে height auto-update করতে observer
+        setTimeout(() => {
+            if (section.style.maxHeight !== '0px') {
+                section.style.maxHeight = section.scrollHeight + 'px';
+            }
+        }, 100);
+    }
+}
+  
 function showAddCategoryForm() {
   document.getElementById('add-category-form').classList.remove('hidden');
 }
@@ -6077,6 +6767,128 @@ async function addNewCategory() {
   showToast('ক্যাটাগরি যোগ হয়েছে', 'success');
 }
 
+// ✏️ খরচ এডিট Modal খোলা
+let editingExpenseId = null;
+
+function openEditExpenseModal(expenseId) {
+  const expense = expenses.find(e => e.id === expenseId);
+  if (!expense) {
+    showToast('খরচ পাওয়া যায়নি', 'error');
+    return;
+  }
+  
+  editingExpenseId = expenseId;
+  
+  // ক্যাটাগরি সিলেক্ট আপডেট
+  const catSelect = document.getElementById('edit-expense-category');
+  catSelect.innerHTML = '<option value="">ক্যাটাগরি নির্বাচন করুন</option>';
+  expenseCategories.forEach(cat => {
+    catSelect.innerHTML += `<option value="${cat}">${cat}</option>`;
+  });
+  
+  // ফিল্ড পপুলেট
+  catSelect.value = expense.category || '';
+  document.getElementById('edit-expense-amount').value = expense.amount || '';
+  document.getElementById('edit-expense-note').value = expense.note || '';
+  document.getElementById('edit-expense-date').value = expense.date || '';
+  
+  document.getElementById('edit-expense-modal').classList.remove('hidden');
+}
+
+function closeEditExpenseModal() {
+  document.getElementById('edit-expense-modal').classList.add('hidden');
+  editingExpenseId = null;
+}
+
+// 💾 এডিট করা খরচ সংরক্ষণ
+async function saveEditedExpense() {
+  if (!editingExpenseId) return;
+  
+  const category = document.getElementById('edit-expense-category').value;
+  const amount = parseFloat(document.getElementById('edit-expense-amount').value);
+  const note = document.getElementById('edit-expense-note').value.trim();
+  const date = document.getElementById('edit-expense-date').value;
+  
+  if (!category) { showToast('ক্যাটাগরি নির্বাচন করুন', 'warning'); return; }
+  if (!amount || amount <= 0) { showToast('সঠিক টাকার পরিমাণ দিন', 'warning'); return; }
+  if (!date) { showToast('তারিখ নির্বাচন করুন', 'warning'); return; }
+  
+  showGlobalLoader('আপডেট হচ্ছে...');
+  
+  try {
+    const updatedData = { category, amount, note, date };
+    
+    if (!isGuest && currentUser) {
+      await database.ref(`users/${currentUser.uid}/expenses/${editingExpenseId}`).update(updatedData);
+    } else {
+      const idx = expenses.findIndex(e => e.id === editingExpenseId);
+      if (idx > -1) {
+        expenses[idx] = { ...expenses[idx], ...updatedData };
+        localStorage.setItem('guest_expenses', JSON.stringify(expenses));
+      }
+    }
+    
+    showToast('✅ খরচ আপডেট হয়েছে!', 'success');
+    if (typeof playSound === 'function') playSound('success');
+    closeEditExpenseModal();
+    loadExpensesData();
+  } catch (err) {
+    console.error('Update error:', err);
+    showToast('❌ আপডেট ব্যর্থ: ' + err.message, 'error');
+  } finally {
+    hideGlobalLoader();
+  }
+}
+
+// 🔍 খরচ সার্চ
+function handleExpenseSearch(value) {
+  renderExpensesList();
+}
+
+function clearExpenseSearch() {
+  const inp = document.getElementById('expense-search-input');
+  if (inp) inp.value = '';
+  renderExpensesList();
+}
+
+// 🏷️ ক্যাটাগরি ফিল্টার
+function filterByCategory(category) {
+  renderExpensesList();
+}
+
+// 📥 CSV এক্সপোর্ট
+function exportExpensesCSV() {
+  if (expenses.length === 0) {
+    showToast('এক্সপোর্ট করার মতো খরচ নেই', 'warning');
+    return;
+  }
+  
+  const rows = [['তারিখ', 'ক্যাটাগরি', 'পরিমাণ', 'নোট']];
+  const sorted = [...expenses].sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  sorted.forEach(e => {
+    rows.push([
+      e.date,
+      e.category,
+      e.amount,
+      (e.note || '').replace(/,/g, ' ')
+    ]);
+  });
+  
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `khroch_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+  
+  showToast('✅ CSV ডাউনলোড হয়েছে!', 'success');
+  if (typeof playSound === 'function') playSound('success');
+}
+
 async function deleteCategory(category) {
   if (expenseCategories.length <= 1) {
     showToast('শেষ ক্যাটাগরি ডিলিট করা যাবে না', 'warning');
@@ -6107,62 +6919,88 @@ async function deleteCategory(category) {
   }
 } 
   
-    // ============================================
-    // ভয়েস সার্চ ফাংশন
-    // ============================================
-    function startVoiceSearch() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      if (!SpeechRecognition) {
-        showToast(t('voice_search') + ' ' + t('no_speech'), 'error');
-        return;
-      }
-      
-      const recognition = new SpeechRecognition();
-      
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.lang = currentLanguage === 'bn' ? 'bn-BD' : 'en-US';
-      
-      const micBtn = document.getElementById('voice-search-btn');
-      micBtn.classList.add('text-red-500', 'animate-pulse');
-      
-      showToast(t('speak_now'), 'info');
-      
-      recognition.onresult = (event) => {
-        const transcript = Array.from(event.results)
-          .map(result => result[0].transcript)
-          .join('');
-        
-        const searchInput = document.getElementById('search-input');
-        searchInput.value = transcript;
-        
-        handleSearch(transcript);
-        
-        checkSearchInput();
-      };
-      
-      recognition.onerror = (event) => {
-        console.error('Voice search error:', event.error);
-        
-        let errorMsg = t('voice_search') + ' ' + t('email_error');
-        if (event.error === 'not-allowed') {
-          errorMsg = t('mic_permission');
-        } else if (event.error === 'no-speech') {
-          errorMsg = t('no_speech');
-        }
-        
-        showToast(errorMsg, 'error');
-        micBtn.classList.remove('text-red-500', 'animate-pulse');
-      };
-      
-      recognition.onend = () => {
-        micBtn.classList.remove('text-red-500', 'animate-pulse');
-      };
-      
-      recognition.start();
+// গ্লোবাল ভেরিয়েবল (ফাংশনের বাইরে থাকবে)
+let voiceRecognitionInstance = null;
+let isListening = false;
+
+function startVoiceSearch() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+  if (!SpeechRecognition) {
+    showToast('❌ আপনার ব্রাউজার ভয়েস সার্চ সাপোর্ট করে না', 'error');
+    return;
+  }
+
+  const micBtn = document.getElementById('voice-search-btn');
+
+  // যদি আগে থেকেই রেকর্ডিং চালু থাকে, তবে স্টপ করে দিন
+  if (isListening && voiceRecognitionInstance) {
+    voiceRecognitionInstance.stop();
+    return;
+  }
+
+  voiceRecognitionInstance = new SpeechRecognition();
+  voiceRecognitionInstance.continuous = false;
+  voiceRecognitionInstance.interimResults = false; // পুরো কথা শেষ হলে সার্চ করবে
+  voiceRecognitionInstance.lang = currentLanguage === 'bn' ? 'bn-BD' : 'en-US';
+
+  // 🎤 মাইক বাটন অ্যানিমেশন অন
+  if (micBtn) {
+    micBtn.classList.add('recording');
+  }
+
+  showToast(t('speak_now'), 'info');
+
+  // ✔️ ভয়েস শুরু হলে
+  voiceRecognitionInstance.onstart = () => {
+    isListening = true;
+  };
+
+  // 📝 ভয়েস রেজাল্ট আসলে
+  voiceRecognitionInstance.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    const searchInput = document.getElementById('search-input');
+    
+    if (searchInput) {
+      searchInput.value = transcript;
+      handleSearch(transcript);
+      checkSearchInput();
+    }
+  };
+
+  // ❌ ভুল হলে
+  voiceRecognitionInstance.onerror = (event) => {
+    console.error('Voice search error:', event.error);
+    
+    let errorMsg = 'ভয়েস সার্চে সমস্যা হয়েছে, আবার চেষ্টা করুন';
+    
+    if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+      errorMsg = '🎤 মাইক্রোফোনের অনুমতি দিন!';
+    } else if (event.error === 'no-speech') {
+      errorMsg = '🔇 কোনো কথা শোনা যায়নি';
+    } else if (event.error === 'network') {
+      errorMsg = '🌐 ইন্টারনেট সংযোগ নেই';
     }
 
+    showToast(errorMsg, 'error');
+  };
+
+  // ✔️ ভয়েস শেষ হলে বা বন্ধ হলে
+  voiceRecognitionInstance.onend = () => {
+    isListening = false;
+    if (micBtn) {
+      micBtn.classList.remove('recording');
+    }
+  };
+
+  try {
+    voiceRecognitionInstance.start();
+  } catch (e) {
+    console.error('Mic start error:', e);
+    isListening = false;
+    if (micBtn) micBtn.classList.remove('recording');
+  }
+}
     // ============================================
     // সার্চ ক্লিয়ার ফাংশন
     // ============================================
@@ -6184,6 +7022,264 @@ async function deleteCategory(category) {
         }
       }
     }
+    
+    // ============================================
+// 💬 WhatsApp Integration Functions
+// ============================================
+
+// সেটিংস লোড করা
+function loadWhatsAppSettings() {
+  try {
+    const saved = localStorage.getItem('whatsapp_settings');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      whatsappSettings = {
+        ...whatsappSettings,
+        ...parsed,
+        templates: { ...whatsappSettings.templates, ...(parsed.templates || {}) }
+      };
+    }
+  } catch(e) { console.warn('WhatsApp settings load error:', e); }
+}
+
+// সেটিংস সেভ করা
+function saveWhatsAppSettings() {
+  try {
+    localStorage.setItem('whatsapp_settings', JSON.stringify(whatsappSettings));
+  } catch(e) { console.warn('WhatsApp settings save error:', e); }
+}
+
+// মোবাইল নম্বর ফরম্যাট করা (01XXXXXXXXX → 8801XXXXXXXXX)
+function formatWhatsAppNumber(mobile) {
+  if (!mobile) return '';
+  let cleaned = mobile.replace(/\D/g, '');
+  if (cleaned.startsWith('880') && cleaned.length >= 13) return cleaned;
+  if (cleaned.startsWith('01') && cleaned.length === 11) return '880' + cleaned.substring(1);
+  if (cleaned.startsWith('1') && cleaned.length === 10) return '880' + cleaned;
+  if (cleaned.length >= 10) return cleaned;
+  return '';
+}
+
+// মেসেজে ভেরিয়েবল রিপ্লেস করা
+function buildWhatsAppMessage(templateKey, variables) {
+  let template = whatsappSettings.templates[templateKey] || whatsappSettings.templates.custom;
+  Object.keys(variables).forEach(key => {
+    const regex = new RegExp(`\\{${key}\\}`, 'g');
+    template = template.replace(regex, variables[key] || '');
+  });
+  template = template.replace(/\{[a-zA-Z]+\}/g, '');
+  return template.trim();
+}
+
+// WhatsApp খোলা
+function openWhatsApp(mobile, message) {
+  const formattedNumber = formatWhatsAppNumber(mobile);
+  if (!formattedNumber) {
+    showToast('❌ সঠিক মোবাইল নম্বর পাওয়া যায়নি', 'warning');
+    return false;
+  }
+  const encodedMessage = encodeURIComponent(message);
+  const url = `https://wa.me/${formattedNumber}?text=${encodedMessage}`;
+  window.open(url, '_blank');
+  return true;
+}
+
+// মূল মেসেজ পাঠানোর ফাংশন
+function sendWhatsAppMessage(customerId, messageType = 'due_reminder', customVariables = {}) {
+  if (!whatsappSettings.enabled) {
+    showToast('WhatsApp ফিচার বন্ধ আছে। সেটিংস থেকে চালু করুন।', 'warning');
+    return;
+  }
+  const customer = getCustomers().find(c => c.customer_id === customerId);
+  if (!customer) {
+    showToast('কাস্টমার পাওয়া যায়নি', 'error');
+    return;
+  }
+  if (!customer.mobile || customer.mobile.trim() === '') {
+    showToast(`❌ ${customer.customer_name} এর মোবাইল নম্বর নেই!`, 'warning');
+    return;
+  }
+  const balance = getCustomerBalance(customerId);
+  const today = new Date().toISOString().split('T')[0];
+  const transactions = allData.filter(t => t.customer_id === customerId);
+  const totalDueGiven = transactions.filter(t => t.type === 'due').reduce((sum, t) => sum + t.amount, 0);
+  const totalPaid = transactions.filter(t => t.type === 'payment').reduce((sum, t) => sum + t.amount, 0);
+  
+  const variables = {
+    customerName: customer.customer_name,
+    previousDue: (totalDueGiven - totalPaid) > 0 ? formatCurrency(totalDueGiven - totalPaid) : '০',
+    newDue: customVariables.newDue ? formatCurrency(customVariables.newDue) : formatCurrency(Math.abs(balance)),
+    totalDue: formatCurrency(Math.abs(balance)),
+    dueDate: formatDate(today),
+    date: formatDate(today),
+    shopName: defaultConfig.shop_name || 'বাকির খাতা',
+    amount: customVariables.amount ? formatCurrency(customVariables.amount) : formatCurrency(0),
+    ...customVariables
+  };
+  
+  const message = buildWhatsAppMessage(messageType, variables);
+  const success = openWhatsApp(customer.mobile, message);
+  
+  if (success) {
+    showToast(`✅ ${customer.customer_name} কে WhatsApp খোলা হচ্ছে...`, 'success');
+    if (typeof playSound === 'function') playSound('success');
+  }
+}
+
+// WhatsApp অপশন মডাল
+function showWhatsAppOptions(customerId) {
+  const customer = getCustomers().find(c => c.customer_id === customerId);
+  if (!customer) return;
+  const balance = getCustomerBalance(customerId);
+  const hasMobile = customer.mobile && customer.mobile.trim() !== '';
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  
+  content.innerHTML = `
+    <div class="max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-3 border-b">
+        <h2 class="text-lg font-bold text-gray-800">💬 WhatsApp মেসেজ</h2>
+        <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+      </div>
+      <div class="bg-emerald-50 rounded-xl p-3 mb-4">
+        <p class="font-bold text-emerald-800">${escapeHtml(customer.customer_name)}</p>
+        ${hasMobile ? `<p class="text-sm text-emerald-600">📞 ${escapeHtml(customer.mobile)}</p>` : `<p class="text-sm text-red-500">⚠️ মোবাইল নম্বর নেই</p>`}
+        <p class="text-sm text-red-600 font-bold mt-1">বাকি: ${formatCurrency(Math.abs(balance))}</p>
+      </div>
+      ${!hasMobile ? `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+          <p class="text-sm text-yellow-800">⚠️ এই কাস্টমারের মোবাইল নম্বর নেই।</p>
+          <button onclick="closeModal(); openEditCustomerModal('${customerId}')" class="mt-2 w-full py-2 bg-yellow-500 text-white rounded-lg text-sm font-medium">✏️ নম্বর যোগ করুন</button>
+        </div>
+      ` : `
+        <div class="space-y-2 mb-4">
+          <button onclick="sendWhatsAppMessage('${customerId}', 'due_reminder')" class="w-full text-left bg-white hover:bg-emerald-50 border-2 border-gray-200 rounded-xl p-3">
+            <div class="flex items-center gap-3"><span class="text-2xl">📝</span><div><p class="font-bold text-sm">বাকির রিমাইন্ডার</p><p class="text-xs text-gray-500">বাকির পরিমাণ জানান</p></div></div>
+          </button>
+          <button onclick="sendWhatsAppMessage('${customerId}', 'payment_thanks')" class="w-full text-left bg-white hover:bg-emerald-50 border-2 border-gray-200 rounded-xl p-3">
+            <div class="flex items-center gap-3"><span class="text-2xl">✅</span><div><p class="font-bold text-sm">পেমেন্ট ধন্যবাদ</p><p class="text-xs text-gray-500">পেমেন্টের পর ধন্যবাদ</p></div></div>
+          </button>
+          <button onclick="sendWhatsAppMessage('${customerId}', 'greeting')" class="w-full text-left bg-white hover:bg-emerald-50 border-2 border-gray-200 rounded-xl p-3">
+            <div class="flex items-center gap-3"><span class="text-2xl">👋</span><div><p class="font-bold text-sm">সাধারণ শুভেচ্ছা</p><p class="text-xs text-gray-500">কাস্টমারের সাথে কথা বলুন</p></div></div>
+          </button>
+          <button onclick="sendCustomWhatsAppMessage('${customerId}')" class="w-full text-left bg-white hover:bg-emerald-50 border-2 border-gray-200 rounded-xl p-3">
+            <div class="flex items-center gap-3"><span class="text-2xl">✏️</span><div><p class="font-bold text-sm">কাস্টম মেসেজ</p><p class="text-xs text-gray-500">নিজে মেসেজ লিখুন</p></div></div>
+          </button>
+        </div>
+      `}
+      <button onclick="closeModal()" class="w-full py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+}
+
+// কাস্টম মেসেজ
+function sendCustomWhatsAppMessage(customerId) {
+  const customer = getCustomers().find(c => c.customer_id === customerId);
+  if (!customer || !customer.mobile) return;
+  const customMessage = prompt('আপনার মেসেজ লিখুন:', `আসসালামু আলাইকুম ${customer.customer_name},\n\n`);
+  if (customMessage && customMessage.trim()) {
+    openWhatsApp(customer.mobile, customMessage);
+    showToast('✅ WhatsApp খোলা হচ্ছে...', 'success');
+  }
+}
+
+// সেটিংস UI টগল
+function toggleWhatsAppFeature() {
+  whatsappSettings.enabled = !whatsappSettings.enabled;
+  saveWhatsAppSettings();
+  updateWhatsAppUI();
+  showToast(whatsappSettings.enabled ? '✅ WhatsApp চালু হয়েছে' : '⏸️ WhatsApp বন্ধ হয়েছে', 'success');
+}
+
+function toggleWhatsAppAutoReminder() {
+  whatsappSettings.autoReminder = whatsappSettings.autoReminder === false ? true : false;
+  saveWhatsAppSettings();
+  updateWhatsAppUI();
+  showToast(whatsappSettings.autoReminder ? '✅ অটো রিমাইন্ডার চালু' : '⏸️ অটো রিমাইন্ডার বন্ধ', 'success');
+}
+
+function updateWhatsAppUI() {
+  const btn = document.getElementById('whatsapp-toggle-btn');
+  const icon = document.getElementById('whatsapp-toggle-icon');
+  if (btn) {
+    if (whatsappSettings.enabled) {
+      btn.className = 'relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-emerald-500 focus:outline-none flex-shrink-0';
+      if (icon) icon.className = 'translate-x-6 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300';
+    } else {
+      btn.className = 'relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-slate-300 focus:outline-none flex-shrink-0';
+      if (icon) icon.className = 'translate-x-1 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300';
+    }
+  }
+  const autoBtn = document.getElementById('whatsapp-auto-btn');
+  const autoIcon = document.getElementById('whatsapp-auto-icon');
+  if (autoBtn) {
+    if (whatsappSettings.autoReminder !== false) {
+      autoBtn.className = 'relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-emerald-500 focus:outline-none flex-shrink-0';
+      if (autoIcon) autoIcon.className = 'translate-x-6 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300';
+    } else {
+      autoBtn.className = 'relative inline-flex items-center h-6 rounded-full w-11 transition-colors duration-300 bg-slate-300 focus:outline-none flex-shrink-0';
+      if (autoIcon) autoIcon.className = 'translate-x-1 inline-block w-5 h-5 transform bg-white rounded-full shadow transition-transform duration-300';
+    }
+  }
+}
+
+// টেমপ্লেট এডিটর
+function openWhatsAppTemplateEditor() {
+  const modal = document.getElementById('modal-overlay');
+  const content = document.getElementById('modal-content');
+  const t = whatsappSettings.templates;
+  content.innerHTML = `
+    <div class="max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-3 border-b">
+        <h2 class="text-lg font-bold">📝 WhatsApp টেমপ্লেট</h2>
+        <button onclick="closeModal()" class="text-gray-400 text-2xl">&times;</button>
+      </div>
+      <div class="space-y-3">
+        <div><label class="text-xs font-bold text-gray-600 block mb-1">📝 বাকির রিমাইন্ডার</label><textarea id="wa-tpl-due" rows="5" class="w-full px-3 py-2 text-xs border-2 rounded-lg">${escapeHtml(t.due_reminder)}</textarea></div>
+        <div><label class="text-xs font-bold text-gray-600 block mb-1">✅ পেমেন্ট ধন্যবাদ</label><textarea id="wa-tpl-thanks" rows="5" class="w-full px-3 py-2 text-xs border-2 rounded-lg">${escapeHtml(t.payment_thanks)}</textarea></div>
+        <div><label class="text-xs font-bold text-gray-600 block mb-1">👋 সাধারণ শুভেচ্ছা</label><textarea id="wa-tpl-greet" rows="5" class="w-full px-3 py-2 text-xs border-2 rounded-lg">${escapeHtml(t.greeting)}</textarea></div>
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
+          <p class="text-xs font-bold text-blue-800 mb-2">🔤 ভেরিয়েবল:</p>
+          <div class="flex flex-wrap gap-1 text-[10px]">
+            <code class="bg-white px-2 py-0.5 rounded border">{customerName}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{totalDue}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{newDue}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{previousDue}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{amount}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{date}</code>
+            <code class="bg-white px-2 py-0.5 rounded border">{shopName}</code>
+          </div>
+        </div>
+      </div>
+      <div class="flex gap-2 mt-4">
+        <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200">বাতিল</button>
+        <button onclick="saveWhatsAppTemplates()" class="flex-1 py-3 rounded-xl bg-green-600 text-white">💾 সংরক্ষণ</button>
+      </div>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+}
+
+function saveWhatsAppTemplates() {
+  whatsappSettings.templates.due_reminder = document.getElementById('wa-tpl-due')?.value || whatsappSettings.templates.due_reminder;
+  whatsappSettings.templates.payment_thanks = document.getElementById('wa-tpl-thanks')?.value || whatsappSettings.templates.payment_thanks;
+  whatsappSettings.templates.greeting = document.getElementById('wa-tpl-greet')?.value || whatsappSettings.templates.greeting;
+  saveWhatsAppSettings();
+  showToast('✅ টেমপ্লেট সেভ হয়েছে', 'success');
+  closeModal();
+}
+
+function testWhatsAppMessage() {
+  const testNumber = prompt('আপনার WhatsApp নম্বর দিন (01XXXXXXXXX):');
+  if (!testNumber) return;
+  const formatted = formatWhatsAppNumber(testNumber);
+  if (!formatted) { showToast('❌ সঠিক নম্বর দিন', 'error'); return; }
+  const testMessage = `🧪 টেস্ট মেসেজ\n\n🏪 ${defaultConfig.shop_name || 'বাকির খাতা'}\n\n✅ WhatsApp ইন্টিগ্রেশন সফলভাবে কাজ করছে!`;
+  window.open(`https://wa.me/${formatted}?text=${encodeURIComponent(testMessage)}`, '_blank');
+  showToast('✅ WhatsApp খোলা হচ্ছে...', 'success');
+}
+
 
     // ============================================
     // ইমেইল ভেরিফিকেশন ফাংশন
@@ -6857,7 +7953,20 @@ function escapeHtml(str) {
               renderCurrentView();
               showToast(currentLanguage === 'bn' ? 'কাস্টমারের ছবি আপলোড হয়েছে!' : 'Customer image uploaded!', 'success');
             }
-          }
+          
+          
+          } else if (currentImageUploadContext === 'new-customer') {
+  // 🔥 নতুন কাস্টমারের ছবি - URL সেভ করে রাখি
+  newCustomerImageUrl = data.secure_url;
+  
+  const preview = document.getElementById('new-customer-image-preview');
+  if (preview) preview.src = data.secure_url;
+  
+  const clearBtn = document.getElementById('clear-new-customer-image-btn');
+  if (clearBtn) clearBtn.classList.remove('hidden');
+  
+  showToast('✅ ছবি প্রস্তুত! সংরক্ষণ করলে যোগ হবে', 'success');
+}
           
           playSound('success');
         }
@@ -8127,6 +9236,9 @@ function updateStockBalanceStats() {
    async function saveData(item) {
   triggerAutoBackupOnChange();
   showGlobalLoader("সংরক্ষণ হচ্ছে...");
+  
+  let saveSuccess = false; // 👈 নতুন ভেরিয়েবল
+  
   try {
     if (!isGuest && currentUser) {
       const userRef = database.ref(`users/${currentUser.uid}/data`);
@@ -8137,7 +9249,9 @@ function updateStockBalanceStats() {
         await saveToLocalBackup();
       }
       
+      saveSuccess = true; // 👈 সফল হলে true
       return { isOk: true, id: newRef.key };
+      
     } else {
       item.__backendId = generateId();
       allData.push(item);
@@ -8147,10 +9261,35 @@ function updateStockBalanceStats() {
         await saveToLocalBackup();
       }
       
+      saveSuccess = true; // 👈 সফল হলে true
       return { isOk: true };
     }
   } finally {
     hideGlobalLoader();
+    
+    // 💬 WhatsApp অটো রিমাইন্ডার (শুধু সেভ সফল হলে)
+    if (saveSuccess && whatsappSettings.enabled && whatsappSettings.autoReminder !== false) {
+      if (item.type === 'due' && item.customer_id) {
+        const customer = getCustomers().find(c => c.customer_id === item.customer_id);
+        if (customer && customer.mobile) {
+          setTimeout(() => {
+            if (confirm(`📱 ${customer.customer_name} কে WhatsApp এ বাকির রিমাইন্ডার পাঠাবেন?`)) {
+              sendWhatsAppMessage(customer.customer_id, 'due_reminder', { newDue: item.amount });
+            }
+          }, 800);
+        }
+      }
+      if (item.type === 'payment' && item.customer_id) {
+        const customer = getCustomers().find(c => c.customer_id === item.customer_id);
+        if (customer && customer.mobile) {
+          setTimeout(() => {
+            if (confirm(`📱 ${customer.customer_name} কে WhatsApp এ ধন্যবাদ পাঠাবেন?`)) {
+              sendWhatsAppMessage(customer.customer_id, 'payment_thanks', { amount: item.amount });
+            }
+          }, 800);
+        }
+      }
+    }
   }
 }
    async function updateData(item) {
@@ -8285,8 +9424,8 @@ function isOverdue(dateStr) {
 
     // Tab navigation
     function showTab(tab) {
-      currentTab = tab;
-      ['customers', 'advance', 'non-due', 'funds', 'transactions', 'reports', 'account'].forEach(t => {
+  currentTab = tab;
+  ['customers', 'advance', 'non-due', 'funds', 'expense', 'transactions', 'reports', 'account'].forEach(t => {
         const element = document.getElementById(`content-${t}`);
         if (element) {
           element.classList.toggle('hidden', t !== tab);
@@ -8612,19 +9751,22 @@ if (currentSortFilter === 'balance-low-high') {
 
     // Render functions
     function renderCurrentView() {
-      updateStats();
-      if (currentTab === 'customers') renderDueCustomers();
-      else if (currentTab === 'advance') renderAdvanceCustomers();
-      else if (currentTab === 'non-due') renderNonDueCustomers();
-      else if (currentTab === 'funds') {
-        renderFundProviders();
-        renderFunds();
-      }
-      else if (currentTab === 'transactions') renderTransactions();
-      else if (currentTab === 'reports') renderReports();
-      // 👇 এই লাইনটি যোগ করুন (সবার শেষে)
-    showSmartAdvice();
-    }
+  updateStats();
+  if (currentTab === 'customers') renderDueCustomers();
+  else if (currentTab === 'advance') renderAdvanceCustomers();
+  else if (currentTab === 'non-due') renderNonDueCustomers();
+  else if (currentTab === 'funds') {
+    renderFundProviders();
+    renderFunds();
+  }
+  else if (currentTab === 'expense') {
+    loadExpensesData();
+  }
+  else if (currentTab === 'transactions') renderTransactions();
+  else if (currentTab === 'reports') renderReports();
+  // 👇 এই লাইনটি যোগ করুন (সবার শেষে)
+showSmartAdvice();
+}
 
     function updateStats() {
   const customers = getCustomers();
@@ -8828,9 +9970,12 @@ function updateBakiField() {
                                     <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         📤 শেয়ার করুন
                                     </div>
-                                    <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
-                                        💳 নগদ/বিকাশ
-                                    </div>
+                                  <div class="dropdown-item" onclick="showWhatsAppOptions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;color:#25D366;font-weight:600;">
+    💬 WhatsApp মেসেজ
+</div>
+<div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+    💳 নগদ/বিকাশ
+</div>
                                     <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         🤖 AI বিশ্লেষণ
                                     </div>
@@ -8917,9 +10062,15 @@ function updateBakiField() {
                                     <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         📤 শেয়ার করুন
                                     </div>
+                                    
+                                    <div class="dropdown-item" onclick="showWhatsAppOptions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;color:#25D366;font-weight:600;">
+    💬 WhatsApp মেসেজ
+</div>
+                                    
                                     <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         💳 নগদ/বিকাশ
                                     </div>
+                                    
                                     <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         🤖 AI বিশ্লেষণ
                                     </div>
@@ -9002,12 +10153,15 @@ function updateBakiField() {
                                     <div class="dropdown-name-header" style="padding:10px 16px;background:#059669;color:white;font-weight:bold;font-size:13px;border-bottom:1px solid #047857;text-align:center;">
                                         👤 ${c.customer_name}
                                     </div>
-                                    <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
-                                        📤 শেয়ার করুন
-                                    </div>
-                                    <div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
-                                        💳 নগদ/বিকাশ
-                                    </div>
+                                   <div class="dropdown-item" onclick="shareCustomerCard('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+    📤 শেয়ার করুন
+</div>
+<div class="dropdown-item" onclick="showWhatsAppOptions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;color:#25D366;font-weight:600;">
+    💬 WhatsApp মেসেজ
+</div>
+<div class="dropdown-item" onclick="showCustomerActions('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
+    💳 নগদ/বিকাশ
+</div>
                                     <div class="dropdown-item" onclick="showCustomerAIAnalysis('${c.customer_id}')" style="padding:10px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;">
                                         🤖 AI বিশ্লেষণ
                                     </div>
@@ -9084,16 +10238,103 @@ function updateBakiField() {
                         <button onclick="cancelDelete()" class="px-2 py-1 bg-gray-300 text-gray-700 text-xs rounded">${currentLanguage === 'bn' ? 'না' : 'No'}</button>
                     </div>
                 ` : `
-                    <div class="flex gap-2 mt-2 justify-end">
-                        <button onclick="viewFundProviderHistory('${p.provider_id}')" class="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600" title="ইতিহাস দেখুন">📋</button>
-                        <button onclick="shareFundProviderCard('${p.provider_id}')" class="share-icon-btn w-8 h-8 text-sm" title="শেয়ার করুন">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                            </svg>
-                        </button>
-                        <button onclick="openEditFundProviderModal('${p.provider_id}')" class="px-2 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600">✏️</button>
-                        <button onclick="initiateDeleteFundProvider('${p.__backendId}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">🗑️</button>
-                    </div>
+           <!-- অ্যাকশন বাটন - গ্রহণ, পরিশোধ + ৩-ডট মেনু -->
+<div class="mt-3 pt-3 border-t border-purple-100 flex items-center gap-2">
+    
+    <!-- ফান্ড গ্রহণ -->
+    <button onclick="openModal('fund-receive', '${p.provider_id}')" 
+        class="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600 text-white text-[11px] font-semibold py-2 px-2 rounded-lg transition-all active:scale-95 shadow-sm hover:shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>গ্রহণ</span>
+    </button>
+    
+    <!-- ফান্ড পরিশোধ -->
+    <button onclick="openModal('fund-payment', '${p.provider_id}')" 
+        class="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white text-[11px] font-semibold py-2 px-2 rounded-lg transition-all active:scale-95 shadow-sm hover:shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7 7l7 -7"/>
+        </svg>
+        <span>পরিশোধ</span>
+    </button>
+    
+    <!-- ৩-ডট মেনু -->
+    <div class="dropdown-menu" style="position:static;display:inline-block;">
+        <div class="three-dot-btn" onclick="toggleDropdown('fp-dropdown-${p.__backendId}', event, '${p.provider_name.replace(/'/g, "\\'")}')" 
+            style="width:36px;height:36px;background:linear-gradient(135deg,#059669,#047857);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;box-shadow:0 2px 8px rgba(147,51,234,0.3);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="2"/>
+                <circle cx="12" cy="12" r="2"/>
+                <circle cx="12" cy="19" r="2"/>
+            </svg>
+        </div>
+        
+        <!-- ড্রপডাউন কন্টেন্ট -->
+        <div id="fp-dropdown-${p.__backendId}" class="dropdown-content" style="display:none;position:fixed;background:white;min-width:190px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.25);z-index:99999;overflow:hidden;">
+            
+            <!-- হেডার -->
+            <div class="dropdown-name-header" style="padding:12px 16px;background:linear-gradient(135deg,#9333ea,#7e22ce);color:white;font-weight:bold;font-size:13px;text-align:center;">
+                💰 ${p.provider_name}
+            </div>
+            
+            <!-- ইতিহাস -->
+            <div class="dropdown-item" onclick="viewFundProviderHistory('${p.provider_id}')" 
+                style="padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;transition:background 0.2s;">
+                <div style="width:28px;height:28px;border-radius:8px;background:#dbeafe;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                        <path d="M9 12h6M9 16h6" />
+                    </svg>
+                </div>
+                <span style="color:#1f2937;">লেনদেন ইতিহাস</span>
+            </div>
+            
+            <!-- শেয়ার -->
+            <div class="dropdown-item" onclick="shareFundProviderCard('${p.provider_id}')" 
+                style="padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;transition:background 0.2s;">
+                <div style="width:28px;height:28px;border-radius:8px;background:#d1fae5;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="18" cy="5" r="3"/>
+                        <circle cx="6" cy="12" r="3"/>
+                        <circle cx="18" cy="19" r="3"/>
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                </div>
+                <span style="color:#1f2937;">শেয়ার করুন</span>
+            </div>
+            
+            <!-- এডিট -->
+            <div class="dropdown-item" onclick="openEditFundProviderModal('${p.provider_id}')" 
+                style="padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:13px;transition:background 0.2s;">
+                <div style="width:28px;height:28px;border-radius:8px;background:#fef3c7;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+                        <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+                    </svg>
+                </div>
+                <span style="color:#1f2937;">তথ্য এডিট</span>
+            </div>
+            
+            <!-- ডিলিট -->
+            <div class="dropdown-item danger" onclick="initiateDeleteFundProvider('${p.__backendId}')" 
+                style="padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;transition:background 0.2s;">
+                <div style="width:28px;height:28px;border-radius:8px;background:#fee2e2;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 7l16 0" />
+                        <path d="M10 11l0 6M14 11l0 6" />
+                        <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+                        <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+                    </svg>
+                </div>
+                <span style="color:#dc2626;">ডিলিট করুন</span>
+            </div>
+            
+        </div>
+    </div>
+</div>
                 `}
             </div>
         `;
@@ -9437,11 +10678,44 @@ function changeChartPeriod(months) {
       const overlay = document.getElementById('modal-overlay');
       const content = document.getElementById('modal-content');
       
-      if (type === 'customer') {
-        content.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800 mb-4">${currentLanguage === 'bn' ? '➕ নতুন কাস্টমার' : '➕ New Customer'}</h2>
-          <form onsubmit="addCustomer(event)">
-            <div class="space-y-4">
+      
+        if (type === 'customer') {
+  // 🔥 নতুন মডাল খুললে ছবি রিসেট
+  newCustomerImageUrl = null;
+  content.innerHTML = `
+    <h2 class="text-xl font-bold text-gray-800 mb-4">${currentLanguage === 'bn' ? '➕ নতুন কাস্টমার' : '➕ New Customer'}</h2>
+    <form onsubmit="addCustomer(event)">
+      
+      <!-- 📷 ছবি আপলোড সেকশন -->
+      <div class="flex flex-col items-center justify-center mb-5">
+        <div class="relative">
+          <img id="new-customer-image-preview" 
+               src="https://ui-avatars.com/api/?name=New&background=e5e7eb&color=9ca3af&size=100" 
+               class="w-24 h-24 rounded-full object-cover border-4 border-emerald-200 shadow-md bg-gray-100"
+               alt="Customer">
+          
+          <button type="button" onclick="openAvatarPicker()" 
+                  class="absolute -bottom-1 -right-1 w-9 h-9 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+                  title="ছবি বা অ্যাভাটার যোগ করুন">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 7h2l2 -3h6l2 3h2a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2"/>
+              <path d="M12 13m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+            </svg>
+          </button>
+          
+          <button type="button" onclick="clearNewCustomerImage()" id="clear-new-customer-image-btn"
+                  class="hidden absolute -top-1 -right-1 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all active:scale-95"
+                  title="ছবি মুছুন">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-[11px] text-gray-400 mt-2">📷 ছবি বা অ্যাভাটার যোগ করুন (ঐচ্ছিক)</p>
+      </div>
+      
+      <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">${currentLanguage === 'bn' ? 'নাম *' : 'Name *'}</label>
                 <input type="text" id="customer-name" required 
@@ -9460,13 +10734,7 @@ function changeChartPeriod(months) {
                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-emerald-400 focus:outline-none"
                   placeholder="${currentLanguage === 'bn' ? 'ঠিকানা' : 'Address'}">
               </div>
-        <div class="bg-yellow-50 p-3 rounded-lg mt-2">
-  <label class="block text-sm font-medium text-yellow-800 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের শেষ তারিখ (ঐচ্ছিক)' : 'Next Payment Due Date (Optional)'}</label>
-  <input type="date" id="transaction-due-date" 
-    class="w-full px-4 py-3 rounded-xl border-2 border-yellow-300 focus:border-yellow-500 focus:outline-none">
-  <p class="text-xs text-yellow-600 mt-1">${currentLanguage === 'bn' ? 'এই তারিখের পরে বাকি থাকলে কাস্টমারের নাম লাল দেখাবে' : 'Customer name will turn red if due after this date'}</p>
-</div>
-              
+
         <div>
   <label class="block text-sm font-medium text-gray-700 mb-1">📅 ${currentLanguage === 'bn' ? 'পরবর্তী পেমেন্টের তারিখ (ঐচ্ছিক)' : 'Next Payment Date (Optional)'}</label>
   <input type="date" id="customer-due-date" 
@@ -9785,24 +11053,23 @@ function changeChartPeriod(months) {
             </div>
           </div>
           
-          <!-- অ্যাকশন বাটন গ্রুপ - শেয়ার বাটন আলাদাভাবে উপরের ডান কোণায় ছোট করে -->
-          <div class="relative mb-4">
-            <div class="action-btns-group">
-              <button onclick="closeModal(); openModal('due', '${personId}')" class="action-btn action-btn-due">
-                <span>📝</span> ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}
-              </button>
-              <button onclick="closeModal(); openModal('payment', '${personId}')" class="action-btn action-btn-payment">
-                <span>💰</span> ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}
-              </button>
-            </div>
-            <div class="absolute top-0 right-0">
-              <button onclick="shareCustomerCard('${customer.customer_id}')" class="share-icon-btn w-10 h-10" title="${t('share_customer')}">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
+         <!-- অ্যাকশন বাটন গ্রুপ - শেয়ার বাটন এখন হেডারে আছে -->
+<div class="action-btns-group flex gap-3 mb-4">
+    <button onclick="closeModal(); setTimeout(() => openModal('due', '${customer.customer_id}'), 100);" class="flex-1 action-btn-due bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}</span>
+    </button>
+    <button onclick="closeModal(); setTimeout(() => openModal('payment', '${customer.customer_id}'), 100);" class="flex-1 action-btn-payment bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <circle cx="12" cy="12" r="2.5"/>
+            <path d="M6 12h.01M18 12h.01"/>
+        </svg>
+        <span>${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}</span>
+    </button>
+</div>
           
           <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? 'লেনদেনের ইতিহাস' : 'Transaction History'}</h3>
           <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
@@ -9864,14 +11131,30 @@ function changeChartPeriod(months) {
             ${provider.address ? `<p class="text-sm">📍 ${provider.address}</p>` : ''}
         </div>
         
-        <div class="action-btns-group flex gap-3 mb-4">
-            <button onclick="closeModal(); openModal('fund-receive', '${personId}')" class="flex-1 bg-purple-600 text-white py-2 rounded-xl font-medium hover:bg-purple-700">
-                💰 ফান্ড গ্রহণ
-            </button>
-            <button onclick="closeModal(); openModal('fund-payment', '${personId}')" class="flex-1 bg-indigo-600 text-white py-2 rounded-xl font-medium hover:bg-indigo-700">
-                💸 ফান্ড পরিশোধ
-            </button>
-        </div>
+     <!-- ফান্ড অ্যাকশন বাটন - সুন্দর ডিজাইন -->
+<div class="grid grid-cols-2 gap-3 mb-4">
+    <button onclick="closeModal(); openModal('fund-receive', '${personId}')" 
+        class="group relative overflow-hidden bg-gradient-to-br from-purple-500 via-purple-600 to-fuchsia-600 hover:from-purple-600 hover:via-purple-700 hover:to-fuchsia-700 text-white py-3.5 px-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-purple-500/40 active:scale-95">
+        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow">
+            <path d="M12 5v14"/>
+            <path d="M5 12l7 -7l7 7"/>
+            <circle cx="12" cy="19" r="0.5" fill="currentColor"/>
+        </svg>
+        <span class="relative z-10 text-sm">${currentLanguage === 'bn' ? 'ফান্ড গ্রহণ' : 'Receive'}</span>
+    </button>
+    
+    <button onclick="closeModal(); openModal('fund-payment', '${personId}')" 
+        class="group relative overflow-hidden bg-gradient-to-br from-indigo-500 via-indigo-600 to-blue-600 hover:from-indigo-600 hover:via-indigo-700 hover:to-blue-700 text-white py-3.5 px-3 rounded-2xl font-semibold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-indigo-500/40 active:scale-95">
+        <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10 drop-shadow">
+            <path d="M12 19V5"/>
+            <path d="M5 12l7 7l7 -7"/>
+            <circle cx="12" cy="5" r="0.5" fill="currentColor"/>
+        </svg>
+        <span class="relative z-10 text-sm">${currentLanguage === 'bn' ? 'ফান্ড পরিশোধ' : 'Payment'}</span>
+    </button>
+</div>
         
         <h3 class="font-semibold text-gray-700 mb-2">📜 লেনদেনের ইতিহাস</h3>
         <div class="max-h-64 overflow-y-auto space-y-2">
@@ -9991,6 +11274,96 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
     }
 
     // CRUD operations for Customers
+    
+    // ============================================
+// 🎨 অ্যাভাটার পিকার সিস্টেম + ছবি আপলোড
+// ============================================
+let newCustomerImageUrl = null;
+
+const avatarCategories = {
+  plant: ['🌳','🌲','🌴','🌵','🌿','🍀','🌱','🌸','🌺','🌻','🌹','🌷','🌼','🍁','🍂','🍃','🌾','💐','🏵️','🪴','🎋','🎍','🌷','🌸'],
+  animal: ['🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🦆','🦉','🦄','🐴','🐝','🦋','🐢','🐌','🐞','🐜','🐳','🐬','🦈','🐙','🦀','🐠','🐟'],
+  human: ['👨','👩','👦','👧','🧑','👶','👴','👵','🧔','🧓','👨‍🦰','👩‍🦰','👨‍🦱','👩‍🦱','👨‍🦳','👩‍🦳','👮','👷','🧑‍⚕️','🧑‍🎓','🧑‍🏫','🧑‍💼','🧑‍🍳','🧑‍🌾','🧑‍🔧','🧑‍🎨','🧑‍🚀','🤴','👸','🦸','🦹','🧙','🧚'],
+  toy: ['🧸','🎈','🎁','🎀','🪀','🪁','🎨','🎭','🎪','🎯','🎲','🎮','🕹️','🃏','🧩','♟️','🎳','🥁','🎸','🎺','🎻','🎹','🎼','🎵','🎶','🎤','🎧','🏀','⚽','🎾','🏈','⚾','🏐','🏉','🎱'],
+  symbol: ['⭐','🌟','✨','💫','⚡','🔥','💎','👑','🏆','🎯','❤️','💙','💚','💛','🧡','💜','🤍','🖤','☀️','🌙','🌈','☁️','🔔','💡','🎵','🕌','📿']
+};
+
+function openAvatarPicker() {
+  const modal = document.getElementById('avatar-picker-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    showAvatarCategory('plant');
+  }
+}
+
+function closeAvatarPicker() {
+  const modal = document.getElementById('avatar-picker-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function showAvatarCategory(cat) {
+  document.querySelectorAll('.avatar-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === cat);
+  });
+  
+  const grid = document.getElementById('avatar-grid');
+  if (!grid) return;
+  
+  const emojis = avatarCategories[cat] || [];
+  grid.innerHTML = emojis.map(emoji => 
+    `<button type="button" onclick="selectAvatar('${emoji}')" class="avatar-item-btn" title="${emoji}">${emoji}</button>`
+  ).join('');
+}
+
+function emojiToDataUrl(emoji) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f0fdf4" rx="50"/><text x="50" y="50" font-size="60" text-anchor="middle" dominant-baseline="central" font-family="sans-serif">${emoji}</text></svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+function selectAvatar(emoji) {
+  const dataUrl = emojiToDataUrl(emoji);
+  newCustomerImageUrl = dataUrl;
+  
+  const preview = document.getElementById('new-customer-image-preview');
+  if (preview) preview.src = dataUrl;
+  
+  const clearBtn = document.getElementById('clear-new-customer-image-btn');
+  if (clearBtn) clearBtn.classList.remove('hidden');
+  
+  closeAvatarPicker();
+  showToast(`✅ অ্যাভাটার ${emoji} সিলেক্ট হয়েছে`, 'success');
+  if (typeof playSound === 'function') playSound('success');
+}
+
+function openCameraFromPicker() {
+  closeAvatarPicker();
+  currentImageUploadContext = 'new-customer';
+  setTimeout(() => {
+    document.getElementById('camera-input').click();
+  }, 200);
+}
+
+function openGalleryFromPicker() {
+  closeAvatarPicker();
+  currentImageUploadContext = 'new-customer';
+  setTimeout(() => {
+    document.getElementById('gallery-input').click();
+  }, 200);
+}
+
+function clearNewCustomerImage() {
+  newCustomerImageUrl = null;
+  
+  const preview = document.getElementById('new-customer-image-preview');
+  if (preview) preview.src = 'https://ui-avatars.com/api/?name=New&background=e5e7eb&color=9ca3af&size=100';
+  
+  const clearBtn = document.getElementById('clear-new-customer-image-btn');
+  if (clearBtn) clearBtn.classList.add('hidden');
+  
+  showToast('🗑️ ছবি সরানো হয়েছে', 'info');
+}
+
+    
     async function addCustomer(e) {
       e.preventDefault();
       
@@ -10014,7 +11387,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
         mobile: document.getElementById('customer-mobile').value.trim(),
         address: document.getElementById('customer-address').value.trim(),
         next_payment_date: document.getElementById('customer-due-date')?.value || null,
-        image: null,
+        image: newCustomerImageUrl || null,
         created_at: new Date().toISOString(),
 timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
       };
@@ -10042,6 +11415,7 @@ timestamp: new Date().toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-
           loadGuestData();
         }
         showToast(currentLanguage === 'bn' ? 'কাস্টমার যোগ হয়েছে!' : 'Customer added!', 'success');
+        
         playSound('success');
         closeModal();
       } else {
@@ -10597,7 +11971,7 @@ function openCategoryManager() {
     <div id="category-list" class="space-y-2 max-h-60 overflow-y-auto mb-4"></div>
     <div class="flex gap-2">
       <input type="text" id="new-cat-name" placeholder="নতুন ক্যাটাগরি (যেমন: বিকাশ, নগদ)" class="flex-1 px-3 py-2 border rounded-xl">
-      <button onclick="addNewCategory()" class="bg-emerald-600 text-white px-4 rounded-xl">যোগ</button>
+      <button onclick="addNewAccountCategory()" class="bg-emerald-600 text-white px-4 rounded-xl">যোগ</button>
     </div>
     <button onclick="closeModal()" class="w-full mt-4 py-2 bg-gray-200 rounded-xl">বন্ধ</button>
   `;
@@ -10611,12 +11985,12 @@ function renderCategoryListUI() {
   container.innerHTML = accountCategories.map((cat, idx) => `
     <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
       <span>📁 ${escapeHtml(cat.name)}</span>
-      <button onclick="deleteCategory(${idx})" class="text-red-500 text-sm">🗑️ ডিলিট</button>
+      <button onclick="deleteAccountCategory(${idx})" class="text-red-500 text-sm">🗑️ ডিলিট</button>
     </div>
   `).join('');
 }
 
-function addNewCategory() {
+function addNewAccountCategory() {
   const name = document.getElementById('new-cat-name').value.trim();
   if (!name) return;
   accountCategories.push({ id: Date.now(), name });
@@ -10627,7 +12001,7 @@ function addNewCategory() {
   showToast('ক্যাটাগরি যোগ হয়েছে', 'success');
 }
 
-function deleteCategory(index) {
+function deleteAccountCategory(index) {
   if (accountCategories.length <= 1) {
     showToast('শেষ ক্যাটাগরি ডিলিট করা যাবে না', 'warning');
     return;
@@ -11285,7 +12659,7 @@ function openBulkDeleteModal() {
             <div class="flex gap-3 mt-6">
                 <button onclick="closeModal()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 text-gray-700 font-medium">বাতিল</button>
                 <button onclick="confirmBulkDelete()" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700">
-                    🗑️ ডাটা ডিলিট করুন
+                    ??️ ডাটা ডিলিট করুন
                 </button>
             </div>
         </div>
@@ -13816,18 +15190,32 @@ function checkAppLock() {
 
 // 8. রাতের বেলা অটো ডার্ক মোড
 function autoDarkModeByTime() {
+    // 🌙 এই ফাংশন এখন আর জোর করে ডার্ক মোড অন করবে না
+    // শুধু ইউজারের পছন্দ অনুযায়ী কাজ করবে
+    
     const hour = new Date().getHours();
-    if (hour >= 20 || hour < 6) {
-        if (!document.body.classList.contains('dark-mode')) {
-            document.body.classList.add('dark-mode');
-            const darkText = document.getElementById('dark-mode-text');
-            if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অন' : 'On';
+    const isNightTime = (hour >= 20 || hour < 6);
+    
+    // ইউজারের পছন্দ চেক (yes / no / null)
+    const userChoice = localStorage.getItem('night_dark_preference');
+    
+    if (isNightTime) {
+        // রাতে - শুধু ইউজার "yes" বললে ডার্ক মোড অন করব
+        if (userChoice === 'yes') {
+            if (!document.body.classList.contains('dark-mode')) {
+                document.body.classList.add('dark-mode');
+                localStorage.setItem('dark_mode', 'true');
+                updateDarkModeButtonUI(true);
+            }
         }
+        // userChoice === 'no' হলে কিছুই করব না - লাইট মোডেই থাকবে
+        // userChoice === null হলে কিছুই করব না - checkAndAskDarkMode জিজ্ঞেস করবে
     } else {
+        // দিনে - লাইট মোডে ফিরে যাবে
         if (document.body.classList.contains('dark-mode')) {
             document.body.classList.remove('dark-mode');
-            const darkText = document.getElementById('dark-mode-text');
-            if (darkText) darkText.textContent = currentLanguage === 'bn' ? 'অফ' : 'Off';
+            localStorage.setItem('dark_mode', 'false');
+            updateDarkModeButtonUI(false);
         }
     }
 }
@@ -13870,6 +15258,10 @@ function checkAndAskDarkMode() {
     const hour = now.getHours();
     const isNightTime = (hour >= 20 || hour < 6);
     
+    // আজকের তারিখ (দিন বদল চেক করার জন্য)
+    const todayKey = now.toDateString(); // "Mon Oct 08 2026"
+    const lastAskedDate = localStorage.getItem('dark_mode_asked_date');
+    
     // দিনে থাকলে - লাইট মোডে রেখে দিন
     if (!isNightTime) {
         if (document.body.classList.contains('dark-mode')) {
@@ -13879,6 +15271,16 @@ function checkAndAskDarkMode() {
         }
         return;
     }
+    
+    // 🌙 রাতে হলে
+    // যদি আজ ইতিমধ্যে জিজ্ঞেস করা হয়ে থাকে, তাহলে আর জিজ্ঞেস করব না
+    if (lastAskedDate === todayKey) {
+        console.log('🌙 আজ রাতে ইতিমধ্যে ডার্ক মোড জিজ্ঞেস করা হয়েছে');
+        return;
+    }
+    
+    // মডাল দেখানোর আগে "আজ জিজ্ঞেস করা হয়েছে" সেভ করে রাখি
+    localStorage.setItem('dark_mode_asked_date', todayKey);
     
     // রাতে হলে - সুন্দর মডাল দেখাবে
     const overlay = document.getElementById('modal-overlay');
@@ -13906,6 +15308,7 @@ function checkAndAskDarkMode() {
 function acceptNightDarkMode() {
     document.body.classList.add('dark-mode');
     localStorage.setItem('dark_mode', 'true');
+    localStorage.setItem('night_dark_preference', 'yes');  // 👈 ইউজারের পছন্দ সেভ
     updateDarkModeButtonUI(true);
     closeModal();
     showToast('🌙 ডার্ক মোড সক্রিয় হয়েছে', 'success', 2000);
@@ -13914,6 +15317,7 @@ function acceptNightDarkMode() {
 function rejectNightDarkMode() {
     document.body.classList.remove('dark-mode');
     localStorage.setItem('dark_mode', 'false');
+    localStorage.setItem('night_dark_preference', 'no');  // 👈 ইউজারের পছন্দ সেভ
     updateDarkModeButtonUI(false);
     closeModal();
     showToast('☀️ লাইট মোডে থাকবেন', 'info', 2000);
@@ -13984,7 +15388,17 @@ window.viewCustomerHistory = function(customerId) {
     const balance = getCustomerBalance(customerId);
     const transactions = getTransactions().filter(t => t.customer_id === customerId);
     transactions.sort((a, b) => new Date(b.datetime || b.created_at) - new Date(a.datetime || a.created_at));
-    
+    // 🔥 প্রতিটি লেনদেনের পর ব্যালেন্স ক্যালকুলেশন
+const chronological = [...transactions].sort((a, b) => 
+    new Date(a.datetime || a.created_at) - new Date(b.datetime || b.created_at)
+);
+let runningBalance = 0;
+const balanceAfterMap = {};
+chronological.forEach(t => {
+    if (t.type === 'due') runningBalance += t.amount;
+    if (t.type === 'payment') runningBalance -= t.amount;
+    balanceAfterMap[t.__backendId] = runningBalance;
+});
     const customerImage = customer.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.customer_name)}&background=059669&color=fff&size=64`;
     
     const balanceText = balance > 0 ? 
@@ -14001,10 +15415,37 @@ window.viewCustomerHistory = function(customerId) {
     // মডাল কন্টেন্ট তৈরি করা হচ্ছে
     content.innerHTML = `
         <div class="max-h-[80vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-4 sticky top-0 bg-white pb-2 z-10">
-                <h2 class="text-xl font-bold text-gray-800">📋 ${escapeHtml(customer.customer_name)}</h2>
-                <button onclick="closeModal()" class="text-gray-400 text-2xl hover:text-gray-600">&times;</button>
-            </div>
+            <!-- হেডার - নাম + শেয়ার + ক্লোজ -->
+<div class="flex items-center justify-between mb-4 sticky top-0 bg-white pb-3 pt-1 z-10 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2 truncate pr-2">
+        <span class="text-xl">📋</span>
+        <span class="truncate">${escapeHtml(customer.customer_name)}</span>
+    </h2>
+    <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- শেয়ার বাটন -->
+        <button onclick="shareCustomerCard('${customer.customer_id}')" 
+            class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white flex items-center justify-center shadow-md hover:shadow-lg hover:scale-105 active:scale-95 transition-all" 
+            title="${t('share_customer')}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+        </button>
+        
+        <!-- ক্লোজ বাটন -->
+        <button onclick="closeModal()" 
+            class="w-9 h-9 rounded-full bg-gray-100 hover:bg-red-100 text-gray-500 hover:text-red-600 flex items-center justify-center transition-all active:scale-95" 
+            title="${currentLanguage === 'bn' ? 'বন্ধ করুন' : 'Close'}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+    </div>
+</div>
             
             <!-- প্রোফাইল ও ব্যালেন্স সেকশন -->
             <div class="flex items-center gap-3 mb-4">
@@ -14025,24 +15466,23 @@ window.viewCustomerHistory = function(customerId) {
                 </div>
             </div>
             
-            <!-- অ্যাকশন বাটন গ্রুপ - এখানেই পেমেন্ট বাটন আছে! -->
-            <div class="relative mb-4">
-                <div class="action-btns-group flex gap-3">
-                    <button onclick="closeModal(); setTimeout(() => openModal('due', '${customer.customer_id}'), 100);" class="flex-1 action-btn-due bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
-                        <span>📝</span> ${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}
-                    </button>
-                    <button onclick="closeModal(); setTimeout(() => openModal('payment', '${customer.customer_id}'), 100);" class="flex-1 action-btn-payment bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
-                        <span>💰</span> ${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}
-                    </button>
-                </div>
-                <div class="absolute top-0 right-0">
-                    <button onclick="shareCustomerCard('${customer.customer_id}')" class="share-icon-btn w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-green-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform" title="${t('share_customer')}">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+       <!-- অ্যাকশন বাটন গ্রুপ - শেয়ার বাটন হেডারে সরানো হয়েছে -->
+<div class="action-btns-group flex gap-3 mb-4">
+    <button onclick="closeModal(); setTimeout(() => openModal('due', '${customer.customer_id}'), 100);" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>${currentLanguage === 'bn' ? 'বাকি দিন' : 'Add Due'}</span>
+    </button>
+    <button onclick="closeModal(); setTimeout(() => openModal('payment', '${customer.customer_id}'), 100);" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all active:scale-95">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <circle cx="12" cy="12" r="2.5"/>
+            <path d="M6 12h.01M18 12h.01"/>
+        </svg>
+        <span>${currentLanguage === 'bn' ? 'পেমেন্ট নিন' : 'Take Payment'}</span>
+    </button>
+</div>
             
             <h3 class="font-semibold text-gray-700 mb-2">${currentLanguage === 'bn' ? '📜 লেনদেনের ইতিহাস' : '📜 Transaction History'}</h3>
             <div class="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
@@ -14055,6 +15495,25 @@ window.viewCustomerHistory = function(customerId) {
                                 </p>
                                 <p class="text-xs text-gray-500">${formatDate(t.date)} <span class="text-emerald-600">🕐 ${t.timestamp || new Date(t.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}</span></p>
                                 ${t.note ? `<p class="text-xs text-gray-400 mt-1">📌 ${escapeHtml(t.note)}</p>` : ''}
+                                <!-- ✅ প্রতিটি লেনদেনের পর ব্যালেন্স স্ট্যাটাস -->
+${(() => {
+    const bal = balanceAfterMap[t.__backendId];
+    if (bal === undefined) return '';
+    
+    if (bal === 0) {
+        return `<span class="inline-block mt-1 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium border border-emerald-200">
+            ✅ এই লেনদেনে ব্যালেন্স শূন্য হয়েছে
+        </span>`;
+    } else if (bal > 0) {
+        return `<span class="inline-block mt-1 text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-medium border border-red-200">
+            🔴 এই লেনদেনের পর ${formatCurrency(bal)} বাকি ছিল
+        </span>`;
+    } else {
+        return `<span class="inline-block mt-1 text-[10px] bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full font-medium border border-yellow-200">
+            💰 এই লেনদেনের পর ${formatCurrency(Math.abs(bal))} অগ্রিম ছিল
+        </span>`;
+    }
+})()}
                             </div>
                             <p class="font-bold ${t.type === 'due' ? 'text-red-600' : 'text-emerald-600'}">
                                 ${t.type === 'due' ? '+' : '-'}${formatCurrency(t.amount)}
@@ -14099,6 +15558,7 @@ function toggleRule(ruleId) {
   
   // Initialize
 function init() {
+  setupSplashVideo();  // 🎬 স্প্ল্যাশ ভিডিও শুরু
   detectPlatform();
   
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
@@ -14189,9 +15649,14 @@ if (loadSavedGDriveToken()) {
   
   // পেমেন্ট মেথড লোড
 loadPaymentMethods();
+
+// 💬 WhatsApp সেটিংস লোড
+loadWhatsAppSettings();
+updateWhatsAppUI();
+console.log('✅ WhatsApp Integration loaded');
   
   // ডেট ফিল্টার সেট করুন
-  setDateFilter('all');
+setDateFilter('today');
   
   initPrayerFeature();
   
@@ -14399,6 +15864,84 @@ function submitPurchaseRequest() {
         playSound('error');
     });
 }
+  
+// ═══════════════════════════════════════════
+// 🎬 SPLASH VIDEO SYSTEM
+// ═══════════════════════════════════════════
+
+function closeSplashVideo() {
+    const overlay = document.getElementById('splash-video-overlay');
+    if (!overlay) return;
+    
+    overlay.classList.add('fade-out');
+    
+    setTimeout(() => {
+        if (overlay.parentElement) {
+            overlay.remove();
+        }
+    }, 500);
+    
+    console.log('✅ Splash video closed');
+}
+
+function setupSplashVideo() {
+    const video = document.getElementById('splash-video');
+    const loadingDots = document.getElementById('splash-loading');
+    
+    if (!video) {
+        // ভিডিও এলিমেন্ট নেই → সরাসরি বন্ধ
+        closeSplashVideo();
+        return;
+    }
+    
+    // ⏱️ MAX সময় ৫ সেকেন্ড (ভিডিও বড় হলে বন্ধ হবে)
+    const maxTimeout = setTimeout(() => {
+        console.log('⏰ Splash timeout (৫ সেকেন্ড পার হয়েছে)');
+        closeSplashVideo();
+    }, 5000);
+    
+    // ভিডিও লোড হয়েছে কিনা
+    video.addEventListener('loadeddata', () => {
+        console.log('📹 Video loaded');
+        if (loadingDots) loadingDots.style.display = 'none';
+    });
+    
+    // ভিডিও শেষ হলে → ২ সেকেন্ড পরে বন্ধ
+    video.addEventListener('ended', () => {
+        console.log('🎬 Video ended');
+        clearTimeout(maxTimeout);
+        setTimeout(() => closeSplashVideo(), 1500);
+    });
+    
+    // ভিডিও লোড না হলে → সরাসরি বন্ধ
+    video.addEventListener('error', (e) => {
+        console.warn('❌ Video error:', e);
+        clearTimeout(maxTimeout);
+        closeSplashVideo();
+    });
+    
+    // স্ক্রলিং বন্ধ রাখো স্প্ল্যাশ চলার সময়
+    document.body.style.overflow = 'hidden';
+    
+    // বন্ধ হলে scroll চালু
+    const observer = new MutationObserver(() => {
+        if (!document.getElementById('splash-video-overlay')) {
+            document.body.style.overflow = '';
+            observer.disconnect();
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// টাচ/ক্লিক করলে video unmute করে সাউন্ড চালু (ঐচ্ছিক)
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('splash-video');
+    if (video) {
+        video.play().catch(err => {
+            console.log('🎬 Autoplay blocked, muted playing');
+        });
+    }
+});
   
   </script>
   
