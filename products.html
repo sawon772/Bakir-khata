@@ -8929,7 +8929,7 @@ if (pubData.is_active === false) {
                 
                 document.getElementById('so-publish-text').textContent = 'আপডেট করুন';
                 soLastPublishedId = publicId;
-                soLastPublishedLink = `${location.origin}/shop/?id=${publicId}`;
+                soLastPublishedLink = `${buildSiteURL(`shop/?id=${publicId}`)}`;
                 
                 soUpdatePreview();
                 showToast('✅ আগের প্রকাশিত ডাটা লোড হয়েছে', 'info', 2500);
@@ -9217,7 +9217,7 @@ async function soPublish() {
         
         // লিংক জেনারেট
         soLastPublishedId = publicId;
-        soLastPublishedLink = `${location.origin}/shop/?id=${publicId}`;
+        soLastPublishedLink = `${buildSiteURL(`shop/?id=${publicId}`)}`;
         
         // UI রিফ্রেশ
         renderProducts();
@@ -11168,7 +11168,7 @@ function viewOrderDetails(orderId) {
         ? `<img src="${order.product_image}" style="width: 80px; height: 80px; border-radius: 14px; object-fit: cover; border: 2px solid var(--border-color);" onerror="this.style.display='none'">`
         : `<div style="width: 80px; height: 80px; border-radius: 14px; background: var(--bg-input); display: flex; align-items: center; justify-content: center; font-size: 34px;">📦</div>`;
     
-    const trackLink = `${location.origin}/shop/?id=${order.product_id}`;
+    const trackLink = `${buildSiteURL(`shop/?id=${order.product_id}`)}`;
 const shortId = order.__orderId.slice(-6).toUpperCase();
 const waText = `আসসালামু আলাইকুম ${order.customer_name},\n\nআপনার অর্ডারটি সম্পর্কে যোগাযোগ করছি।\n\n📦 পণ্য: ${order.product_title}\n📊 পরিমাণ: ${order.quantity}টি\n💰 মোট: ৳${order.total_price}\n🎯 Tracking ID: #${shortId}\n📅 ${dateTime}\n\n📌 অর্ডার ট্র্যাক করুন:\n${trackLink}\n\n(ট্র্যাকিং সেকশনে গিয়ে #${shortId} লিখে স্ট্যাটাস দেখতে পারবেন)\n\nঅনুগ্রহ করে জানাবেন অর্ডারটি কনফার্ম করবেন কিনা।\n\nধন্যবাদ 🙏\n${order.shop_name || ''}`;
     const waUrl = `https://wa.me/88${cleanPhone}?text=${encodeURIComponent(waText)}`;
@@ -11614,7 +11614,7 @@ function whatsappOrderCustomer(orderId) {
     const cleanPhone = (order.customer_phone || '').replace(/\D/g, '');
     const dateTime = order.date ? new Date(order.date).toLocaleDateString('bn-BD') : '';
     const shortId = order.__orderId.slice(-6).toUpperCase();
-    const trackLink = `${location.origin}/shop/?id=${order.product_id}`;
+    const trackLink = `${buildSiteURL(`shop/?id=${order.product_id}`)}`;
     
     const text = `আসসালামু আলাইকুম ${order.customer_name},\n\nআপনার অর্ডারটি সম্পর্কে যোগাযোগ করছি।\n\n📦 পণ্য: ${order.product_title}\n📊 পরিমাণ: ${order.quantity}টি\n💰 মোট: ৳${order.total_price}\n🎯 Tracking ID: #${shortId}\n📅 ${dateTime}\n\n📌 অর্ডার ট্র্যাক করুন:\n${trackLink}\n\nঅনুগ্রহ করে জানাবেন অর্ডারটি কনফার্ম করবেন কিনা।\n\nধন্যবাদ 🙏\n${order.shop_name || ''}`;
     
@@ -13358,9 +13358,25 @@ async function bulkPublishAll() {
 
 let currentShopQRUrl = '';
 
+// ═══════════════════════════════════════════════
+// 🌐 Base path detect — Cloudflare (/) vs GitHub (/Bakir-khata/)
+// ═══════════════════════════════════════════════
+function getBasePath() {
+    const path = window.location.pathname;
+    // শেষ "/" পর্যন্ত সব রাখো — যেমন "/Bakir-khata/" বা "/"
+    return path.substring(0, path.lastIndexOf('/') + 1);
+}
+
+// 🌐 Path-aware URL builder
+function buildSiteURL(relativePath) {
+    const base = getBasePath();
+    const cleanPath = relativePath.replace(/^\/+/, '');
+    return `${window.location.origin}${base}${cleanPath}`;
+}
+
 function getShopURL() {
     if (!currentUser) return '';
-    return `${window.location.origin}/shop-list?shop=${currentUser.uid}`;
+    return buildSiteURL(`shop-list?shop=${currentUser.uid}`);
 }
 
 
